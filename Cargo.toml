@@ -1,0 +1,10 @@
+[package]
+name = "unftp"
+version = "0.1.0"
+authors = ["Koen Wilde <koen@chillheid.nl>"]
+edition = "2018"
+
+[dependencies]
+firetrap = "0.1"
+log = "0.4"
+env_logger = "0.6"
