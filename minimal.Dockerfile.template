@@ -1,0 +1,13 @@
+FROM rust:%%RUST_VERSION%%-slim AS builder
+WORKDIR /usr/src/unftp
+COPY . .
+RUN apt-get update && apt-get install -y \
+  musl-dev \
+  musl-tools
+RUN rustup target add x86_64-unknown-linux-musl
+RUN cargo build --release --target=x86_64-unknown-linux-musl
+
+FROM scratch
+WORKDIR /root
+COPY --from=builder /usr/src/unftp/target/x86_64-unknown-linux-musl/release/unftp .
+CMD ["/root/unftp"]
