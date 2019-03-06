@@ -4,8 +4,8 @@ DOCKER_TEMPLATES:=$(wildcard *.Dockerfile.template)
 DOCKER_FILES=$(DOCKER_TEMPLATES:%.template=%)
 DOCKER_IMAGES=$(DOCKER_FILES:%.Dockerfile=%)
 
-.PHONY: helping
-helping: # Show available `make` commands
+.PHONY: help
+help: # Show available `make` commands
 	@awk -F'#' '/^[%a-z][.A-Za-z0-9]+/ { if (NF > 1) { sub(/:[^#]*/, ""); printf("%-15s %s\n", $$1, $$2)}}' Makefile
 
 .PRECIOUS: %.Dockerfile
