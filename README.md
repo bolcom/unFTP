@@ -1,5 +1,7 @@
 # unFTP
 
+[![Build Status](https://travis-ci.org/bolcom/unFTP.svg)](https://travis-ci.org/bolcom/unFTP)
+
 When you need to FTP, but don't want to.
 
 With unFTP, you can present FTP to the outside world while freeing yourself to use all the modern APIs and techniques you want to.
