@@ -30,3 +30,7 @@ make docker-run-alpine
 
 Partly as an example, there is also 'minimal' image available that is statically linked and build `FROM scratch`. To use it use `make docker-minimal` and `make docker-run-minimal`.
 For the full list of supplied docker images, use `make docker-list`.
+
+## License
+
+You're free to use, modify and distribute this software under the terms of the Apache-2.0 license, whichever has your preference.
