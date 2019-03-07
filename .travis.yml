@@ -12,13 +12,17 @@ os:
   - linux
   - osx
 
-before_script:
+before_install:
   - if (test -n "$TRAVIS_TAG" && test "$TRAVIS_RUST_VERSION" = "stable" && test "$TRAVIS_OS_NAME" = "linux"); then export DEPLOY=true; else export DEPLOY=false; fi
+
+before_script:
+  - if $DEPLOY; then rustup target add x86_64-unknown-linux-musl; fi
 
 script:
   - cargo build --verbose --all --all-features
   - cargo test --verbose --all --all-features
   - if $DEPLOY; then make docker-image; else true; fi
+  - if $DEPLOY; then cargo test --verbose --all --all-features --target=x86_64-unknown-linux-musl; else true; fi
 
 deploy:
   provider: script
