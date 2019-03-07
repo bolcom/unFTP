@@ -7,12 +7,14 @@ When you need to FTP, but don't want to.
 With unFTP, you can present FTP to the outside world while freeing yourself to use all the modern APIs and techniques you want to.
 By storing everything in Google Buckets and authenticating against an external service it requires no local state.
 
-unFTP is currently very much under development and totally not usable yet.
+**unFTP is currently very much under development and totally not usable yet.**
 
 ## Prerequisites
 
 You'll need [Rust](https://rust-lang.org) 1.31 (including `cargo`) or higher to build unFTP.
 There are no runtime dependencies besides the OS and libc.
+
+Run `make help` to see an overview of the supplied *make* targets.
 
 ## Docker
 
