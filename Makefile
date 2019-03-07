@@ -37,7 +37,7 @@ docker-image-%: %.Dockerfile # Build the % docker image
 
 ##
 .PHONY: docker-run-%
-docker-run-%: docker-% # Run the % docker image in the foreground
+docker-run-%: docker-image-% # Run the % docker image in the foreground
 	@echo docker run -ti --rm --net host --init $@
 
 ##
