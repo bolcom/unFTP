@@ -1,5 +1,8 @@
 language: rust
 
+services:
+  - docker
+
 rust:
   - stable
   - beta
@@ -9,12 +12,23 @@ os:
   - linux
   - osx
 
+before_script:
+  - if (test -n "$TRAVIS_TAG" && test "$TRAVIS_RUST_VERSION" = "stable" && test "$TRAVIS_OS_NAME" = "linux"); then export DEPLOY=true; else export DEPLOY=false; fi
+
 script:
   - cargo build --verbose --all --all-features
   - cargo test --verbose --all --all-features
+  - if $DEPLOY; then make docker-image; else true; fi
+
+deploy:
+  provider: script
+  script: if $DEPLOY; then (echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin && docker push bolcom/unftp); else true; fi
+  on:
+    tags: true
 
 cache: cargo
 
 matrix:
   allow_failures:
     - rust: nightly
+  fast_finish: true

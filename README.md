@@ -16,16 +16,16 @@ There are no runtime dependencies besides the OS and libc.
 
 ## Docker
 
-To build a docker image based on alpine:
+To build the default docker image:
 
 ```sh
-make docker-alpine
+make docker-image
 ```
 
-To build and run unFTP inside an alpine docker image:
+To build and run unFTP inside the default docker image in the foreground:
 
 ```sh
-make docker-run-alpine
+make docker-run
 ```
 
 Partly as an example, there is also 'minimal' image available that is statically linked and build `FROM scratch`. To use it use `make docker-minimal` and `make docker-run-minimal`.
