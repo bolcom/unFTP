@@ -8,8 +8,7 @@ use std::env;
 use std::process::Command;
 
 const APP_NAME: &str = "unFTP";
-const APP_VERSION: &str = env!("CARGO_PKG_VERSION");
-const APP_HASH: &str = env!("HASH");
+const APP_VERSION: &str = env!("BUILD_VERSION");
 
 const ENV_UNFTP_ADDRESS: EnvVar = EnvVar::WithDefault("UNFTP_ADDRESS", "127.0.0.1:2121");
 const ENV_LOG_REDIS_KEY: EnvVar = EnvVar::NoDefault("LOG_REDIS_KEY");
@@ -48,8 +47,9 @@ fn main() {
     let server = Server::with_root(env::temp_dir()).greeting("Welcome to unFTP");
 
     info!(
-        "Starting {} server version {}({}) on {}.",
-        APP_NAME, APP_VERSION, APP_HASH, addr
+        "Starting {} server version {} on {}.",
+        APP_NAME, APP_VERSION, addr
     );
+
     server.listen(&addr);
 }
