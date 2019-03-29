@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y \
   musl-dev \
   musl-tools
 RUN rustup target add x86_64-unknown-linux-musl
-RUN cargo build --release --target=x86_64-unknown-linux-musl
+RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --release --target=x86_64-unknown-linux-musl
 
 FROM alpine:latest
 WORKDIR /root

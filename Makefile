@@ -28,7 +28,7 @@ help: # Show available `make` commands
 ##
 .PRECIOUS: %.Dockerfile
 %.Dockerfile: %.Dockerfile.template # Generate the % Dockerfile from the template
-	sed 's/%%RUST_VERSION%%/$(RUST_VERSION)/g' $< > $@
+	sed 's/%%RUST_VERSION%%/$(RUST_VERSION)/g; s/%%BUILD_VERSION%%/$(DOCKER_TAG)/g' $< > $@
 
 ##
 .PHONY: docker-%

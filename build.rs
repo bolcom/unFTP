@@ -1,8 +1,10 @@
+use std::env;
 use std::process::Command;
 
 fn main() {
-    // note: add error checking yourself.
-    let output = Command::new("git").args(&["rev-parse", "--short", "HEAD"]).output().unwrap();
-    let git_hash = String::from_utf8(output.stdout).unwrap();
-    println!("cargo:rustc-env=HASH={}", git_hash);
+    let version = match Command::new("git").args(&["describe", "--tags"]).output() {
+        Ok(output) => String::from_utf8(output.stdout).unwrap(),
+        Err(_) => env::var("BUILD_VERSION").unwrap_or(">unknown<".to_string()),
+    };
+    println!("cargo:rustc-env=BUILD_VERSION={}", version);
 }
