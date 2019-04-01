@@ -4,6 +4,8 @@
 
 When you need to FTP, but don't want to.
 
+![logo](logo512.png)
+
 With unFTP, you can present FTP to the outside world while freeing yourself to use all the modern APIs and techniques you want to.
 By storing everything in Google Buckets and authenticating against an external service it requires no local state.
 
@@ -35,4 +37,4 @@ For the full list of supplied docker images, use `make docker-list`.
 
 ## License
 
-You're free to use, modify and distribute this software under the terms of the Apache-2.0 license, whichever has your preference.
+You're free to use, modify and distribute this software under the terms of the Apache-2.0 license.
