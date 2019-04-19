@@ -8,6 +8,5 @@ RUN rustup target add x86_64-unknown-linux-musl
 RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --release --target=x86_64-unknown-linux-musl
 
 FROM alpine:latest
-WORKDIR /root
-COPY --from=builder /usr/src/unftp/target/x86_64-unknown-linux-musl/release/unftp .
-CMD ["/root/unftp"]
+COPY --from=builder /usr/src/unftp/target/x86_64-unknown-linux-musl/release/unftp /
+CMD ["/unftp"]
