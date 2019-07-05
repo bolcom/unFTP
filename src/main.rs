@@ -15,6 +15,7 @@ const APP_NAME: &str = "unFTP";
 const APP_VERSION: &str = env!("BUILD_VERSION");
 
 const ENV_UNFTP_ADDRESS: Arg = Arg::WithDefault("UNFTP_ADDRESS", "0.0.0.0:2121");
+const ENV_UNFTP_HOME: Arg = Arg::NoDefault("UNFTP_HOME");
 const ENV_LOG_REDIS_KEY: Arg = Arg::NoDefault("LOG_REDIS_KEY");
 const ENV_LOG_REDIS_HOST: Arg = Arg::WithDefault("LOG_REDIS_HOST", "localhost");
 const ENV_LOG_REDIS_PORT: Arg = Arg::WithDefault("LOG_REDIS_PORT", "6379");
@@ -47,7 +48,12 @@ fn main() {
     let root = Logger::root(drain.fuse(), o!());
     let log = root.new(o!("module" => "main"));
     let addr = ENV_UNFTP_ADDRESS.val();
-    let server = Server::with_root(env::temp_dir()).greeting("Welcome to unFTP");
-    info!(log, "Starting {} server.", APP_NAME; "version" => APP_VERSION, "address" => &addr);
+
+    let home_dir = ENV_UNFTP_HOME.val_or_else(|_| env::temp_dir().as_path().to_str().unwrap().to_string());
+    let server = Server::with_root(home_dir.clone()).greeting("Welcome to unFTP");
+    info!(log, "Starting {} server.", APP_NAME;
+    "version" => APP_VERSION,
+    "address" => &addr,
+    "home" => home_dir);
     server.listen(&addr);
 }

@@ -23,4 +23,12 @@ impl Arg {
     pub fn provided(&self) -> bool {
         env::var_os(self.name()).is_some()
     }
+
+    #[inline]
+    pub fn val_or_else<F: FnOnce(std::env::VarError) -> String>(self, f: F) -> String {
+        match self {
+            Arg::NoDefault(name) => env::var(name).unwrap_or_else(f),
+            Arg::WithDefault(name, default) => env::var(name).unwrap_or_else(|_| default.to_string()),
+        }
+    }
 }

@@ -11,11 +11,10 @@ use r2d2_redis::RedisConnectionManager;
 use serde_json::json;
 use slog::Key;
 use slog::{OwnedKVList, Record, KV};
+use std::cell::RefCell;
 use std::fmt;
 use std::process::Command;
 use std::time::Duration;
-use std::cell::RefCell;
-
 
 /// A logger that sends JSON formatted logs to a list in a Redis instance. It uses this format
 ///
