@@ -1,7 +1,7 @@
 [package]
 name = "unftp"
-version = "0.0.4"
-authors = ["Koen Wilde <koen@chillheid.nl>", "Hannes de Jager <hdejager@bol.com>"]
+version = "0.0.5"
+authors = ["Koen Wilde <koen@chillheid.nl>", "Hannes de Jager <hdejager@bol.com>", "Steven Meunier <smeunier@bol.com"]
 edition = "2018"
 
 [dependencies]
