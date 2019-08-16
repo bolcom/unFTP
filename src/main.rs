@@ -9,7 +9,7 @@ extern crate slog_async;
 extern crate slog_term;
 
 use crate::config::Arg;
-use firetrap::Server;
+use libunftp::Server;
 use futures::future;
 use hyper::rt::{self, Future};
 use hyper::service::service_fn;

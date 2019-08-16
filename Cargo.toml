@@ -5,7 +5,7 @@ authors = ["Koen Wilde <koen@chillheid.nl>", "Hannes de Jager <hdejager@bol.com>
 edition = "2018"
 
 [dependencies]
-firetrap = {git = "https://github.com/bolcom/firetrap.git", branch = "develop"}
+libunftp = {git = "https://github.com/bolcom/libunftp.git", branch = "master"}
 log = "0.4"
 env_logger = "0.6"
 redis = "0.9.0"
