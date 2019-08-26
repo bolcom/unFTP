@@ -140,7 +140,7 @@ impl Builder {
             .build(manager)?;
 
         let con = pool.get()?;
-        let _: () = redis::cmd("PING").query(&*con)?;
+        redis::cmd("PING").query(&*con)?;
 
         Ok(Logger {
             redis_host: self.redis_host,

@@ -47,7 +47,7 @@ fn redis_logger() -> Option<redislog::Logger> {
     None
 }
 
-type BoxFuture = Box<Future<Item = Response<Body>, Error = hyper::Error> + Send>;
+type BoxFuture = Box<dyn Future<Item = Response<Body>, Error = hyper::Error> + Send>;
 
 fn metrics_service(req: Request<Body>) -> BoxFuture {
     let mut response = Response::new(Body::empty());
@@ -68,7 +68,7 @@ fn gather_metrics() -> Vec<u8> {
     let metric_families = prometheus::gather();
     let mut buffer = vec![];
     encoder.encode(&metric_families, &mut buffer).unwrap();
-    return buffer;
+    buffer
 }
 
 fn main() {
@@ -88,7 +88,7 @@ fn main() {
     let http_addr = ENV_METRICS_ADDRESS
         .val()
         .parse()
-        .expect(format!("Unable to parse metrics address {}", ENV_METRICS_ADDRESS.val()).as_str());
+        .expect(&*format!("Unable to parse metrics address {}", ENV_METRICS_ADDRESS.val()));
     let http_log = log.clone();
     let http_server = hyper::Server::bind(&http_addr)
         .serve(|| service_fn(metrics_service))
@@ -122,8 +122,8 @@ fn main() {
 
     http_thread
         .join()
-        .expect(format!("The Prometheus {} exporter server thread has panicked", APP_NAME).as_str());
+        .expect(&*format!("The Prometheus {} exporter server thread has panicked", APP_NAME));
     ftp_thread
         .join()
-        .expect(format!("The {} server thread has panicked", APP_NAME).as_str());
+        .expect(&*format!("The {} server thread has panicked", APP_NAME));
 }
