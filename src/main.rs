@@ -9,11 +9,11 @@ extern crate slog_async;
 extern crate slog_term;
 
 use crate::config::Arg;
-use libunftp::Server;
 use futures::future;
 use hyper::rt::{self, Future};
 use hyper::service::service_fn;
 use hyper::{Body, Method, Request, Response, StatusCode};
+use libunftp::Server;
 use prometheus::{Encoder, TextEncoder};
 use std::env;
 use std::thread;
@@ -123,7 +123,5 @@ fn main() {
     http_thread
         .join()
         .expect(&*format!("The Prometheus {} exporter server thread has panicked", APP_NAME));
-    ftp_thread
-        .join()
-        .expect(&*format!("The {} server thread has panicked", APP_NAME));
+    ftp_thread.join().expect(&*format!("The {} server thread has panicked", APP_NAME));
 }

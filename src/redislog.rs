@@ -112,10 +112,7 @@ impl Builder {
     }
 
     pub fn redis_port(self, val: u32) -> Builder {
-        Builder {
-            redis_port: val,
-            ..self
-        }
+        Builder { redis_port: val, ..self }
     }
 
     pub fn ttl(self, duration: Duration) -> Builder {
@@ -135,9 +132,7 @@ impl Builder {
 
         let con_str = format!("redis://{}:{}", self.redis_host, self.redis_port);
         let manager = RedisConnectionManager::new(con_str.as_str())?;
-        let pool = r2d2::Pool::builder()
-            .connection_timeout(Duration::new(1, 0))
-            .build(manager)?;
+        let pool = r2d2::Pool::builder().connection_timeout(Duration::new(1, 0)).build(manager)?;
 
         let con = pool.get()?;
         redis::cmd("PING").query(&*con)?;
