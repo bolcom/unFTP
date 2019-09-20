@@ -1,2 +1,3 @@
-max_width = 160
+# FIXME: rustfmt arbitratily breaks long lines, don't run it for the time being
+max_width = 120
 reorder_imports = true
