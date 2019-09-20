@@ -114,13 +114,16 @@ fn main() {
         Some(l) => slog_async::Async::new(l.fuse()).build().fuse(),
         None => {
             let decorator = slog_term::PlainDecorator::new(std::io::stdout());
-            let drain = slog_term::CompactFormat::new(decorator).build();
-            slog_async::Async::new(drain.fuse()).build().fuse()
+            let drain = slog_term::CompactFormat::new(decorator).build().fuse();
+            slog_async::Async::new(drain).build().fuse()
         }
     };
 
-    let root = Logger::root(drain.fuse(), o!());
+    let root = Logger::root(drain, o!());
     let log = root.new(o!("module" => "main"));
+
+    let _scope_guard = slog_scope::set_global_logger(root);
+    let _log_guard = slog_stdlog::init_with_level(log::Level::Debug).unwrap();
 
     // HTTP server for exporting Prometheus metrics
     if ENV_METRICS_ADDRESS.provided() {
