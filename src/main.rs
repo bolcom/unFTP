@@ -6,6 +6,7 @@ use crate::config::Arg;
 use tokio::runtime::Runtime;
 use libunftp::Server;
 use libunftp::auth;
+
 use futures::future;
 use hyper::rt::Future;
 use hyper::service::service_fn;
@@ -103,7 +104,7 @@ fn gather_metrics() -> Vec<u8> {
     let metric_families = prometheus::gather();
     let mut buffer = vec![];
     encoder.encode(&metric_families, &mut buffer).unwrap();
-    return buffer;
+    buffer
 }
 
 fn main() {
