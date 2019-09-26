@@ -16,7 +16,6 @@ repository = "https://github.com/bolcom/unFTP"
 license = "Apache-2.0"
 readme = "README.md"
 
-
 [dependencies]
 libunftp = {git = "https://github.com/bolcom/libunftp.git", branch = "master", features=["rest", "pam"]}
 log = "0.4"
@@ -36,4 +35,4 @@ http = "0.1"
 prometheus = "0.4"
 futures = "0.1"
 tokio = "0.1"
-
+clap = "2.33.0"
