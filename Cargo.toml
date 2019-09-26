@@ -1,8 +1,21 @@
 [package]
 name = "unftp"
 version = "0.0.5"
-authors = ["Koen Wilde <koen@chillheid.nl>", "Hannes de Jager <hdejager@bol.com>", "Steven Meunier <smeunier@bol.com"]
+authors = [
+    "Agoston Horvath <ahorvath@bol.com>",
+    "Dávid Kosztka <dkosztka@bol.com>",
+    "Hannes de Jager <hdejager@bol.com>",
+    "Koen Wilde <koen@chillheid.nl>",
+    "Maarten Dirkse <mdirkse@bol.com>",
+    "Steven Meunier <smeunier@bol.com>",
+    "Rob klein Gunnewiek <rkleingunnewiek@bol.com>"
+]
 edition = "2018"
+description = "When you need to FTP, but don't want to."
+repository = "https://github.com/bolcom/unFTP"
+license = "Apache-2.0"
+readme = "README.md"
+
 
 [dependencies]
 libunftp = {git = "https://github.com/bolcom/libunftp.git", branch = "master", features=["rest", "pam"]}
