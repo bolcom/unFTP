@@ -5,8 +5,6 @@ use std::env;
 use std::str::FromStr;
 use std::sync::Arc;
 
-use crate::config::Arg;
-
 use clap::App;
 use futures::future;
 use hyper::rt::Future;
@@ -22,64 +20,178 @@ use tokio::runtime::Runtime;
 const APP_NAME: &str = "unFTP";
 const APP_VERSION: &str = env!("BUILD_VERSION");
 
-const ENV_CERTS_FILE: Arg = Arg::NoDefault("CERTS_FILE");
-const ENV_KEY_FILE: Arg = Arg::NoDefault("KEY_FILE");
+fn clap_app<'a>(tmp_dir: &'a str) -> clap::App<'a, 'a> {
+    App::new(APP_NAME)
+        .version(APP_VERSION)
+        .about("When you need to FTP but don't want to")
+        .author("The bol.com unFTP team")
+        .arg(
+            clap::Arg::with_name("bind-address")
+                .long("bind-address")
+                .value_name("HOST_PORT")
+                .help("Sets the host and port to listen on for FTP control connections")
+                .default_value("0.0.0.0:2121")
+                .env("UNFTP_ADDRESS")
+                .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("fs-home-dir")
+                .long("fs-home-dir")
+                .value_name("HOME_DIR")
+                .help("Sets the home directory for the filesystem back-end")
+                .default_value(tmp_dir)
+                .env("UNFTP_HOME")
+                .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("ftps-certs-file")
+                .long("ftps-certs-file")
+                .value_name("PEM_FILE")
+                .help("Sets the path the the certificates used for TLS security")
+                .env("UNFTP_CERTS_FILE")
+                .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("ftps-key-file")
+                .long("ftps-key-file")
+                .value_name("PEM_FILE")
+                .help("Sets the path to the private key file used for TLS security")
+                .env("UNFTP_CERTS_FILE")
+                .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("log-redis-key")
+                .long("log-redis-key")
+                .value_name("KEY")
+                .help("Sets the key name for storage in Redis")
+                .env("UNFTP_LOG_REDIS_KEY")
+                .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("log-redis-host")
+                .long("log-redis-host")
+                .value_name("KEY")
+                .help("Sets the hostname for the Redis server where logging should go")
+                .env("UNFTP_LOG_REDIS_HOST")
+                .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("log-redis-port")
+                .long("log-redis-port")
+                .value_name("PORT")
+                .help("Sets the port for the Redis server where logging should go")
+                .env("UNFTP_LOG_REDIS_PORT")
+                .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("metrics-bind-address")
+                .long("metrics-bind-address")
+                .value_name("HOST_PORT")
+                .help("Sets the host and port for the HTTP server used by prometheus metrics collection")
+                .env("UNFTP_METRICS_ADDRESS")
+                .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("auth-rest-url")
+                .long("auth-rest-url")
+                .value_name("URL")
+                .help("-")
+                .env("UNFTP_AUTH_REST_URL")
+                .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("auth-rest-method")
+                .long("auth-rest-method")
+                .value_name("URL")
+                .help("-")
+                .env("UNFTP_AUTH_REST_METHOD")
+                .default_value("GET")
+                .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("auth-rest-body")
+                .long("auth-rest-body")
+                .value_name("URL")
+                .help("-")
+                .env("UNFTP_AUTH_REST_BODY")
+                .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("auth-rest-selector")
+                .long("auth-rest-selector")
+                .value_name("SELECTOR")
+                .help("-")
+                .env("UNFTP_AUTH_REST_SELECTOR")
+                .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("auth-rest-regex")
+                .long("auth-rest-regex")
+                .value_name("REGEX")
+                .help("-")
+                .env("UNFTP_AUTH_REST_REGEX")
+                .takes_value(true),
+        )
+}
 
-const ENV_METRICS_ADDRESS: Arg = Arg::NoDefault("METRICS_ADDRESS");
-
-const ENV_LOG_REDIS_KEY: Arg = Arg::NoDefault("LOG_REDIS_KEY");
-const ENV_LOG_REDIS_HOST: Arg = Arg::NoDefault("LOG_REDIS_HOST");
-const ENV_LOG_REDIS_PORT: Arg = Arg::NoDefault("LOG_REDIS_PORT");
-
-const ENV_AUTH_REST_URL: Arg = Arg::NoDefault("AUTH_REST_URL");
-const ENV_AUTH_REST_METHOD: Arg = Arg::WithDefault("AUTH_REST_METHOD", "GET");
-const ENV_AUTH_REST_BODY: Arg = Arg::NoDefault("AUTH_REST_BODY");
-const ENV_AUTH_REST_SELECTOR: Arg = Arg::NoDefault("AUTH_REST_SELECTOR");
-const ENV_AUTH_REST_REGEX: Arg = Arg::NoDefault("AUTH_REST_REGEX");
-
-fn redis_logger() -> Option<redislog::Logger> {
-    if ENV_LOG_REDIS_HOST.provided() && ENV_LOG_REDIS_PORT.provided() && ENV_LOG_REDIS_KEY.provided() {
-        let logger = redislog::Builder::new(APP_NAME)
-            .redis(
-                ENV_LOG_REDIS_HOST.val(),
-                ENV_LOG_REDIS_PORT.val().parse::<u32>().unwrap(),
-                ENV_LOG_REDIS_KEY.val(),
-            )
-            .build()
-            .expect("could not initialize Redis logger");
-        return Some(logger);
+fn redis_logger(m: &clap::ArgMatches) -> Option<redislog::Logger> {
+    match (
+        m.value_of("log-redis-key"),
+        m.value_of("log-redis-host"),
+        m.value_of("log-redis-port"),
+    ) {
+        (Some(key), Some(host), Some(port)) => {
+            let logger = redislog::Builder::new(APP_NAME)
+                .redis(
+                    String::from(host),
+                    String::from(port).parse::<u32>().unwrap(),
+                    String::from(key),
+                )
+                .build()
+                .expect("could not initialize Redis logger");
+            Some(logger)
+        }
+        (None, None, None) => None,
+        _ => {
+            // TODO: Warn user
+            None
+        }
     }
-    None
 }
 
 // FIXME: add user support
-fn make_auth() -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync> {
-    if ENV_AUTH_REST_URL.provided() {
-        if !ENV_AUTH_REST_REGEX.provided() || !ENV_AUTH_REST_SELECTOR.provided() {
-            panic!("rest url was provided but selector and regex not")
+fn make_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync> {
+    match (
+        m.value_of("auth-rest-url"),
+        m.value_of("auth-rest-regex"),
+        m.value_of("auth-rest-selector"),
+        m.value_of("auth-rest-method"),
+    ) {
+        (Some(url), Some(regex), Some(selector), Some(method)) => {
+            if method.to_uppercase() != "GET" && m.value_of("auth-rest-body").is_none() {
+                panic!("no body provided for rest request")
+            }
+
+            log::info!("Using REST authenticator ({})", url);
+
+            let authenticator: auth::rest::RestAuthenticator = auth::rest::Builder::new()
+                .with_username_placeholder("{USER}".to_string())
+                .with_password_placeholder("{PASS}".to_string())
+                .with_url(String::from(url))
+                .with_method(Method::from_str(method).unwrap())
+                .with_body(String::from(m.value_of("auth-rest-body").unwrap()))
+                .with_selector(String::from(selector))
+                .with_regex(String::from(regex))
+                .build();
+
+            Arc::new(authenticator)
         }
-
-        if ENV_AUTH_REST_METHOD.val() == "GET" && !ENV_AUTH_REST_BODY.provided() {
-            panic!("no body provided for rest request")
+        (Some(_url), _, _, _) => panic!("rest url was provided but selector and regex not"),
+        _ => {
+            log::info!("Using anonymous authenticator");
+            Arc::new(auth::AnonymousAuthenticator {})
         }
-
-        log::info!("Using REST authenticator ({})", ENV_AUTH_REST_URL.val());
-
-        let authenticator: auth::rest::RestAuthenticator = auth::rest::Builder::new()
-            .with_username_placeholder("{USER}".to_string())
-            .with_password_placeholder("{PASS}".to_string())
-            .with_url(ENV_AUTH_REST_URL.val())
-            .with_method(Method::from_str(ENV_AUTH_REST_METHOD.val().as_str()).unwrap())
-            .with_body(ENV_AUTH_REST_BODY.val())
-            .with_selector(ENV_AUTH_REST_SELECTOR.val())
-            .with_regex(ENV_AUTH_REST_REGEX.val())
-            .build();
-
-        return Arc::new(authenticator);
     }
-
-    log::info!("Using anonymous authenticator");
-    Arc::new(auth::AnonymousAuthenticator {})
 }
 
 fn metrics_service(req: Request<Body>) -> Box<dyn Future<Item = Response<Body>, Error = hyper::Error> + Send> {
@@ -105,37 +217,12 @@ fn gather_metrics() -> Vec<u8> {
 }
 
 fn main() {
+    let mut rt = Runtime::new().unwrap();
     let tmp_dir = env::temp_dir();
 
-    let matches = App::new(APP_NAME)
-        .version(APP_VERSION)
-        .about("When you need to FTP but don't want to")
-        .author("The bol.com unFTP team")
-        .arg(
-            clap::Arg::with_name("bind-address")
-                .short("a")
-                .long("bind-address")
-                .value_name("HOST_PORT")
-                .help("Sets the host and port to listen on for FTP control connections")
-                .default_value("0.0.0.0:2121")
-                .env("UNFTP_ADDRESS")
-                .takes_value(true),
-        )
-        .arg(
-            clap::Arg::with_name("fs-home-dir")
-                .short("h")
-                .long("fs-home-dir")
-                .value_name("FILESYSTEM_BACKEND_HOME_DIR")
-                .help("Sets the home directory for the filesystem back-end")
-                .default_value(tmp_dir.as_path().to_str().unwrap())
-                .env("UNFTP_HOME")
-                .takes_value(true),
-        )
-        .get_matches();
+    let arg_matches = clap_app(tmp_dir.as_path().to_str().unwrap()).get_matches();
 
-    let mut rt = Runtime::new().unwrap();
-
-    let drain = match redis_logger() {
+    let drain = match redis_logger(&arg_matches) {
         Some(l) => slog_async::Async::new(l.fuse()).build().fuse(),
         None => {
             let decorator = slog_term::PlainDecorator::new(std::io::stdout());
@@ -150,12 +237,16 @@ fn main() {
     let _scope_guard = slog_scope::set_global_logger(root);
     let _log_guard = slog_stdlog::init_with_level(log::Level::Debug).unwrap();
 
+    let addr = String::from(arg_matches.value_of("bind-address").unwrap());
+    let home_dir = String::from(arg_matches.value_of("fs-home-dir").unwrap());
+
+    info!(log, "Starting {} server.", APP_NAME; "version" => APP_VERSION, "address" => &addr, "home" => home_dir.clone());
+
     // HTTP server for exporting Prometheus metrics
-    if ENV_METRICS_ADDRESS.provided() {
-        let http_addr = ENV_METRICS_ADDRESS
-            .val()
+    if let Some(addr) = arg_matches.value_of("metrics-bind-address") {
+        let http_addr = addr
             .parse()
-            .expect(format!("Unable to parse metrics address {}", ENV_METRICS_ADDRESS.val()).as_str());
+            .expect(format!("Unable to parse metrics address {}", addr).as_str());
 
         let http_log = log.clone();
 
@@ -167,25 +258,28 @@ fn main() {
         let _http_thread = rt.spawn(http_server);
     }
 
-    let addr = String::from(matches.value_of("bind-address").unwrap());
-    let home_dir = String::from(matches.value_of("fs-home-dir").unwrap());
-
-    let use_ftps: bool = ENV_CERTS_FILE.provided() && ENV_KEY_FILE.provided();
-    if !use_ftps && (ENV_CERTS_FILE.provided() || ENV_KEY_FILE.provided()) {
-        warn!(
-            log,
-            "Need to set both {} and {}. FTPS still disabled.",
-            ENV_CERTS_FILE.name(),
-            ENV_KEY_FILE.name()
-        )
-    }
-
-    info!(log, "Starting {} server.", APP_NAME; "version" => APP_VERSION, "address" => &addr, "home" => home_dir.clone());
-
     let server = Server::with_root(home_dir)
         .greeting("Welcome to unFTP")
-        .authenticator(make_auth())
+        .authenticator(make_auth(&arg_matches))
         .with_metrics();
+
+    // Setup FTPS
+    match (
+        arg_matches.value_of("ftps-certs-file"),
+        arg_matches.value_of("ftps-key-file"),
+    ) {
+        (Some(_certs_file), Some(_key_file)) => {
+            // TODO: Re-enable when libunftp API was changed to not take static strings.
+            //server.certs(certs_file, key_file)
+        }
+        (Some(_), None) | (None, Some(_)) => {
+            warn!(
+                log,
+                "Need to set both {} and {}. FTPS still disabled.", "ftps-certs-file", "ftps-key-file"
+            );
+        }
+        _ => {}
+    };
 
     let _ftp_thread = rt.spawn(server.listener(&addr));
 
