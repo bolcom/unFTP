@@ -1,9 +1,7 @@
-extern crate chrono;
-extern crate r2d2;
-extern crate r2d2_redis;
-extern crate redis;
-extern crate serde_json;
-extern crate slog;
+use std::cell::RefCell;
+use std::fmt;
+use std::process::Command;
+use std::time::Duration;
 
 use chrono::{DateTime, SecondsFormat, Utc};
 use core::fmt::Write;
@@ -11,10 +9,6 @@ use r2d2_redis::RedisConnectionManager;
 use serde_json::json;
 use slog::Key;
 use slog::{OwnedKVList, Record, KV};
-use std::cell::RefCell;
-use std::fmt;
-use std::process::Command;
-use std::time::Duration;
 
 /// A logger that sends JSON formatted logs to a list in a Redis instance. It uses this format
 ///
@@ -112,7 +106,10 @@ impl Builder {
     }
 
     pub fn redis_port(self, val: u32) -> Builder {
-        Builder { redis_port: val, ..self }
+        Builder {
+            redis_port: val,
+            ..self
+        }
     }
 
     pub fn ttl(self, duration: Duration) -> Builder {
@@ -132,7 +129,9 @@ impl Builder {
 
         let con_str = format!("redis://{}:{}", self.redis_host, self.redis_port);
         let manager = RedisConnectionManager::new(con_str.as_str())?;
-        let pool = r2d2::Pool::builder().connection_timeout(Duration::new(1, 0)).build(manager)?;
+        let pool = r2d2::Pool::builder()
+            .connection_timeout(Duration::new(1, 0))
+            .build(manager)?;
 
         let con = pool.get()?;
         redis::cmd("PING").query(&*con)?;

@@ -1,29 +1,26 @@
 mod config;
 mod redislog;
 
+use std::env;
+use std::str::FromStr;
+use std::sync::Arc;
+
 use crate::config::Arg;
 
-use tokio::runtime::Runtime;
-use libunftp::Server;
-use libunftp::auth;
-
+use clap::App;
 use futures::future;
 use hyper::rt::Future;
 use hyper::service::service_fn;
 use hyper::{Body, Method, Request, Response, StatusCode};
-use prometheus::{Encoder, TextEncoder};
-use std::env;
-use std::sync::Arc;
-use std::str::FromStr;
-
-use slog::*;
+use libunftp::auth;
 use libunftp::auth::AnonymousUser;
+use libunftp::Server;
+use prometheus::{Encoder, TextEncoder};
+use slog::*;
+use tokio::runtime::Runtime;
 
 const APP_NAME: &str = "unFTP";
 const APP_VERSION: &str = env!("BUILD_VERSION");
-
-const ENV_UNFTP_ADDRESS: Arg = Arg::WithDefault("UNFTP_ADDRESS", "0.0.0.0:2121");
-const ENV_UNFTP_HOME: Arg = Arg::NoDefault("UNFTP_HOME");
 
 const ENV_CERTS_FILE: Arg = Arg::NoDefault("CERTS_FILE");
 const ENV_KEY_FILE: Arg = Arg::NoDefault("KEY_FILE");
@@ -85,7 +82,7 @@ fn make_auth() -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync> {
     Arc::new(auth::AnonymousAuthenticator {})
 }
 
-fn metrics_service(req: Request<Body>) -> Box<dyn Future<Item=Response<Body>, Error=hyper::Error> + Send> {
+fn metrics_service(req: Request<Body>) -> Box<dyn Future<Item = Response<Body>, Error = hyper::Error> + Send> {
     let mut response = Response::new(Body::empty());
     match (req.method(), req.uri().path()) {
         (&Method::GET, "/metrics") => {
@@ -108,6 +105,34 @@ fn gather_metrics() -> Vec<u8> {
 }
 
 fn main() {
+    let tmp_dir = env::temp_dir();
+
+    let matches = App::new(APP_NAME)
+        .version(APP_VERSION)
+        .about("When you need to FTP but don't want to")
+        .author("The bol.com unFTP team")
+        .arg(
+            clap::Arg::with_name("bind-address")
+                .short("a")
+                .long("bind-address")
+                .value_name("HOST_PORT")
+                .help("Sets the host and port to listen on for FTP control connections")
+                .default_value("0.0.0.0:2121")
+                .env("UNFTP_ADDRESS")
+                .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("fs-home-dir")
+                .short("h")
+                .long("fs-home-dir")
+                .value_name("FILESYSTEM_BACKEND_HOME_DIR")
+                .help("Sets the home directory for the filesystem back-end")
+                .default_value(tmp_dir.as_path().to_str().unwrap())
+                .env("UNFTP_HOME")
+                .takes_value(true),
+        )
+        .get_matches();
+
     let mut rt = Runtime::new().unwrap();
 
     let drain = match redis_logger() {
@@ -127,7 +152,9 @@ fn main() {
 
     // HTTP server for exporting Prometheus metrics
     if ENV_METRICS_ADDRESS.provided() {
-        let http_addr = ENV_METRICS_ADDRESS.val().parse()
+        let http_addr = ENV_METRICS_ADDRESS
+            .val()
+            .parse()
             .expect(format!("Unable to parse metrics address {}", ENV_METRICS_ADDRESS.val()).as_str());
 
         let http_log = log.clone();
@@ -140,8 +167,8 @@ fn main() {
         let _http_thread = rt.spawn(http_server);
     }
 
-    let addr = ENV_UNFTP_ADDRESS.val();
-    let home_dir = ENV_UNFTP_HOME.val_or_else(|_| env::temp_dir().as_path().to_str().unwrap().to_string());
+    let addr = String::from(matches.value_of("bind-address").unwrap());
+    let home_dir = String::from(matches.value_of("fs-home-dir").unwrap());
 
     let use_ftps: bool = ENV_CERTS_FILE.provided() && ENV_KEY_FILE.provided();
     if !use_ftps && (ENV_CERTS_FILE.provided() || ENV_KEY_FILE.provided()) {
