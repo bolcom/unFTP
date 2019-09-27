@@ -35,6 +35,29 @@ make docker-run
 Partly as an example, there is also 'minimal' image available that is statically linked and build `FROM scratch`. To use it use `make docker-minimal` and `make docker-run-minimal`.
 For the full list of supplied docker images, use `make docker-list`.
 
+## Running
+
+To run with default settings:
+
+```sh
+cargo run
+```
+
+To show a list of program arguments:
+
+```sh
+cargo run -- \
+  --help
+```
+
+Example running an instance with a filesystem back-end and custom port
+
+```sh
+cargo run -- \
+  --fs-home-dir=/home/unftp/data \
+  --bind-address=0.0.0.0:2100
+```
+
 ## License
 
 You're free to use, modify and distribute this software under the terms of the Apache-2.0 license.
