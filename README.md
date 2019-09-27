@@ -13,7 +13,7 @@ By storing everything in Google Buckets and authenticating against an external s
 
 ## Prerequisites
 
-You'll need [Rust](https://rust-lang.org) 1.31 (including `cargo`) or higher to build unFTP.
+You'll need [Rust](https://rust-lang.org) 1.37 (including `cargo`) or higher to build unFTP.
 There are no runtime dependencies besides the OS and libc.
 
 Run `make help` to see an overview of the supplied *make* targets.
