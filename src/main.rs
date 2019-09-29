@@ -1,4 +1,3 @@
-mod config;
 mod redislog;
 
 use std::env;
@@ -10,8 +9,7 @@ use futures::future;
 use hyper::rt::Future;
 use hyper::service::service_fn;
 use hyper::{Body, Method, Request, Response, StatusCode};
-use libunftp::auth;
-use libunftp::auth::AnonymousUser;
+use libunftp::auth::{self, pam, AnonymousUser};
 use libunftp::Server;
 use prometheus::{Encoder, TextEncoder};
 use slog::*;
@@ -98,6 +96,14 @@ fn clap_app<'a>(tmp_dir: &'a str) -> clap::App<'a, 'a> {
                 .help("The type of authorization to use. One of 'anonymous', 'pam' or 'rest'")
                 .default_value("anonymous")
                 .env("UNFTP_AUTH_REST_URL")
+                .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("auth-pam-service")
+                .long("auth-pam-service")
+                .value_name("NAME")
+                .help("The name of the PAM service")
+                .env("UNFTP_PAM_SERVICE")
                 .takes_value(true),
         )
         .arg(
@@ -196,7 +202,7 @@ fn redis_logger(m: &clap::ArgMatches) -> Option<redislog::Logger> {
 fn make_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync> {
     match m.value_of("auth-type") {
         None | Some("anonymous") => make_anon_auth(),
-        Some("pam") => unimplemented!(),
+        Some("pam") => make_pam_auth(m),
         Some("rest") => make_rest_auth(m),
         _ => panic!("unknown auth type"),
     }
@@ -205,6 +211,14 @@ fn make_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<AnonymousUser>
 fn make_anon_auth() -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync> {
     log::info!("Using anonymous authenticator");
     Arc::new(auth::AnonymousAuthenticator {})
+}
+
+fn make_pam_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync> {
+    if let Some(service) = m.value_of("auth-pam-service") {
+        log::info!("Using pam authenticator");
+        return Arc::new(pam::PAMAuthenticator::new(service));
+    }
+    panic!("argument 'auth-pam-service' is required");
 }
 
 // FIXME: add user support
@@ -263,18 +277,28 @@ fn gather_metrics() -> Vec<u8> {
 }
 
 // TODO: Implement
-fn _storage_backend<S>(m: &clap::ArgMatches) -> Box<dyn (Fn() -> S) + Send>
-{
+fn _storage_backend<S>(m: &clap::ArgMatches) -> Box<dyn (Fn() -> S) + Send> {
     match m.value_of("sbe-type") {
         None | Some("filesystem") => {
-            // let p = String::from("x");
+            // let p = m.value_of("home dir");
             // Box::new(move || {
             //     let p = &p.clone();
-            //     libunftp::storage::filesystem::Filesystem::new(p)                
+            //     libunftp::storage::filesystem::Filesystem::new(p)
             // })
             unimplemented!()
         }
-        Some("gcs") => unimplemented!(),
+        Some("gcs") => {
+            if let Some(_bucket) = m.value_of("sbe-gcs-bucket") {
+                // Box::new(move || {
+                //     libunftp::storage::cloud_storage::CloudStorage::new(
+                //         "bolcom-dev-unftp-dev-738-unftp-dev",
+                //         yup_oauth2::service_account_key_from_file(&"/Users/dkosztka/Downloads/bolcom-dev-unftp-dev-738-1379d4070948.json".to_string()).expect("borked"),
+                //     )
+                // })
+                unimplemented!()
+            }
+            panic!("sbe-gcs-bucket needs to be specified")
+        }
         Some(x) => panic!("unknown storage back-end type {}", x),
     }
 }
@@ -350,9 +374,7 @@ fn main() {
             );
             server
         }
-        _ => {
-            server
-        }
+        _ => server,
     };
 
     let _ftp_thread = runtime.spawn(server.listener(&addr));
