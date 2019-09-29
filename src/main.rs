@@ -313,7 +313,7 @@ fn main() {
     let mut runtime = TokioRuntime::new().unwrap();
 
     // HTTP server for exporting Prometheus metrics
-    if let Some(addr) = arg_matches.value_of("metrics-bind-address") {
+    if let Some(addr) = arg_matches.value_of("bind-address-http") {
         let http_addr = addr
             .parse()
             .expect(format!("Unable to parse metrics address {}", addr).as_str());
