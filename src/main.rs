@@ -15,7 +15,7 @@ use libunftp::auth::AnonymousUser;
 use libunftp::Server;
 use prometheus::{Encoder, TextEncoder};
 use slog::*;
-use tokio::runtime::Runtime;
+use tokio::runtime::Runtime as TokioRuntime;
 
 const APP_NAME: &str = "unFTP";
 const APP_VERSION: &str = env!("BUILD_VERSION");
@@ -23,7 +23,7 @@ const APP_VERSION: &str = env!("BUILD_VERSION");
 fn clap_app<'a>(tmp_dir: &'a str) -> clap::App<'a, 'a> {
     App::new(APP_NAME)
         .version(APP_VERSION)
-        .about("When you need to FTP but don't want to")
+        .about("An FTP server for when you need to FTP but don't want to")
         .author("The bol.com unFTP team")
         .arg(
             clap::Arg::with_name("bind-address")
@@ -35,10 +35,10 @@ fn clap_app<'a>(tmp_dir: &'a str) -> clap::App<'a, 'a> {
                 .takes_value(true),
         )
         .arg(
-            clap::Arg::with_name("fs-home-dir")
-                .long("fs-home-dir")
-                .value_name("HOME_DIR")
-                .help("Sets the home directory for the filesystem back-end")
+            clap::Arg::with_name("home-dir")
+                .long("home-dir")
+                .value_name("PATH")
+                .help("Sets the FTP home directory")
                 .default_value(tmp_dir)
                 .env("UNFTP_HOME")
                 .takes_value(true),
@@ -70,7 +70,7 @@ fn clap_app<'a>(tmp_dir: &'a str) -> clap::App<'a, 'a> {
         .arg(
             clap::Arg::with_name("log-redis-host")
                 .long("log-redis-host")
-                .value_name("KEY")
+                .value_name("HOST")
                 .help("Sets the hostname for the Redis server where logging should go")
                 .env("UNFTP_LOG_REDIS_HOST")
                 .takes_value(true),
@@ -84,11 +84,20 @@ fn clap_app<'a>(tmp_dir: &'a str) -> clap::App<'a, 'a> {
                 .takes_value(true),
         )
         .arg(
-            clap::Arg::with_name("metrics-bind-address")
-                .long("metrics-bind-address")
+            clap::Arg::with_name("bind-address-http")
+                .long("bind-address-http")
                 .value_name("HOST_PORT")
                 .help("Sets the host and port for the HTTP server used by prometheus metrics collection")
                 .env("UNFTP_METRICS_ADDRESS")
+                .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("auth-type")
+                .long("auth-type")
+                .value_name("NAME")
+                .help("The type of authorization to use. One of 'anonymous', 'pam' or 'rest'")
+                .default_value("anonymous")
+                .env("UNFTP_AUTH_REST_URL")
                 .takes_value(true),
         )
         .arg(
@@ -132,6 +141,31 @@ fn clap_app<'a>(tmp_dir: &'a str) -> clap::App<'a, 'a> {
                 .env("UNFTP_AUTH_REST_REGEX")
                 .takes_value(true),
         )
+        .arg(
+            clap::Arg::with_name("sbe-type")
+                .long("sbe-type")
+                .value_name("NAME")
+                .help("The type of storage backend to use. Either 'filesystem' or 'gcs'")
+                .default_value("filesystem")
+                .env("UNFTP_SBE_TYPE")
+                .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("sbe-gcs-bucket")
+                .long("sbe-gcs-bucket")
+                .value_name("BUCKET")
+                .help("The bucket to use for the Google Cloud Storage backend")
+                .env("UNFTP_GCS_BUCKET")
+                .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("sbe-gcs-serv-acc-key")
+                .long("sbe-gcs-serv-acc-key")
+                .value_name("KEY")
+                .help("The service account key for access to Google Cloud Storage.")
+                .env("UNFTP_GCS_KEY")
+                .takes_value(true),
+        )
 }
 
 fn redis_logger(m: &clap::ArgMatches) -> Option<redislog::Logger> {
@@ -159,8 +193,22 @@ fn redis_logger(m: &clap::ArgMatches) -> Option<redislog::Logger> {
     }
 }
 
-// FIXME: add user support
 fn make_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync> {
+    match m.value_of("auth-type") {
+        None | Some("anonymous") => make_anon_auth(),
+        Some("pam") => unimplemented!(),
+        Some("rest") => make_rest_auth(m),
+        _ => panic!("unknown auth type"),
+    }
+}
+
+fn make_anon_auth() -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync> {
+    log::info!("Using anonymous authenticator");
+    Arc::new(auth::AnonymousAuthenticator {})
+}
+
+// FIXME: add user support
+fn make_rest_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync> {
     match (
         m.value_of("auth-rest-url"),
         m.value_of("auth-rest-regex"),
@@ -186,10 +234,8 @@ fn make_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<AnonymousUser>
 
             Arc::new(authenticator)
         }
-        (Some(_url), _, _, _) => panic!("rest url was provided but selector and regex not"),
         _ => {
-            log::info!("Using anonymous authenticator");
-            Arc::new(auth::AnonymousAuthenticator {})
+            panic!("for auth type rest please specify all auth-rest-* options");
         }
     }
 }
@@ -216,12 +262,28 @@ fn gather_metrics() -> Vec<u8> {
     buffer
 }
 
-fn main() {
-    let mut rt = Runtime::new().unwrap();
-    let tmp_dir = env::temp_dir();
+// TODO: Implement
+fn _storage_backend<S>(m: &clap::ArgMatches) -> Box<dyn (Fn() -> S) + Send>
+{
+    match m.value_of("sbe-type") {
+        None | Some("filesystem") => {
+            // let p = String::from("x");
+            // Box::new(move || {
+            //     let p = &p.clone();
+            //     libunftp::storage::filesystem::Filesystem::new(p)                
+            // })
+            unimplemented!()
+        }
+        Some("gcs") => unimplemented!(),
+        Some(x) => panic!("unknown storage back-end type {}", x),
+    }
+}
 
+fn main() {
+    let tmp_dir = env::temp_dir();
     let arg_matches = clap_app(tmp_dir.as_path().to_str().unwrap()).get_matches();
 
+    // Logging
     let drain = match redis_logger(&arg_matches) {
         Some(l) => slog_async::Async::new(l.fuse()).build().fuse(),
         None => {
@@ -230,17 +292,25 @@ fn main() {
             slog_async::Async::new(drain).build().fuse()
         }
     };
-
     let root = Logger::root(drain, o!());
     let log = root.new(o!("module" => "main"));
-
     let _scope_guard = slog_scope::set_global_logger(root);
     let _log_guard = slog_stdlog::init_with_level(log::Level::Debug).unwrap();
 
     let addr = String::from(arg_matches.value_of("bind-address").unwrap());
-    let home_dir = String::from(arg_matches.value_of("fs-home-dir").unwrap());
+    let home_dir = String::from(arg_matches.value_of("home-dir").unwrap());
+    let auth_type = String::from(arg_matches.value_of("auth-type").unwrap());
+    let sbe_type = String::from(arg_matches.value_of("sbe-type").unwrap());
 
-    info!(log, "Starting {} server.", APP_NAME; "version" => APP_VERSION, "address" => &addr, "home" => home_dir.clone());
+    info!(log, "Starting {} server.", APP_NAME;
+    "version" => APP_VERSION,
+    "address" => &addr,
+    "home" => home_dir.clone(),
+    "auth-type" => auth_type,
+    "sbe-type" => sbe_type
+    );
+
+    let mut runtime = TokioRuntime::new().unwrap();
 
     // HTTP server for exporting Prometheus metrics
     if let Some(addr) = arg_matches.value_of("metrics-bind-address") {
@@ -255,33 +325,36 @@ fn main() {
             .map_err(move |e| error!(http_log, "HTTP Server error: {}", e));
 
         info!(log, "Starting Prometheus {} exporter.", APP_NAME; "address" => &http_addr);
-        let _http_thread = rt.spawn(http_server);
+        let _http_thread = runtime.spawn(http_server);
     }
 
-    let server = Server::with_root(home_dir)
+    let mut server = Server::with_root(home_dir)
         .greeting("Welcome to unFTP")
         .authenticator(make_auth(&arg_matches))
+        .passive_ports(49152..65535)
         .with_metrics();
 
     // Setup FTPS
-    match (
+    server = match (
         arg_matches.value_of("ftps-certs-file"),
         arg_matches.value_of("ftps-key-file"),
     ) {
-        (Some(_certs_file), Some(_key_file)) => {
-            // TODO: Re-enable when libunftp API was changed to not take static strings.
-            //server.certs(certs_file, key_file)
+        (Some(certs_file), Some(key_file)) => {
+            info!(log, "FTPS enabled");
+            server.certs(certs_file, key_file)
         }
         (Some(_), None) | (None, Some(_)) => {
             warn!(
                 log,
                 "Need to set both {} and {}. FTPS still disabled.", "ftps-certs-file", "ftps-key-file"
             );
+            server
         }
-        _ => {}
+        _ => {
+            server
+        }
     };
 
-    let _ftp_thread = rt.spawn(server.listener(&addr));
-
-    rt.shutdown_on_idle().wait().unwrap();
+    let _ftp_thread = runtime.spawn(server.listener(&addr));
+    runtime.shutdown_on_idle().wait().unwrap();
 }

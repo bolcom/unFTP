@@ -54,8 +54,28 @@ Example running an instance with a filesystem back-end and custom port
 
 ```sh
 cargo run -- \
-  --fs-home-dir=/home/unftp/data \
+  --home-dir=/home/unftp/data \
   --bind-address=0.0.0.0:2100
+```
+
+With FTPS enabled:
+
+```sh
+# Generate keypair
+openssl req \
+   -x509 \
+   -newkey rsa:2048 \
+   -nodes \
+   -keyout unftp.key \
+   -out unftp.crt \
+   -days 3650 \
+   -subj '/CN=www.myunftp.domain/O=My Company Name LTD./C=NL'
+
+# Run, pointing to cert and key
+cargo run -- \
+  --home-dir=/home/unftp/data \
+  --ftps-certs-file=/home/unftp/server.pem \
+  --ftps-key-file=/home/unftp/server.key
 ```
 
 ## License
