@@ -4,7 +4,7 @@ use std::env;
 use std::str::FromStr;
 use std::sync::Arc;
 
-use clap::App;
+use clap::{App, ArgMatches};
 use futures::future;
 use hyper::rt::Future;
 use hyper::service::service_fn;
@@ -14,6 +14,7 @@ use libunftp::Server;
 use prometheus::{Encoder, TextEncoder};
 use slog::*;
 use tokio::runtime::Runtime as TokioRuntime;
+use std::process;
 
 const APP_NAME: &str = "unFTP";
 const APP_VERSION: &str = env!("BUILD_VERSION");
@@ -303,10 +304,7 @@ fn _storage_backend<S>(m: &clap::ArgMatches) -> Box<dyn (Fn() -> S) + Send> {
     }
 }
 
-fn main() {
-    let tmp_dir = env::temp_dir();
-    let arg_matches = clap_app(tmp_dir.as_path().to_str().unwrap()).get_matches();
-
+fn run(arg_matches: ArgMatches) -> std::result::Result<(), String> {
     // Logging
     let drain = match redis_logger(&arg_matches) {
         Some(l) => slog_async::Async::new(l.fuse()).build().fuse(),
@@ -379,4 +377,15 @@ fn main() {
 
     let _ftp_thread = runtime.spawn(server.listener(&addr));
     runtime.shutdown_on_idle().wait().unwrap();
+
+    Ok(())
+}
+
+fn main() {
+    let tmp_dir = env::temp_dir();
+    let arg_matches = clap_app(tmp_dir.as_path().to_str().unwrap()).get_matches();
+    if let Err(e) = run(arg_matches) {
+        println!("Application error: {}", e);
+        process::exit(1);
+    }    
 }
