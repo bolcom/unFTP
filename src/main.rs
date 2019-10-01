@@ -2,6 +2,9 @@ mod app;
 mod args;
 mod redislog;
 
+#[macro_use]
+extern crate clap;
+
 use std::env;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -20,9 +23,9 @@ use tokio::runtime::Runtime as TokioRuntime;
 
 fn redis_logger(m: &clap::ArgMatches) -> Option<redislog::Logger> {
     match (
-        m.value_of("log-redis-key"),
-        m.value_of("log-redis-host"),
-        m.value_of("log-redis-port"),
+        m.value_of(args::REDIS_KEY),
+        m.value_of(args::REDIS_HOST),
+        m.value_of(args::REDIS_PORT),
     ) {
         (Some(key), Some(host), Some(port)) => {
             let logger = redislog::Builder::new(app::NAME)
@@ -44,7 +47,7 @@ fn redis_logger(m: &clap::ArgMatches) -> Option<redislog::Logger> {
 }
 
 fn make_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync> {
-    match m.value_of("auth-type") {
+    match m.value_of(args::AUTH_TYPE) {
         None | Some("anonymous") => make_anon_auth(),
         Some("pam") => make_pam_auth(m),
         Some("rest") => make_rest_auth(m),
@@ -58,7 +61,7 @@ fn make_anon_auth() -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync>
 }
 
 fn make_pam_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync> {
-    if let Some(service) = m.value_of("auth-pam-service") {
+    if let Some(service) = m.value_of(args::AUTH_PAM_SERVICE) {
         log::info!("Using pam authenticator");
         return Arc::new(pam::PAMAuthenticator::new(service));
     }
@@ -68,13 +71,13 @@ fn make_pam_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<AnonymousU
 // FIXME: add user support
 fn make_rest_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync> {
     match (
-        m.value_of("auth-rest-url"),
-        m.value_of("auth-rest-regex"),
-        m.value_of("auth-rest-selector"),
-        m.value_of("auth-rest-method"),
+        m.value_of(args::AUTH_REST_URL),
+        m.value_of(args::AUTH_REST_REGEX),
+        m.value_of(args::AUTH_REST_SELECTOR),
+        m.value_of(args::AUTH_REST_METHOD),
     ) {
         (Some(url), Some(regex), Some(selector), Some(method)) => {
-            if method.to_uppercase() != "GET" && m.value_of("auth-rest-body").is_none() {
+            if method.to_uppercase() != "GET" && m.value_of(args::AUTH_REST_BODY).is_none() {
                 panic!("no body provided for rest request")
             }
 
@@ -122,7 +125,7 @@ fn gather_metrics() -> Vec<u8> {
 
 // TODO: Implement
 fn _storage_backend<S>(m: &clap::ArgMatches) -> Box<dyn (Fn() -> S) + Send> {
-    match m.value_of("sbe-type") {
+    match m.value_of(args::STORAGE_BACKEND_TYPE) {
         None | Some("filesystem") => {
             // let p = m.value_of("home dir");
             // Box::new(move || {
@@ -132,7 +135,7 @@ fn _storage_backend<S>(m: &clap::ArgMatches) -> Box<dyn (Fn() -> S) + Send> {
             unimplemented!()
         }
         Some("gcs") => {
-            if let Some(_bucket) = m.value_of("sbe-gcs-bucket") {
+            if let Some(_bucket) = m.value_of(args::GCS_BUCKET) {
                 // Box::new(move || {
                 //     libunftp::storage::cloud_storage::CloudStorage::new(
                 //         "bolcom-dev-unftp-dev-738-unftp-dev",
@@ -149,7 +152,7 @@ fn _storage_backend<S>(m: &clap::ArgMatches) -> Box<dyn (Fn() -> S) + Send> {
 
 fn run(arg_matches: ArgMatches) -> std::result::Result<(), String> {
     // Logging
-    let min_log_level = match arg_matches.occurrences_of("verbose") {
+    let min_log_level = match arg_matches.occurrences_of(args::VERBOSITY) {
         0 => (slog::Level::Info, log::Level::Info),
         1 => (slog::Level::Debug, log::Level::Debug),
         2 | _ => (slog::Level::Trace, log::Level::Trace),
@@ -172,10 +175,10 @@ fn run(arg_matches: ArgMatches) -> std::result::Result<(), String> {
     let _scope_guard = slog_scope::set_global_logger(root);
     slog_stdlog::init_with_level(min_log_level.1).unwrap();
 
-    let addr = String::from(arg_matches.value_of("bind-address").unwrap());
-    let home_dir = String::from(arg_matches.value_of("home-dir").unwrap());
-    let auth_type = String::from(arg_matches.value_of("auth-type").unwrap());
-    let sbe_type = String::from(arg_matches.value_of("sbe-type").unwrap());
+    let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());
+    let home_dir = String::from(arg_matches.value_of(args::HOME_DIR).unwrap());
+    let auth_type = String::from(arg_matches.value_of(args::AUTH_TYPE).unwrap());
+    let sbe_type = String::from(arg_matches.value_of(args::STORAGE_BACKEND_TYPE).unwrap());
 
     info!(log, "Starting {} server.", app::NAME;
     "version" => app::VERSION,
@@ -188,7 +191,7 @@ fn run(arg_matches: ArgMatches) -> std::result::Result<(), String> {
     let mut runtime = TokioRuntime::new().unwrap();
 
     // HTTP server for exporting Prometheus metrics
-    if let Some(addr) = arg_matches.value_of("bind-address-http") {
+    if let Some(addr) = arg_matches.value_of(args::HTPP_BIND_ADDR) {
         let http_addr = addr
             .parse()
             .unwrap_or_else(|_| panic!("Unable to parse metrics address {}", addr));
@@ -211,8 +214,8 @@ fn run(arg_matches: ArgMatches) -> std::result::Result<(), String> {
 
     // Setup FTPS
     server = match (
-        arg_matches.value_of("ftps-certs-file"),
-        arg_matches.value_of("ftps-key-file"),
+        arg_matches.value_of(args::FTPS_CERTS_FILE),
+        arg_matches.value_of(args::FTPS_KEY_FILE),
     ) {
         (Some(certs_file), Some(key_file)) => {
             info!(log, "FTPS enabled");
@@ -239,7 +242,7 @@ fn main() {
     let tmp_dir = tmp_dir.as_path().to_str().unwrap();
     let arg_matches = args::clap_app(tmp_dir).get_matches();
     if let Err(e) = run(arg_matches) {
-        println!("Application error: {}", e);
+        println!("Error: {}", e);
         process::exit(1);
     };
 }
