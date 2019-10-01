@@ -13,17 +13,23 @@ use libunftp::auth::{self, pam, AnonymousUser};
 use libunftp::Server;
 use prometheus::{Encoder, TextEncoder};
 use slog::*;
-use tokio::runtime::Runtime as TokioRuntime;
 use std::process;
+use tokio::runtime::Runtime as TokioRuntime;
 
 const APP_NAME: &str = "unFTP";
 const APP_VERSION: &str = env!("BUILD_VERSION");
 
-fn clap_app<'a>(tmp_dir: &'a str) -> clap::App<'a, 'a> {
+fn clap_app(tmp_dir: &str) -> clap::App {
     App::new(APP_NAME)
         .version(APP_VERSION)
         .about("An FTP server for when you need to FTP but don't want to")
         .author("The bol.com unFTP team")
+        .arg(
+            clap::Arg::with_name("verbose")
+                .short("v")
+                .multiple(true)
+                .help("verbosity level"),
+        )
         .arg(
             clap::Arg::with_name("bind-address")
                 .long("bind-address")
@@ -306,18 +312,28 @@ fn _storage_backend<S>(m: &clap::ArgMatches) -> Box<dyn (Fn() -> S) + Send> {
 
 fn run(arg_matches: ArgMatches) -> std::result::Result<(), String> {
     // Logging
+    let min_log_level = match arg_matches.occurrences_of("verbose") {
+        0 => (slog::Level::Info, log::Level::Info),
+        1 => (slog::Level::Debug, log::Level::Debug),
+        2 | _ => (slog::Level::Trace, log::Level::Trace),
+    };
     let drain = match redis_logger(&arg_matches) {
-        Some(l) => slog_async::Async::new(l.fuse()).build().fuse(),
+        Some(l) => slog_async::Async::new(l.filter_level(min_log_level.0).fuse())
+            .build()
+            .fuse(),
         None => {
             let decorator = slog_term::PlainDecorator::new(std::io::stdout());
-            let drain = slog_term::CompactFormat::new(decorator).build().fuse();
+            let drain = slog_term::CompactFormat::new(decorator)
+                .build()
+                .filter_level(min_log_level.0)
+                .fuse();
             slog_async::Async::new(drain).build().fuse()
         }
     };
     let root = Logger::root(drain, o!());
     let log = root.new(o!("module" => "main"));
     let _scope_guard = slog_scope::set_global_logger(root);
-    let _log_guard = slog_stdlog::init_with_level(log::Level::Debug).unwrap();
+    slog_stdlog::init_with_level(min_log_level.1).unwrap();
 
     let addr = String::from(arg_matches.value_of("bind-address").unwrap());
     let home_dir = String::from(arg_matches.value_of("home-dir").unwrap());
@@ -338,7 +354,7 @@ fn run(arg_matches: ArgMatches) -> std::result::Result<(), String> {
     if let Some(addr) = arg_matches.value_of("bind-address-http") {
         let http_addr = addr
             .parse()
-            .expect(format!("Unable to parse metrics address {}", addr).as_str());
+            .unwrap_or_else(|_| panic!("Unable to parse metrics address {}", addr));
 
         let http_log = log.clone();
 
@@ -387,5 +403,5 @@ fn main() {
     if let Err(e) = run(arg_matches) {
         println!("Application error: {}", e);
         process::exit(1);
-    }    
+    };
 }

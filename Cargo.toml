@@ -25,7 +25,7 @@ serde_json = "1.0"
 chrono = "0.4.6"
 r2d2 = "0.8.3"
 r2d2_redis = "0.8.0"
-slog = "2.4.1"
+slog = { version = "2.4.1", features = ["max_level_trace", "release_max_level_warn"] }
 slog-term = "2.4.0"
 slog-async = "2.3.0"
 slog-stdlog = "4.0.0"
