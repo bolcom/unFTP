@@ -12,7 +12,7 @@ pub const BIND_ADDRESS: &str = "bind-address";
 pub const FTPS_CERTS_FILE: &str = "ftps-certs-file";
 pub const FTPS_KEY_FILE: &str = "ftps-key-file";
 pub const GCS_BUCKET: &str = "sbe-gcs-bucket";
-pub const GCS_SERVICE_ACCOUNT_KEY: &str = "sbe-gcs-serv-acc-key";
+pub const GCS_KEY_FILE: &str = "sbe-gcs-key-file";
 pub const HOME_DIR: &str = "home-dir";
 pub const HTPP_BIND_ADDR: &str = "bind-address-http";
 pub const REDIS_HOST: &str = "log-redis-host";
@@ -196,11 +196,11 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(GCS_SERVICE_ACCOUNT_KEY)
-                .long("sbe-gcs-serv-acc-key")
-                .value_name("KEY")
-                .help("The service account key for access to Google Cloud Storage.")
-                .env("UNFTP_GCS_KEY")
+            Arg::with_name(GCS_KEY_FILE)
+                .long("sbe-gcs-key-file")
+                .value_name("KEY_FILE")
+                .help("The JSON file that contains the service account key for access to Google Cloud Storage.")
+                .env("UNFTP_GCS_KEY_FILE")
                 .takes_value(true),
         )
 }
