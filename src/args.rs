@@ -114,7 +114,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .long("bind-address-http")
                 .value_name("HOST_PORT")
                 .help("Sets the host and port for the HTTP server used by prometheus metrics collection")
-                .env("UNFTP_METRICS_ADDRESS")
+                .env("UNFTP_HTTP_ADDRESS")
                 .takes_value(true),
         )
         .arg(
