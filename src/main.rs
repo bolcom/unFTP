@@ -176,7 +176,7 @@ fn run(arg_matches: ArgMatches) -> std::result::Result<(), String> {
     slog_stdlog::init_with_level(min_log_level.1).unwrap();
 
     let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());
-    let home_dir = String::from(arg_matches.value_of(args::HOME_DIR).unwrap());
+    let home_dir = String::from(arg_matches.value_of(args::ROOT_DIR).unwrap());
     let auth_type = String::from(arg_matches.value_of(args::AUTH_TYPE).unwrap());
     let sbe_type = String::from(arg_matches.value_of(args::STORAGE_BACKEND_TYPE).unwrap());
 
@@ -191,7 +191,7 @@ fn run(arg_matches: ArgMatches) -> std::result::Result<(), String> {
     let mut runtime = TokioRuntime::new().unwrap();
 
     // HTTP server for exporting Prometheus metrics
-    if let Some(addr) = arg_matches.value_of(args::HTPP_BIND_ADDR) {
+    if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDR) {
         let http_addr = addr
             .parse()
             .unwrap_or_else(|_| panic!("Unable to parse metrics address {}", addr));

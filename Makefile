@@ -1,4 +1,4 @@
-RUST_VERSION=1.37
+RUST_VERSION=1.38
 DOCKER_TAG=$(shell git describe --tags)
 DOCKER_TEMPLATES:=$(wildcard *.Dockerfile.template)
 DOCKER_FILES=$(DOCKER_TEMPLATES:%.template=%)
@@ -33,6 +33,7 @@ help: # Show available `make` commands
 ##
 .PHONY: docker-%
 docker-image-%: %.Dockerfile # Build the % docker image
+	cargo clean
 	docker build -t unftp-$*:$(DOCKER_TAG) -f $< .
 
 ##
@@ -43,6 +44,7 @@ docker-run-%: docker-image-% # Run the % docker image in the foreground
 ##
 .PHONY: docker-image
 docker-image: alpine.Dockerfile # Build the default docker image
+	cargo clean
 	docker build -t bolcom/unftp:$(DOCKER_TAG) -f alpine.Dockerfile .
 
 .PHONY: docker-run

@@ -77,6 +77,17 @@ cargo run -- \
 
 ## Docker
 
+Dockerfile is templated. To get a list of available commands, run:
+```sh
+make
+```
+
+We offer 3 different bases for building an unFTP docker image:
+
+* `minimal`: an empty image containing a static build of unFTP. *WARNING*: this is broken right now, as Cargo can only compile static binary if all the dependent libraries is also statically built.
+* `alpine` (default): build unftp in rust-slim and deploy in alpine. This image is built with musl instead of a full-blown libc. Resulting image is about 20MB.
+* `full`: build & run on the rust-slim base. Resulting image is over 1GB.
+
 To build the default docker image:
 
 ```sh
@@ -89,8 +100,30 @@ To build and run unFTP inside the default docker image in the foreground:
 make docker-run
 ```
 
-Partly as an example, there is also 'minimal' image available that is statically linked and build `FROM scratch`. To use it use `make docker-minimal` and `make docker-run-minimal`.
-For the full list of supplied docker images, use `make docker-list`.
+## Features
+
+unFTP offer optional features in its Cargo.toml:
+
+* `pam`: enable PAM authentication module
+* `rest`: enable REST authentication module
+* `cloud_storage`: enable Google Cloud Storage (GCS) storage backend
+
+
+### Rest authentication
+
+When enabled, allows a remote REST service authenticate the user.
+
+It's a very generic REST client that fetches the endpoint specified in `--auth-rest-url` with the method specified in `--auth-rest-method`. *WARNING*: https is not yet supported.
+
+If necessary, you can specify a request body in `--auth-rest-body`.
+
+The special placeholders `{USER}` and `{PASS}` are replaced by the (clear-text) credentials provided by the user in the request url and body.
+
+The response body is parsed as JSON. From here, an RFC6901 selector specified via `--auth-rest-selector` can be used to extract a value. For more info and examples, consult `serde_json`'s [manual](https://docs.serde.rs/serde_json/value/enum.Value.html#method.pointer).
+
+The extracted value is matched against a regular expression specified via `--auth-rest-regex`. See [their documentation](https://crates.io/crates/regex) for more details.
+
+If the regular expression matches, the user is authenticated. In any other case (lookup failure, timeout, non-matching regex) the authentication is refused.
 
 ## License
 

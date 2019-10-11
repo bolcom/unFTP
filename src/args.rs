@@ -13,8 +13,8 @@ pub const FTPS_CERTS_FILE: &str = "ftps-certs-file";
 pub const FTPS_KEY_FILE: &str = "ftps-key-file";
 pub const GCS_BUCKET: &str = "sbe-gcs-bucket";
 pub const GCS_KEY_FILE: &str = "sbe-gcs-key-file";
-pub const HOME_DIR: &str = "home-dir";
-pub const HTPP_BIND_ADDR: &str = "bind-address-http";
+pub const ROOT_DIR: &str = "root-dir";
+pub const HTTP_BIND_ADDR: &str = "bind-address-http";
 pub const REDIS_HOST: &str = "log-redis-host";
 pub const REDIS_KEY: &str = "log-redis-key";
 pub const REDIS_PORT: &str = "log-redis-port";
@@ -61,12 +61,12 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(HOME_DIR)
-                .long("home-dir")
+            Arg::with_name(ROOT_DIR)
+                .long("root-dir")
                 .value_name("PATH")
-                .help("Sets the FTP home directory")
+                .help("Sets the FTP root directory")
                 .default_value(tmp_dir)
-                .env("UNFTP_HOME")
+                .env("UNFTP_ROOT")
                 .takes_value(true),
         )
         .arg(
@@ -110,7 +110,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(HTPP_BIND_ADDR)
+            Arg::with_name(HTTP_BIND_ADDR)
                 .long("bind-address-http")
                 .value_name("HOST_PORT")
                 .help("Sets the host and port for the HTTP server used by prometheus metrics collection")
@@ -140,7 +140,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
             Arg::with_name(AUTH_REST_URL)
                 .long("auth-rest-url")
                 .value_name("URL")
-                .help("-")
+                .help("Define REST endpoint. {USER} and {PASS} are replaced by provided credentials.")
                 .env("UNFTP_AUTH_REST_URL")
                 .takes_value(true),
         )
@@ -148,7 +148,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
             Arg::with_name(AUTH_REST_METHOD)
                 .long("auth-rest-method")
                 .value_name("URL")
-                .help("-")
+                .help("HTTP method to access REST endpoint")
                 .env("UNFTP_AUTH_REST_METHOD")
                 .default_value("GET")
                 .takes_value(true),
@@ -157,7 +157,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
             Arg::with_name(AUTH_REST_BODY)
                 .long("auth-rest-body")
                 .value_name("URL")
-                .help("-")
+                .help("If HTTP method contains body, it can be specified here. {USER} and {PASS} are replaced by provided credentials.")
                 .env("UNFTP_AUTH_REST_BODY")
                 .takes_value(true),
         )
@@ -165,7 +165,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
             Arg::with_name(AUTH_REST_SELECTOR)
                 .long("auth-rest-selector")
                 .value_name("SELECTOR")
-                .help("-")
+                .help("Define JSON pointer to fetch from REST response body (RFC6901)")
                 .env("UNFTP_AUTH_REST_SELECTOR")
                 .takes_value(true),
         )
@@ -173,7 +173,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
             Arg::with_name(AUTH_REST_REGEX)
                 .long("auth-rest-regex")
                 .value_name("REGEX")
-                .help("-")
+                .help("Regular expression to try match against value extracted via selector")
                 .env("UNFTP_AUTH_REST_REGEX")
                 .takes_value(true),
         )

@@ -3,7 +3,9 @@ FROM rust:%%RUST_VERSION%%-slim
 WORKDIR /usr/src/unftp
 COPY . .
 
-RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo install --path .
+RUN apt-get update && apt-get install -y libpam0g-dev
+RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --release
+RUN cargo install --path .
 RUN cargo clean
 
 CMD ["unftp"]

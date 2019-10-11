@@ -1,9 +1,13 @@
+### FIXME: In order for rustc to compile static, it needs all the Cargo libraries to be compiled static. But Cargo has no standard way to do that.
+### consequently, you can't compile static binary in rust right now. this image is broken until rustc/cargo is fixed.
+
 FROM rust:%%RUST_VERSION%%-slim AS builder
 WORKDIR /usr/src/unftp
 COPY . .
 RUN apt-get update && apt-get install -y \
   musl-dev \
-  musl-tools
+  musl-tools \
+  libpam0g-dev
 RUN rustup target add x86_64-unknown-linux-musl
 RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --release --target=x86_64-unknown-linux-musl
 
