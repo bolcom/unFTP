@@ -62,8 +62,8 @@ openssl req \
 # Run, pointing to cert and key
 cargo run -- \
   --root-dir=/home/unftp/data \
-  --ftps-certs-file=/home/unftp/server.pem \
-  --ftps-key-file=/home/unftp/server.key
+  --ftps-certs-file=/home/unftp/unftp.crt \
+  --ftps-key-file=/home/unftp/unftp.key
 ```
 
 Enabling the [Prometheus](https://prometheus.io) exporter, binding to port 8080:
