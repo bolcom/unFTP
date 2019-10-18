@@ -34,7 +34,7 @@ help: # Show available `make` commands
 .PHONY: docker-%
 docker-image-%: %.Dockerfile # Build the % docker image
 	cargo clean
-	docker build -t bolcom/unftp-$*:$(DOCKER_TAG) -f $< .
+	docker build -t bolcom/unftp:$*-$(DOCKER_TAG) -f $< .
 
 ##
 .PHONY: docker-run-%
@@ -45,7 +45,7 @@ docker-run-%: docker-image-% # Run the % docker image in the foreground
 .PHONY: docker-image
 docker-image: alpine.Dockerfile # Build the default docker image
 	cargo clean
-	docker build -t bolcom/unftp:$(DOCKER_TAG) -f alpine.Dockerfile .
+	docker build -t bolcom/unftp:alpine-$(DOCKER_TAG) -f alpine.Dockerfile .
 
 .PHONY: docker-run
 docker-run: docker-image # Run the default docker image in the foreground
