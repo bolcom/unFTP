@@ -6,7 +6,7 @@ When you need to FTP, but don't want to.
 
 ![logo](logo.png)
 
-unFTP is a FTP server written in [Rust](https://www.rust-lang.org) and built on top of [libunftp](https://github.com/bolcom/libunftp) and the [Tokio ](https://tokio.rs) asynchronous run-time. It is **un**like your normal FTP server in that it provides:
+unFTP is a FTP server written in [Rust](https://www.rust-lang.org) and built on top of [libunftp](https://github.com/bolcom/libunftp) and the [Tokio](https://tokio.rs) asynchronous run-time. It is **un**like your normal FTP server in that it provides:
 
 - Configurable Authentication (e.g. Anonymous, [PAM](https://en.wikipedia.org/wiki/Linux_PAM) or a REST service).
 - Configurable storage back-ends (e.g. [GCS](https://cloud.google.com/storage/) or filesystem)
@@ -42,7 +42,7 @@ Example running an instance with a filesystem back-end and custom port
 
 ```sh
 cargo run -- \
-  --home-dir=/home/unftp/data \
+  --root-dir=/home/unftp/data \
   --bind-address=0.0.0.0:2100
 ```
 
@@ -61,7 +61,7 @@ openssl req \
 
 # Run, pointing to cert and key
 cargo run -- \
-  --home-dir=/home/unftp/data \
+  --root-dir=/home/unftp/data \
   --ftps-certs-file=/home/unftp/server.pem \
   --ftps-key-file=/home/unftp/server.key
 ```
@@ -72,21 +72,22 @@ Enabling the [Prometheus](https://prometheus.io) exporter, binding to port 8080:
 cargo run -- \
   --bind-address=0.0.0.0:2121 \
   --bind-address-http=0.0.0.0:8080 \
-  --home-dir=/home/unftp/data
+  --root-dir=/home/unftp/data
 ```
 
 ## Docker
 
 Dockerfile is templated. To get a list of available commands, run:
+
 ```sh
 make
 ```
 
-We offer 3 different bases for building an unFTP docker image:
+We offer 3 different options for building an unFTP docker image:
 
-* `minimal`: an empty image containing a static build of unFTP. *WARNING*: this is broken right now, as Cargo can only compile static binary if all the dependent libraries is also statically built.
-* `alpine` (default): build unftp in rust-slim and deploy in alpine. This image is built with musl instead of a full-blown libc. Resulting image is about 20MB.
-* `full`: build & run on the rust-slim base. Resulting image is over 1GB.
+- `minimal`: an empty image containing a static build of unFTP. *WARNING*: this is broken right now, as Cargo can only compile static binary if all the dependent libraries is also statically built.
+- `alpine` (default): build unftp in rust-slim and deploy in alpine. This image is built with musl instead of a full-blown libc. Resulting image is about 20MB.
+- `full`: build & run on the rust-slim base. Resulting image is over 1GB.
 
 To build the default docker image:
 
@@ -102,16 +103,15 @@ make docker-run
 
 ## Features
 
-unFTP offer optional features in its Cargo.toml:
+unFTP offers optional features in its Cargo.toml:
 
-* `pam`: enable PAM authentication module
-* `rest`: enable REST authentication module
-* `cloud_storage`: enable Google Cloud Storage (GCS) storage backend
-
+- `pam`: enables the PAM authentication module
+- `rest`: enables the REST authentication module
+- `cloud_storage`: enables the Google Cloud Storage (GCS) storage backend
 
 ### Rest authentication
 
-When enabled, allows a remote REST service authenticate the user.
+When enabled this feature allows authentication against a remote REST service.
 
 It's a very generic REST client that fetches the endpoint specified in `--auth-rest-url` with the method specified in `--auth-rest-method`. *WARNING*: https is not yet supported.
 
@@ -119,7 +119,7 @@ If necessary, you can specify a request body in `--auth-rest-body`.
 
 The special placeholders `{USER}` and `{PASS}` are replaced by the (clear-text) credentials provided by the user in the request url and body.
 
-The response body is parsed as JSON. From here, an RFC6901 selector specified via `--auth-rest-selector` can be used to extract a value. For more info and examples, consult `serde_json`'s [manual](https://docs.serde.rs/serde_json/value/enum.Value.html#method.pointer).
+The response body is parsed as JSON. From here, a [JSON Pointer (RFC6901)](https://tools.ietf.org/html/rfc6901) compliant selector specified via `--auth-rest-selector` can be used to extract a value. For more info and examples, consult `serde_json`'s [manual](https://docs.serde.rs/serde_json/value/enum.Value.html#method.pointer).
 
 The extracted value is matched against a regular expression specified via `--auth-rest-regex`. See [their documentation](https://crates.io/crates/regex) for more details.
 
