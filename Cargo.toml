@@ -39,7 +39,16 @@ tokio-io = "0.1"
 clap = "2.33.0"
 
 [features]
-default = ["rest", "cloud_storage", "pam"]
 pam = ["libunftp/pam"]
 cloud_storage = ["libunftp/cloud_storage"]
 rest = ["libunftp/rest"]
+
+# build everything by default to make sure build works
+default = ["rest", "cloud_storage", "pam"]
+
+# features that are compatible with docker builds
+# pam is disabled in most docker images as it requires libc (consequently, cannot compile static either)
+docker = ["rest", "cloud_storage"]
+
+# only used in build.rs
+static = []

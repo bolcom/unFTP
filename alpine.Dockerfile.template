@@ -3,18 +3,19 @@ WORKDIR /usr/src/unftp
 COPY . .
 RUN apt-get update && apt-get install -y \
   musl-dev \
-  musl-tools \
-  libpam0g-dev
+  musl-tools
 RUN rustup target add x86_64-unknown-linux-musl
-RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --release --target=x86_64-unknown-linux-musl
+ENV RUSTFLAGS="-C target-feature=+crt-static"
+RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --no-default-features --features docker --release --target=x86_64-unknown-linux-musl
+
+FROM alpine:latest
 
 # run as user for security
-FROM alpine:latest
-run mkdir /unftp
+RUN mkdir /unftp
 RUN addgroup -S unftp && adduser -S unftp -G unftp
 COPY --from=builder /usr/src/unftp/target/x86_64-unknown-linux-musl/release/unftp /unftp
 RUN chown -R unftp:unftp /unftp
 
 WORKDIR /unftp
 USER unftp
-CMD unftp
+CMD ["/unftp/unftp"]

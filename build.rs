@@ -7,4 +7,9 @@ fn main() {
         Err(_) => env::var("BUILD_VERSION").unwrap_or(">unknown<".to_string()),
     };
     println!("cargo:rustc-env=BUILD_VERSION={}", version);
+
+    #[cfg(feature = "static")]
+    {
+        println!("cargo:rustc-link-lib=static=pam");
+    }
 }

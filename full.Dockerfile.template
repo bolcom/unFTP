@@ -4,8 +4,7 @@ WORKDIR /usr/src/unftp
 COPY . .
 
 RUN apt-get update && apt-get install -y libpam0g-dev
-RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --release
-RUN cargo install --path .
+RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo install --path .
 RUN cargo clean
 
 CMD ["unftp"]
