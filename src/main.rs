@@ -14,7 +14,11 @@ use futures::future;
 use hyper::rt::Future;
 use hyper::service::service_fn;
 use hyper::{Body, Method, Request, Response, StatusCode};
-use libunftp::auth::{self, pam, AnonymousUser};
+use libunftp::auth::{self, AnonymousUser};
+
+#[cfg(feature = "pam")]
+use libunftp::auth::pam;
+
 use libunftp::Server;
 use prometheus::{Encoder, TextEncoder};
 use slog::*;
@@ -61,11 +65,20 @@ fn make_anon_auth() -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync>
 }
 
 fn make_pam_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync> {
-    if let Some(service) = m.value_of(args::AUTH_PAM_SERVICE) {
-        log::info!("Using pam authenticator");
-        return Arc::new(pam::PAMAuthenticator::new(service));
+    #[cfg(not(feature = "pam"))]
+    {
+        let _ = m;
+        panic!("pam auth was disabled at build time");
     }
-    panic!("argument 'auth-pam-service' is required");
+
+    #[cfg(feature = "pam")]
+    {
+        if let Some(service) = m.value_of(args::AUTH_PAM_SERVICE) {
+            log::info!("Using pam authenticator");
+            return Arc::new(pam::PAMAuthenticator::new(service));
+        }
+        panic!("argument 'auth-pam-service' is required");
+    }
 }
 
 // FIXME: add user support
@@ -101,7 +114,7 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<Anonymous
     }
 }
 
-fn metrics_service(req: Request<Body>) -> Box<dyn Future<Item = Response<Body>, Error = hyper::Error> + Send> {
+fn metrics_service(req: Request<Body>) -> Box<dyn Future<Item=Response<Body>, Error=hyper::Error> + Send> {
     let mut response = Response::new(Body::empty());
     match (req.method(), req.uri().path()) {
         (&Method::GET, "/metrics") => {
