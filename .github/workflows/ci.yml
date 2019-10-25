@@ -1,0 +1,87 @@
+on: [push]
+
+name: CI
+
+jobs:
+  ci:
+    name: ${{ matrix.os }} / ${{matrix.toolchain}}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        toolchain: [stable, beta]
+    steps:
+      # Make sure PAM is installed when on linux
+      - name: Install pam
+        run: sudo apt-get install libpam0g-dev
+        if: matrix.os == 'ubuntu-latest'
+
+      - name: Checkout sources
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+
+      - name: Install stable toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{matrix.toolchain}}
+          override: true
+          components: rustfmt, clippy
+
+      - name: Run cargo fmt
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+      - name: Run cargo check
+        uses: actions-rs/cargo@v1
+        with:
+          command: check
+          args: --all --all-features
+
+      - name: Run cargo clippy
+        uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --all-features -- -D warnings
+
+      - name: Run cargo test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --all --all-features
+
+
+# language: rust
+#
+# services:
+#   - docker
+#
+# rust:
+#   - stable
+#   - beta
+#
+# os:
+#   - linux
+#   - osx
+#
+# before_install:
+#   - if (test -n "$TRAVIS_TAG" && test "$TRAVIS_RUST_VERSION" = "stable" && test "$TRAVIS_OS_NAME" = "linux"); then export DEPLOY=true; else export DEPLOY=false; fi
+#   - if $DEPLOY; then (sudo apt-get update && sudo apt-get install -y musl-dev musl-tools); fi
+#
+# before_script:
+#   - if $DEPLOY; then rustup target add x86_64-unknown-linux-musl; fi
+#
+# script:
+#   - cargo build --verbose --all --all-features
+#   - cargo test --verbose --all --all-features
+#   - if $DEPLOY; then cargo test --verbose --all --all-features --target=x86_64-unknown-linux-musl; else true; fi
+#   - if $DEPLOY; then make docker-image; else true; fi
+#
+# deploy:
+#   provider: script
+#   script: if $DEPLOY; then (echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin && docker push bolcom/unftp); else true; fi
+#   on:
+#     tags: true
