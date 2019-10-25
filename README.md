@@ -75,6 +75,15 @@ cargo run -- \
   --root-dir=/home/unftp/data
 ```
 
+With the GCS back-end:
+
+```sh
+cargo run -- \
+  --sbe-type=gcs \
+  --sbe-gcs-bucket=mybucket \
+  --sbe-gcs-key-file=file
+```
+
 ## Docker
 
 Dockerfile is templated. To get a list of available commands, run:

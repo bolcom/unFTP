@@ -1,6 +1,6 @@
 [package]
 name = "unftp"
-version = "0.3.1"
+version = "0.4.0"
 authors = [
     "Agoston Horvath <ahorvath@bol.com>",
     "Dávid Kosztka <dkosztka@bol.com>",
@@ -17,7 +17,7 @@ license = "Apache-2.0"
 readme = "README.md"
 
 [dependencies]
-libunftp = {git = "https://github.com/bolcom/libunftp.git", branch = "master"}
+libunftp = "0.4.1"
 log = "0.4"
 env_logger = "0.6"
 redis = "0.9.0"
@@ -37,6 +37,7 @@ futures = "0.1"
 tokio = "0.1"
 tokio-io = "0.1"
 clap = "2.33.0"
+yup-oauth2 = {version = "3.1.0"}
 
 [features]
 pam = ["libunftp/pam"]
