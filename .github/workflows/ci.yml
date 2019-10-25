@@ -1,4 +1,4 @@
-on: [push, pull_request]
+on: [push]
 
 name: CI
 
@@ -8,7 +8,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest]
+        os: [ubuntu-latest]
         toolchain: [stable, beta]
     steps:
       # Make sure PAM is installed when on linux
@@ -85,9 +85,3 @@ jobs:
 #   script: if $DEPLOY; then (echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin && docker push bolcom/unftp); else true; fi
 #   on:
 #     tags: true
-#
-# cache: cargo
-#
-# matrix:
-#   fast_finish: true
-#

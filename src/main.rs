@@ -114,7 +114,7 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<Anonymous
     }
 }
 
-fn metrics_service(req: Request<Body>) -> Box<dyn Future<Item=Response<Body>, Error=hyper::Error> + Send> {
+fn metrics_service(req: Request<Body>) -> Box<dyn Future<Item = Response<Body>, Error = hyper::Error> + Send> {
     let mut response = Response::new(Body::empty());
     match (req.method(), req.uri().path()) {
         (&Method::GET, "/metrics") => {
