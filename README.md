@@ -1,6 +1,6 @@
 # unFTP
 
-[![Build Status](https://travis-ci.org/bolcom/unFTP.svg)](https://travis-ci.org/bolcom/unFTP)
+[![Build Status](https://github.com/bolcom/unftp/workflows/CI/badge.svg)](https://github.com/bolcom/unftp/actions)
 
 When you need to FTP, but don't want to.
 
