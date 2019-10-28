@@ -158,7 +158,7 @@ fn gcs_storage_backend(
 }
 
 // starts the FTP server as a Tokio task.
-fn start_ftp(log: &Logger, m: &clap::ArgMatches, runtime: TokioRuntime) -> TokioRuntime {
+fn start_ftp(log: &Logger, m: &clap::ArgMatches, runtime: &mut TokioRuntime) {
     match m.value_of(args::STORAGE_BACKEND_TYPE) {
         None | Some("filesystem") => start_ftp_with_storage(&log, m, fs_storage_backend(m), runtime),
         Some("gcs") => {
@@ -177,9 +177,8 @@ fn start_ftp_with_storage<S>(
     log: &Logger,
     arg_matches: &ArgMatches,
     storage_backend: Box<dyn (Fn() -> S) + Send>,
-    mut runtime: TokioRuntime,
-) -> TokioRuntime
-where
+    runtime: &mut TokioRuntime,
+) where
     S: StorageBackend<AnonymousUser> + Send + Sync + 'static,
     S::File: tokio::io::AsyncRead + Send,
     S::Metadata: Sync + Send,
@@ -217,12 +216,10 @@ where
     };
 
     runtime.spawn(server.listener(&addr));
-
-    runtime
 }
 
 // starts an HTTP server and exports Prometheus metrics.
-fn start_http(log: &Logger, arg_matches: &ArgMatches, mut runtime: TokioRuntime) -> TokioRuntime {
+fn start_http(log: &Logger, arg_matches: &ArgMatches, runtime: &mut TokioRuntime) {
     if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDR) {
         let http_addr = addr
             .parse()
@@ -237,8 +234,6 @@ fn start_http(log: &Logger, arg_matches: &ArgMatches, mut runtime: TokioRuntime)
         info!(log, "Starting Prometheus {} exporter.", app::NAME; "address" => &http_addr);
         let _http_thread = runtime.spawn(http_server);
     }
-
-    runtime
 }
 
 fn run(arg_matches: ArgMatches) -> std::result::Result<(), String> {
@@ -281,8 +276,8 @@ fn run(arg_matches: ArgMatches) -> std::result::Result<(), String> {
 
     let mut runtime = TokioRuntime::new().unwrap();
 
-    runtime = start_http(&log, &arg_matches, runtime);
-    runtime = start_ftp(&log, &arg_matches, runtime);
+    start_http(&log, &arg_matches, &mut runtime);
+    start_ftp(&log, &arg_matches, &mut runtime);
     runtime.shutdown_on_idle().wait().unwrap();
 
     Ok(())
