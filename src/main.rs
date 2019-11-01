@@ -15,15 +15,16 @@ use hyper::rt::Future;
 use hyper::service::service_fn;
 use hyper::{Body, Method, Request, Response, StatusCode};
 use libunftp::auth::{self, AnonymousUser};
-
-#[cfg(feature = "pam")]
-use libunftp::auth::pam;
-
+use libunftp::storage::StorageBackend;
 use libunftp::Server;
 use prometheus::{Encoder, TextEncoder};
 use slog::*;
+use std::path::PathBuf;
 use std::process;
 use tokio::runtime::Runtime as TokioRuntime;
+
+#[cfg(feature = "pam")]
+use libunftp::auth::pam;
 
 fn redis_logger(m: &clap::ArgMatches) -> Option<redislog::Logger> {
     match (
@@ -136,30 +137,102 @@ fn gather_metrics() -> Vec<u8> {
     buffer
 }
 
-// TODO: Implement
-fn _storage_backend<S>(m: &clap::ArgMatches) -> Box<dyn (Fn() -> S) + Send> {
+// Creates the filesystem storage back-end
+fn fs_storage_backend(m: &clap::ArgMatches) -> Box<dyn (Fn() -> libunftp::storage::filesystem::Filesystem) + Send> {
+    let p: PathBuf = m.value_of(args::ROOT_DIR).unwrap().into();
+    Box::new(move || libunftp::storage::filesystem::Filesystem::new(p.clone()))
+}
+
+// Creates the GCS storage back-end
+fn gcs_storage_backend(
+    m: &clap::ArgMatches,
+) -> Box<dyn (Fn() -> libunftp::storage::cloud_storage::CloudStorage) + Send> {
+    let b: String = m.value_of(args::GCS_BUCKET).unwrap().into();
+    let p: PathBuf = m.value_of(args::GCS_KEY_FILE).unwrap().into();
+    Box::new(move || {
+        libunftp::storage::cloud_storage::CloudStorage::new(
+            b.clone(),
+            yup_oauth2::service_account_key_from_file(p.clone()).expect("oops"),
+        )
+    })
+}
+
+// starts the FTP server as a Tokio task.
+fn start_ftp(log: &Logger, m: &clap::ArgMatches, runtime: &mut TokioRuntime) {
     match m.value_of(args::STORAGE_BACKEND_TYPE) {
-        None | Some("filesystem") => {
-            // let p = m.value_of("home dir");
-            // Box::new(move || {
-            //     let p = &p.clone();
-            //     libunftp::storage::filesystem::Filesystem::new(p)
-            // })
-            unimplemented!()
-        }
+        None | Some("filesystem") => start_ftp_with_storage(&log, m, fs_storage_backend(m), runtime),
         Some("gcs") => {
             if let Some(_bucket) = m.value_of(args::GCS_BUCKET) {
-                // Box::new(move || {
-                //     libunftp::storage::cloud_storage::CloudStorage::new(
-                //         "bolcom-dev-unftp-dev-738-unftp-dev",
-                //         yup_oauth2::service_account_key_from_file(&"/Users/dkosztka/Downloads/bolcom-dev-unftp-dev-738-1379d4070948.json".to_string()).expect("borked"),
-                //     )
-                // })
-                unimplemented!()
+                start_ftp_with_storage(&log, m, gcs_storage_backend(m), runtime)
+            } else {
+                panic!("sbe-gcs-bucket needs to be specified")
             }
-            panic!("sbe-gcs-bucket needs to be specified")
         }
         Some(x) => panic!("unknown storage back-end type {}", x),
+    }
+}
+
+// Given a storage back-end, starts the FTP server as a Tokio task.
+fn start_ftp_with_storage<S>(
+    log: &Logger,
+    arg_matches: &ArgMatches,
+    storage_backend: Box<dyn (Fn() -> S) + Send>,
+    runtime: &mut TokioRuntime,
+) where
+    S: StorageBackend<AnonymousUser> + Send + Sync + 'static,
+    S::File: tokio::io::AsyncRead + Send,
+    S::Metadata: Sync + Send,
+{
+    let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());
+
+    let mut server = Server::new(storage_backend)
+        .greeting("Welcome to unFTP")
+        .authenticator(make_auth(&arg_matches))
+        .passive_ports(49152..65535)
+        .with_metrics();
+
+    // Setup FTPS
+    server = match (
+        arg_matches.value_of(args::FTPS_CERTS_FILE),
+        arg_matches.value_of(args::FTPS_KEY_FILE),
+    ) {
+        (Some(certs_file), Some(key_file)) => {
+            info!(log, "FTPS enabled");
+            server.certs(certs_file, key_file)
+        }
+        (Some(_), None) | (None, Some(_)) => {
+            warn!(
+                log,
+                "Need to set both {} and {}. FTPS still disabled.",
+                args::FTPS_CERTS_FILE,
+                args::FTPS_KEY_FILE
+            );
+            server
+        }
+        _ => {
+            info!(log, "FTPS not enabled");
+            server
+        }
+    };
+
+    runtime.spawn(server.listener(&addr));
+}
+
+// starts an HTTP server and exports Prometheus metrics.
+fn start_http(log: &Logger, arg_matches: &ArgMatches, runtime: &mut TokioRuntime) {
+    if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDR) {
+        let http_addr = addr
+            .parse()
+            .unwrap_or_else(|_| panic!("Unable to parse metrics address {}", addr));
+
+        let http_log = log.clone();
+
+        let http_server = hyper::Server::bind(&http_addr)
+            .serve(|| service_fn(metrics_service))
+            .map_err(move |e| error!(http_log, "HTTP Server error: {}", e));
+
+        info!(log, "Starting Prometheus {} exporter.", app::NAME; "address" => &http_addr);
+        let _http_thread = runtime.spawn(http_server);
     }
 }
 
@@ -203,48 +276,8 @@ fn run(arg_matches: ArgMatches) -> std::result::Result<(), String> {
 
     let mut runtime = TokioRuntime::new().unwrap();
 
-    // HTTP server for exporting Prometheus metrics
-    if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDR) {
-        let http_addr = addr
-            .parse()
-            .unwrap_or_else(|_| panic!("Unable to parse metrics address {}", addr));
-
-        let http_log = log.clone();
-
-        let http_server = hyper::Server::bind(&http_addr)
-            .serve(|| service_fn(metrics_service))
-            .map_err(move |e| error!(http_log, "HTTP Server error: {}", e));
-
-        info!(log, "Starting Prometheus {} exporter.", app::NAME; "address" => &http_addr);
-        let _http_thread = runtime.spawn(http_server);
-    }
-
-    let mut server = Server::with_root(home_dir)
-        .greeting("Welcome to unFTP")
-        .authenticator(make_auth(&arg_matches))
-        .passive_ports(49152..65535)
-        .with_metrics();
-
-    // Setup FTPS
-    server = match (
-        arg_matches.value_of(args::FTPS_CERTS_FILE),
-        arg_matches.value_of(args::FTPS_KEY_FILE),
-    ) {
-        (Some(certs_file), Some(key_file)) => {
-            info!(log, "FTPS enabled");
-            server.certs(certs_file, key_file)
-        }
-        (Some(_), None) | (None, Some(_)) => {
-            warn!(
-                log,
-                "Need to set both {} and {}. FTPS still disabled.", "ftps-certs-file", "ftps-key-file"
-            );
-            server
-        }
-        _ => server,
-    };
-
-    let _ftp_thread = runtime.spawn(server.listener(&addr));
+    start_http(&log, &arg_matches, &mut runtime);
+    start_ftp(&log, &arg_matches, &mut runtime);
     runtime.shutdown_on_idle().wait().unwrap();
 
     Ok(())
