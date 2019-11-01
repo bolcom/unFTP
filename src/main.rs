@@ -45,8 +45,7 @@ fn redis_logger(m: &clap::ArgMatches) -> Option<redislog::Logger> {
         }
         (None, None, None) => None,
         _ => {
-            // TODO: Warn user
-            None
+            panic!("for the redis logger please specify all --log-redis-* options")
         }
     }
 }
