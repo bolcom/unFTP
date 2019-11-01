@@ -10,6 +10,8 @@ RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --no-default-features --featur
 
 FROM scratch
 
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+
 # run as user for security
 COPY --chown=1010:1010 --from=builder /usr/src/unftp/target/x86_64-unknown-linux-musl/release/unftp /unftp
 USER 1010

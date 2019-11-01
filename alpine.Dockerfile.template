@@ -10,6 +10,8 @@ RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --no-default-features --featur
 
 FROM alpine:latest
 
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+
 # run as user for security
 RUN mkdir /unftp
 RUN addgroup -S unftp && adduser -S unftp -G unftp
