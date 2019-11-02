@@ -17,7 +17,7 @@ license = "Apache-2.0"
 readme = "README.md"
 
 [dependencies]
-libunftp = "0.4.1"
+libunftp = "0.4.2"
 log = "0.4"
 env_logger = "0.6"
 redis = "0.9.0"
