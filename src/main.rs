@@ -10,6 +10,7 @@ mod args;
 mod redislog;
 
 use std::env;
+use std::result::Result;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -30,7 +31,7 @@ use tokio::runtime::Runtime as TokioRuntime;
 #[cfg(feature = "pam")]
 use libunftp::auth::pam;
 
-fn redis_logger(m: &clap::ArgMatches) -> Option<redislog::Logger> {
+fn redis_logger(m: &clap::ArgMatches) -> Result<Option<redislog::Logger>, String> {
     match (
         m.value_of(args::REDIS_KEY),
         m.value_of(args::REDIS_HOST),
@@ -44,20 +45,20 @@ fn redis_logger(m: &clap::ArgMatches) -> Option<redislog::Logger> {
                     String::from(key),
                 )
                 .build()
-                .expect("could not initialize Redis logger");
-            Some(logger)
+                .map_err(|e| format!("could not initialize Redis logger: {}", e))?;
+            Ok(Some(logger))
         }
-        (None, None, None) => None,
-        _ => panic!("for the redis logger please specify all --log-redis-* options"),
+        (None, None, None) => Ok(None),
+        _ => Err("for the redis logger please specify all --log-redis-* options".to_string()),
     }
 }
 
-fn make_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync> {
+fn make_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync>, String> {
     match m.value_of(args::AUTH_TYPE) {
-        None | Some("anonymous") => make_anon_auth(),
+        None | Some("anonymous") => Ok(make_anon_auth()),
         Some("pam") => make_pam_auth(m),
         Some("rest") => make_rest_auth(m),
-        _ => panic!("unknown auth type"),
+        unkown_type => Err(format!("unknown auth type: {}", unkown_type.unwrap())),
     }
 }
 
@@ -66,25 +67,25 @@ fn make_anon_auth() -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync>
     Arc::new(auth::AnonymousAuthenticator {})
 }
 
-fn make_pam_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync> {
+fn make_pam_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync>, String> {
     #[cfg(not(feature = "pam"))]
     {
         let _ = m;
-        panic!("pam auth was disabled at build time");
+        Err(format!("the pam authentication module was disabled at build time"))
     }
 
     #[cfg(feature = "pam")]
     {
         if let Some(service) = m.value_of(args::AUTH_PAM_SERVICE) {
             log::info!("Using pam authenticator");
-            return Arc::new(pam::PAMAuthenticator::new(service));
+            return Ok(Arc::new(pam::PAMAuthenticator::new(service)));
         }
-        panic!("argument 'auth-pam-service' is required");
+        Err(format!("--{} is required when using pam auth", args::AUTH_PAM_SERVICE))
     }
 }
 
 // FIXME: add user support
-fn make_rest_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync> {
+fn make_rest_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync>, String> {
     match (
         m.value_of(args::AUTH_REST_URL),
         m.value_of(args::AUTH_REST_REGEX),
@@ -93,7 +94,7 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<Anonymous
     ) {
         (Some(url), Some(regex), Some(selector), Some(method)) => {
             if method.to_uppercase() != "GET" && m.value_of(args::AUTH_REST_BODY).is_none() {
-                panic!("no body provided for rest request")
+                return Err("REST authenticator error: no body provided for rest request".to_string());
             }
 
             log::info!("Using REST authenticator ({})", url);
@@ -102,17 +103,15 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Arc<dyn auth::Authenticator<Anonymous
                 .with_username_placeholder("{USER}".to_string())
                 .with_password_placeholder("{PASS}".to_string())
                 .with_url(String::from(url))
-                .with_method(Method::from_str(method).unwrap())
-                .with_body(String::from(m.value_of("auth-rest-body").unwrap()))
+                .with_method(Method::from_str(method).map_err(|e| format!("error creating REST auth: {}", e))?)
+                .with_body(String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or("")))
                 .with_selector(String::from(selector))
                 .with_regex(String::from(regex))
                 .build();
 
-            Arc::new(authenticator)
+            Ok(Arc::new(authenticator))
         }
-        _ => {
-            panic!("for auth type rest please specify all auth-rest-* options");
-        }
+        _ => Err("for auth type rest please specify all auth-rest-* options".to_string()),
     }
 }
 
@@ -147,29 +146,31 @@ fn fs_storage_backend(m: &clap::ArgMatches) -> Box<dyn (Fn() -> libunftp::storag
 // Creates the GCS storage back-end
 fn gcs_storage_backend(
     m: &clap::ArgMatches,
-) -> Box<dyn (Fn() -> libunftp::storage::cloud_storage::CloudStorage) + Send> {
-    let b: String = m.value_of(args::GCS_BUCKET).unwrap().into();
-    let p: PathBuf = m.value_of(args::GCS_KEY_FILE).unwrap().into();
-    Box::new(move || {
+) -> Result<Box<dyn (Fn() -> libunftp::storage::cloud_storage::CloudStorage) + Send>, String> {
+    let b: String = m
+        .value_of(args::GCS_BUCKET)
+        .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_BUCKET))?
+        .into();
+    let p: PathBuf = m
+        .value_of(args::GCS_KEY_FILE)
+        .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_KEY_FILE))?
+        .into();
+    Ok(Box::new(move || {
         libunftp::storage::cloud_storage::CloudStorage::new(
             b.clone(),
-            yup_oauth2::service_account_key_from_file(p.clone()).expect("oops"),
+            yup_oauth2::service_account_key_from_file(p.clone())
+                .map_err(|e| format!("could not load GCS back-end key file: {}", e))
+                .unwrap(),
         )
-    })
+    }))
 }
 
 // starts the FTP server as a Tokio task.
-fn start_ftp(log: &Logger, m: &clap::ArgMatches, runtime: &mut TokioRuntime) {
+fn start_ftp(log: &Logger, m: &clap::ArgMatches, runtime: &mut TokioRuntime) -> Result<(), String> {
     match m.value_of(args::STORAGE_BACKEND_TYPE) {
         None | Some("filesystem") => start_ftp_with_storage(&log, m, fs_storage_backend(m), runtime),
-        Some("gcs") => {
-            if let Some(_bucket) = m.value_of(args::GCS_BUCKET) {
-                start_ftp_with_storage(&log, m, gcs_storage_backend(m), runtime)
-            } else {
-                panic!("sbe-gcs-bucket needs to be specified")
-            }
-        }
-        Some(x) => panic!("unknown storage back-end type {}", x),
+        Some("gcs") => start_ftp_with_storage(&log, m, gcs_storage_backend(m)?, runtime),
+        Some(x) => Err(format!("unknown storage back-end type {}", x)),
     }
 }
 
@@ -179,7 +180,8 @@ fn start_ftp_with_storage<S>(
     arg_matches: &ArgMatches,
     storage_backend: Box<dyn (Fn() -> S) + Send>,
     runtime: &mut TokioRuntime,
-) where
+) -> Result<(), String>
+where
     S: StorageBackend<AnonymousUser> + Send + Sync + 'static,
     S::File: tokio::io::AsyncRead + Send,
     S::Metadata: Sync + Send,
@@ -194,19 +196,21 @@ fn start_ftp_with_storage<S>(
         .collect();
 
     if ports.len() != 2 {
-        panic!(
-            "please specify a port range e.g. 50000-60000 for {}",
+        return Err(format!(
+            "please specify a valid port range e.g. 50000-60000 for --{}",
             args::PASSIVE_PORTS
-        )
+        ));
     }
-    let start_port: u16 = ports[0].parse().unwrap();
-    let end_port: u16 = ports[1].parse().unwrap();
+    let start_port: u16 = ports[0]
+        .parse()
+        .map_err(|_| "start of port range needs to be numeric")?;
+    let end_port: u16 = ports[1].parse().map_err(|_| "end of port range needs to be numeric")?;
 
     info!(log, "Using passive port range {}..{}", start_port, end_port);
 
     let mut server = Server::new(storage_backend)
         .greeting("Welcome to unFTP")
-        .authenticator(make_auth(&arg_matches))
+        .authenticator(make_auth(&arg_matches)?)
         .passive_ports(start_port..end_port)
         .with_metrics();
 
@@ -235,14 +239,15 @@ fn start_ftp_with_storage<S>(
     };
 
     runtime.spawn(server.listener(&addr));
+    Ok(())
 }
 
 // starts an HTTP server and exports Prometheus metrics.
-fn start_http(log: &Logger, arg_matches: &ArgMatches, runtime: &mut TokioRuntime) {
+fn start_http(log: &Logger, arg_matches: &ArgMatches, runtime: &mut TokioRuntime) -> Result<(), String> {
     if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDR) {
         let http_addr = addr
             .parse()
-            .unwrap_or_else(|_| panic!("Unable to parse metrics address {}", addr));
+            .map_err(|e| format!("unable to parse HTTP address {}: {}", addr, e))?;
 
         let http_log = log.clone();
 
@@ -253,16 +258,17 @@ fn start_http(log: &Logger, arg_matches: &ArgMatches, runtime: &mut TokioRuntime
         info!(log, "Starting Prometheus {} exporter.", app::NAME; "address" => &http_addr);
         let _http_thread = runtime.spawn(http_server);
     }
+    Ok(())
 }
 
-fn run(arg_matches: ArgMatches) -> std::result::Result<(), String> {
+fn run(arg_matches: ArgMatches) -> Result<(), String> {
     // Logging
     let min_log_level = match arg_matches.occurrences_of(args::VERBOSITY) {
         0 => (slog::Level::Info, log::Level::Info),
         1 => (slog::Level::Debug, log::Level::Debug),
         2 | _ => (slog::Level::Trace, log::Level::Trace),
     };
-    let drain = match redis_logger(&arg_matches) {
+    let drain = match redis_logger(&arg_matches)? {
         Some(l) => slog_async::Async::new(l.filter_level(min_log_level.0).fuse())
             .build()
             .fuse(),
@@ -296,8 +302,8 @@ fn run(arg_matches: ArgMatches) -> std::result::Result<(), String> {
 
     let mut runtime = TokioRuntime::new().unwrap();
 
-    start_http(&log, &arg_matches, &mut runtime);
-    start_ftp(&log, &arg_matches, &mut runtime);
+    start_http(&log, &arg_matches, &mut runtime)?;
+    start_ftp(&log, &arg_matches, &mut runtime)?;
     runtime.shutdown_on_idle().wait().unwrap();
 
     Ok(())
@@ -308,7 +314,7 @@ fn main() {
     let tmp_dir = tmp_dir.as_path().to_str().unwrap();
     let arg_matches = args::clap_app(tmp_dir).get_matches();
     if let Err(e) = run(arg_matches) {
-        println!("Error: {}", e);
+        println!("\nError: {}", e);
         process::exit(1);
     };
 }

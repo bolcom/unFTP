@@ -13,14 +13,14 @@ pub const FTPS_CERTS_FILE: &str = "ftps-certs-file";
 pub const FTPS_KEY_FILE: &str = "ftps-key-file";
 pub const GCS_BUCKET: &str = "sbe-gcs-bucket";
 pub const GCS_KEY_FILE: &str = "sbe-gcs-key-file";
-pub const ROOT_DIR: &str = "root-dir";
 pub const HTTP_BIND_ADDR: &str = "bind-address-http";
+pub const PASSIVE_PORTS: &str = "passive-ports";
 pub const REDIS_HOST: &str = "log-redis-host";
 pub const REDIS_KEY: &str = "log-redis-key";
 pub const REDIS_PORT: &str = "log-redis-port";
+pub const ROOT_DIR: &str = "root-dir";
 pub const STORAGE_BACKEND_TYPE: &str = "sbe-type";
 pub const VERBOSITY: &str = "verbosity";
-pub const PASSIVE_PORTS: &str = "passive-ports";
 
 arg_enum! {
     #[derive(Debug)]
