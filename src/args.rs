@@ -20,6 +20,7 @@ pub const REDIS_KEY: &str = "log-redis-key";
 pub const REDIS_PORT: &str = "log-redis-port";
 pub const STORAGE_BACKEND_TYPE: &str = "sbe-type";
 pub const VERBOSITY: &str = "verbosity";
+pub const PASSIVE_PORTS: &str = "passive-ports";
 
 arg_enum! {
     #[derive(Debug)]
@@ -116,6 +117,15 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .value_name("HOST_PORT")
                 .help("Sets the host and port for the HTTP server used by prometheus metrics collection")
                 .env("UNFTP_HTTP_ADDRESS")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name(PASSIVE_PORTS)
+                .long("passive-ports")
+                .value_name("PORT_RANGE")
+                .help("Sets the port range for data ports.")
+                .default_value("49152-65535")
+                .env("UNFTP_PASV_PORT_RANGE")
                 .takes_value(true),
         )
         .arg(

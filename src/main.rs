@@ -186,10 +186,28 @@ fn start_ftp_with_storage<S>(
 {
     let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());
 
+    let ports: std::vec::Vec<&str> = arg_matches
+        .value_of(args::PASSIVE_PORTS)
+        .unwrap()
+        .split(|c: char| !c.is_numeric())
+        .filter(|s| !s.is_empty())
+        .collect();
+
+    if ports.len() != 2 {
+        panic!(
+            "please specify a port range e.g. 50000-60000 for {}",
+            args::PASSIVE_PORTS
+        )
+    }
+    let start_port: u16 = ports[0].parse().unwrap();
+    let end_port: u16 = ports[1].parse().unwrap();
+
+    info!(log, "Using passive port range {}..{}", start_port, end_port);
+
     let mut server = Server::new(storage_backend)
         .greeting("Welcome to unFTP")
         .authenticator(make_auth(&arg_matches))
-        .passive_ports(49152..65535)
+        .passive_ports(start_port..end_port)
         .with_metrics();
 
     // Setup FTPS
