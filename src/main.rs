@@ -1,9 +1,13 @@
-mod app;
-mod args;
-mod redislog;
+#[macro_use]
+extern crate lazy_static;
 
 #[macro_use]
 extern crate clap;
+
+#[allow(dead_code)]
+mod app;
+mod args;
+mod redislog;
 
 use std::env;
 use std::str::FromStr;
@@ -265,10 +269,11 @@ fn run(arg_matches: ArgMatches) -> std::result::Result<(), String> {
 
     info!(log, "Starting {} server.", app::NAME;
     "version" => app::VERSION,
+    "libunftp-version" => app::libunftp_version(),
     "address" => &addr,
     "home" => home_dir.clone(),
     "auth-type" => auth_type,
-    "sbe-type" => sbe_type
+    "sbe-type" => sbe_type,
     );
 
     let mut runtime = TokioRuntime::new().unwrap();

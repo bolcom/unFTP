@@ -43,6 +43,7 @@ arg_enum! {
 pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
     App::new(app::NAME)
         .version(app::VERSION)
+        .long_version(app::long_version())
         .about("An FTP server for when you need to FTP but don't want to")
         .author("The bol.com unFTP team")
         .arg(

@@ -12,4 +12,16 @@ fn main() {
     {
         println!("cargo:rustc-link-lib=static=pam");
     }
+
+    generate_build_info();
+}
+
+// uses the 'built' crate to generate a build.rs file with a bunch of build information. We then
+// include this file in the app module.
+fn generate_build_info() {
+    let src = env::var("CARGO_MANIFEST_DIR").unwrap();
+    let dst = std::path::Path::new(&env::var("OUT_DIR").unwrap()).join("build-info.rs");
+    let mut opts = built::Options::default();
+    opts.set_dependencies(true);
+    built::write_built_file_with_opts(&opts, &src, &dst).expect("Failed to acquire build-time information");
 }
