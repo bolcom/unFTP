@@ -208,10 +208,23 @@ where
 
     info!(log, "Using passive port range {}..{}", start_port, end_port);
 
+    let idle_timeout_str = arg_matches.value_of(args::IDLE_SESSION_TIMEOUT).unwrap();
+    let idle_timeout = String::from(idle_timeout_str).parse::<u64>().map_err(move |e| {
+        format!(
+            "unable to parse given value '{}' for --{}: {}. Please use a numeric value",
+            idle_timeout_str,
+            args::IDLE_SESSION_TIMEOUT,
+            e
+        )
+    })?;
+
+    info!(log, "Idle session timeout is set to {} seconds", idle_timeout);
+
     let mut server = Server::new(storage_backend)
         .greeting("Welcome to unFTP")
         .authenticator(make_auth(&arg_matches)?)
         .passive_ports(start_port..end_port)
+        .idle_session_timeout(idle_timeout)
         .with_metrics();
 
     // Setup FTPS
