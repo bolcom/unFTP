@@ -14,6 +14,7 @@ pub const FTPS_KEY_FILE: &str = "ftps-key-file";
 pub const GCS_BUCKET: &str = "sbe-gcs-bucket";
 pub const GCS_KEY_FILE: &str = "sbe-gcs-key-file";
 pub const HTTP_BIND_ADDR: &str = "bind-address-http";
+pub const IDLE_SESSION_TIMEOUT: &str = "idle-session-timeout";
 pub const PASSIVE_PORTS: &str = "passive-ports";
 pub const REDIS_HOST: &str = "log-redis-host";
 pub const REDIS_KEY: &str = "log-redis-key";
@@ -58,18 +59,18 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .long("bind-address")
                 .value_name("HOST_PORT")
                 .help("Sets the host and port to listen on for FTP control connections")
-                .default_value("0.0.0.0:2121")
                 .env("UNFTP_ADDRESS")
-                .takes_value(true),
+                .takes_value(true)
+                .default_value("0.0.0.0:2121"),
         )
         .arg(
             Arg::with_name(ROOT_DIR)
                 .long("root-dir")
                 .value_name("PATH")
                 .help("Sets the FTP root directory")
-                .default_value(tmp_dir)
                 .env("UNFTP_ROOT")
-                .takes_value(true),
+                .takes_value(true)
+                .default_value(tmp_dir),
         )
         .arg(
             Arg::with_name(FTPS_CERTS_FILE)
@@ -117,27 +118,28 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .value_name("HOST_PORT")
                 .help("Sets the host and port for the HTTP server used by prometheus metrics collection")
                 .env("UNFTP_HTTP_ADDRESS")
-                .takes_value(true),
+                .takes_value(true)
+                .default_value("0.0.0.0:8080"),
         )
         .arg(
             Arg::with_name(PASSIVE_PORTS)
                 .long("passive-ports")
                 .value_name("PORT_RANGE")
                 .help("Sets the port range for data ports.")
-                .default_value("49152-65535")
                 .env("UNFTP_PASV_PORT_RANGE")
-                .takes_value(true),
+                .takes_value(true)
+                .default_value("49152-65535"),
         )
         .arg(
             Arg::with_name(AUTH_TYPE)
                 .long("auth-type")
                 .value_name("NAME")
                 .help("The type of authorization to use")
-                .default_value("anonymous")
                 .possible_values(&AuthType::variants())
                 //.case_insensitive(true)
                 .env("UNFTP_AUTH_REST_URL")
-                .takes_value(true),
+                .takes_value(true)
+                .default_value("anonymous"),
         )
         .arg(
             Arg::with_name(AUTH_PAM_SERVICE)
@@ -193,10 +195,10 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .long("sbe-type")
                 .value_name("NAME")
                 .help("The type of storage backend to use.")
-                .default_value("filesystem")
                 .possible_values(&StorageBackendType::variants())
                 .env("UNFTP_SBE_TYPE")
-                .takes_value(true),
+                .takes_value(true)
+                .default_value("filesystem"),
         )
         .arg(
             Arg::with_name(GCS_BUCKET)
@@ -213,5 +215,14 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .help("The JSON file that contains the service account key for access to Google Cloud Storage.")
                 .env("UNFTP_GCS_KEY_FILE")
                 .takes_value(true),
+        )
+        .arg(
+            Arg::with_name(IDLE_SESSION_TIMEOUT)
+                .long("idle-session-timeout")
+                .value_name("TIMEOUT_SECONDS")
+                .help("The timeout in seconds after which idle connections will be closed")
+                .env("UNFTP_IDLE_SESSION_TIMEOUT")
+                .takes_value(true)
+                .default_value("600"),
         )
 }
