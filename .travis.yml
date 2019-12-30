@@ -20,8 +20,8 @@ before_script:
   - if $DEPLOY; then rustup target add x86_64-unknown-linux-musl; fi
 
 script:
-  - cargo build --verbose --all --all-features
-  - cargo test --verbose --all --all-features
+  - cargo build --verbose --all --features rest,cloud_storage
+  - cargo test --verbose --all --features rest,cloud_storage
   - if $DEPLOY; then cargo test --verbose --all --all-features --target=x86_64-unknown-linux-musl; else true; fi
   - if $DEPLOY; then make docker-image; else true; fi
 
