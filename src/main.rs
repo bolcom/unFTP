@@ -10,23 +10,26 @@ mod args;
 mod redislog;
 
 use std::env;
+use std::path::PathBuf;
+use std::process;
 use std::result::Result;
 use std::str::FromStr;
 use std::sync::Arc;
 
 use clap::ArgMatches;
-use futures::future;
-use hyper::rt::Future;
-use hyper::service::service_fn;
-use hyper::{Body, Method, Request, Response, StatusCode};
-use libunftp::auth::{self, AnonymousUser};
-use libunftp::storage::StorageBackend;
-use libunftp::Server;
+use futures01::future::Future;
+use hyper::{
+    service::{make_service_fn, service_fn},
+    Body, Method, Request, Response, StatusCode,
+};
+use libunftp::{
+    auth::{self, AnonymousUser},
+    storage::StorageBackend,
+    Server,
+};
 use prometheus::{Encoder, TextEncoder};
 use slog::*;
-use std::path::PathBuf;
-use std::process;
-use tokio::runtime::Runtime as TokioRuntime;
+use tokio_compat::runtime::Runtime as TokioRuntime;
 
 #[cfg(feature = "pam")]
 use libunftp::auth::pam;
@@ -103,7 +106,7 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<An
                 .with_username_placeholder("{USER}".to_string())
                 .with_password_placeholder("{PASS}".to_string())
                 .with_url(String::from(url))
-                .with_method(Method::from_str(method).map_err(|e| format!("error creating REST auth: {}", e))?)
+                .with_method(hyper12::Method::from_str(method).map_err(|e| format!("error creating REST auth: {}", e))?)
                 .with_body(String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or("")))
                 .with_selector(String::from(selector))
                 .with_regex(String::from(regex))
@@ -115,7 +118,7 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<An
     }
 }
 
-fn metrics_service(req: Request<Body>) -> Box<dyn Future<Item = Response<Body>, Error = hyper::Error> + Send> {
+async fn metrics_service(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
     let mut response = Response::new(Body::empty());
     match (req.method(), req.uri().path()) {
         (&Method::GET, "/metrics") => {
@@ -126,7 +129,7 @@ fn metrics_service(req: Request<Body>) -> Box<dyn Future<Item = Response<Body>, 
         }
     }
 
-    Box::new(future::ok(response))
+    Ok(response)
 }
 
 fn gather_metrics() -> Vec<u8> {
@@ -183,7 +186,7 @@ fn start_ftp_with_storage<S>(
 ) -> Result<(), String>
 where
     S: StorageBackend<AnonymousUser> + Send + Sync + 'static,
-    S::File: tokio::io::AsyncRead + Send,
+    S::File: tokio01::io::AsyncRead + Send,
     S::Metadata: Sync + Send,
 {
     let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());
@@ -256,20 +259,24 @@ where
 }
 
 // starts an HTTP server and exports Prometheus metrics.
-fn start_http(log: &Logger, arg_matches: &ArgMatches, runtime: &mut TokioRuntime) -> Result<(), String> {
-    if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDR) {
-        let http_addr = addr
-            .parse()
-            .map_err(|e| format!("unable to parse HTTP address {}: {}", addr, e))?;
+async fn start_http(log: &Logger, bind_addr: &str) -> Result<(), String> {
+    let http_addr = bind_addr
+        .parse()
+        .map_err(|e| format!("unable to parse HTTP address {}: {}", bind_addr, e))?;
 
-        let http_log = log.clone();
+    let make_svc = make_service_fn(|_conn| {
+        async {
+            // service_fn converts our function into a `Service`
+            Ok::<_, hyper::Error>(service_fn(metrics_service))
+        }
+    });
 
-        let http_server = hyper::Server::bind(&http_addr)
-            .serve(|| service_fn(metrics_service))
-            .map_err(move |e| error!(http_log, "HTTP Server error: {}", e));
+    let http_server = hyper::Server::bind(&http_addr).serve(make_svc);
 
-        info!(log, "Starting Prometheus {} exporter.", app::NAME; "address" => &http_addr);
-        let _http_thread = runtime.spawn(http_server);
+    info!(log, "Starting Prometheus {} exporter.", app::NAME; "address" => &http_addr);
+
+    if let Err(e) = http_server.await {
+        error!(log, "HTTP Server error: {}", e)
     }
     Ok(())
 }
@@ -308,14 +315,23 @@ fn run(arg_matches: ArgMatches) -> Result<(), String> {
     "version" => app::VERSION,
     "libunftp-version" => app::libunftp_version(),
     "address" => &addr,
-    "home" => home_dir.clone(),
+    "home" => home_dir,
     "auth-type" => auth_type,
     "sbe-type" => sbe_type,
     );
 
     let mut runtime = TokioRuntime::new().unwrap();
 
-    start_http(&log, &arg_matches, &mut runtime)?;
+    if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDR) {
+        let addr = String::from(addr);
+        let log = log.clone();
+        runtime.spawn_std(async move {
+            if let Err(e) = start_http(&log, &*addr).await {
+                error!(log, "HTTP Server error: {}", e)
+            }
+        });
+    }
+
     start_ftp(&log, &arg_matches, &mut runtime)?;
     runtime.shutdown_on_idle().wait().unwrap();
 
