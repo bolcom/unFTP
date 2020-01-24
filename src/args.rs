@@ -59,7 +59,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .long("bind-address")
                 .value_name("HOST_PORT")
                 .help("Sets the host and port to listen on for FTP control connections")
-                .env("UNFTP_ADDRESS")
+                .env("UNFTP_BIND_ADDRESS")
                 .takes_value(true)
                 .default_value("0.0.0.0:2121"),
         )
@@ -68,7 +68,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .long("root-dir")
                 .value_name("PATH")
                 .help("Sets the FTP root directory")
-                .env("UNFTP_ROOT")
+                .env("UNFTP_ROOT_DIR")
                 .takes_value(true)
                 .default_value(tmp_dir),
         )
@@ -77,7 +77,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .long("ftps-certs-file")
                 .value_name("PEM_FILE")
                 .help("Sets the path the the certificates used for TLS security")
-                .env("UNFTP_CERTS_FILE")
+                .env("UNFTP_FTPS_CERTS_FILE")
                 .takes_value(true),
         )
         .arg(
@@ -85,7 +85,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .long("ftps-key-file")
                 .value_name("PEM_FILE")
                 .help("Sets the path to the private key file used for TLS security")
-                .env("UNFTP_CERTS_FILE")
+                .env("UNFTP_FTPS_KEY_FILE")
                 .takes_value(true),
         )
         .arg(
@@ -117,7 +117,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .long("bind-address-http")
                 .value_name("HOST_PORT")
                 .help("Sets the host and port for the HTTP server used by prometheus metrics collection")
-                .env("UNFTP_HTTP_ADDRESS")
+                .env("UNFTP_BIND_ADDRESS_HTTP")
                 .takes_value(true)
                 .default_value("0.0.0.0:8080"),
         )
@@ -126,7 +126,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .long("passive-ports")
                 .value_name("PORT_RANGE")
                 .help("Sets the port range for data ports.")
-                .env("UNFTP_PASV_PORT_RANGE")
+                .env("UNFTP_PASSIVE_PORTS")
                 .takes_value(true)
                 .default_value("49152-65535"),
         )
@@ -137,7 +137,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .help("The type of authorization to use")
                 .possible_values(&AuthType::variants())
                 //.case_insensitive(true)
-                .env("UNFTP_AUTH_REST_URL")
+                .env("UNFTP_AUTH_TYPE")
                 .takes_value(true)
                 .default_value("anonymous"),
         )
@@ -146,7 +146,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .long("auth-pam-service")
                 .value_name("NAME")
                 .help("The name of the PAM service")
-                .env("UNFTP_PAM_SERVICE")
+                .env("UNFTP_AUTH_PAM_SERVICE")
                 .takes_value(true),
         )
         .arg(
@@ -205,7 +205,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .long("sbe-gcs-bucket")
                 .value_name("BUCKET")
                 .help("The bucket to use for the Google Cloud Storage backend")
-                .env("UNFTP_GCS_BUCKET")
+                .env("UNFTP_SBE_GCS_BUCKET")
                 .takes_value(true),
         )
         .arg(
@@ -213,7 +213,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .long("sbe-gcs-key-file")
                 .value_name("KEY_FILE")
                 .help("The JSON file that contains the service account key for access to Google Cloud Storage.")
-                .env("UNFTP_GCS_KEY_FILE")
+                .env("UNFTP_SBE_GCS_KEY_FILE")
                 .takes_value(true),
         )
         .arg(
