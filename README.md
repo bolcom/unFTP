@@ -18,7 +18,7 @@ With unFTP, you can present RFC compliant FTP to the outside world while freeing
 
 ## Prerequisites
 
-You'll need [Rust](https://rust-lang.org) 1.37 (including `cargo`) or higher to build unFTP.
+You'll need [Rust](https://rust-lang.org) 1.40 (including `cargo`) or higher to build unFTP.
 There are no runtime dependencies besides the OS and libc.
 
 Run `make help` to see an overview of the supplied *make* targets.
