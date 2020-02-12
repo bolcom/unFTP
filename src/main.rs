@@ -141,7 +141,9 @@ fn gather_metrics() -> Vec<u8> {
 }
 
 // Creates the filesystem storage back-end
-fn fs_storage_backend(m: &clap::ArgMatches) -> Box<dyn (Fn() -> libunftp::storage::filesystem::Filesystem) + Send> {
+fn fs_storage_backend(
+    m: &clap::ArgMatches,
+) -> Box<dyn (Fn() -> libunftp::storage::filesystem::Filesystem) + Send + Sync> {
     let p: PathBuf = m.value_of(args::ROOT_DIR).unwrap().into();
     Box::new(move || libunftp::storage::filesystem::Filesystem::new(p.clone()))
 }
@@ -149,7 +151,7 @@ fn fs_storage_backend(m: &clap::ArgMatches) -> Box<dyn (Fn() -> libunftp::storag
 // Creates the GCS storage back-end
 fn gcs_storage_backend(
     m: &clap::ArgMatches,
-) -> Result<Box<dyn (Fn() -> libunftp::storage::cloud_storage::CloudStorage) + Send>, String> {
+) -> Result<Box<dyn (Fn() -> libunftp::storage::cloud_storage::CloudStorage) + Send + Sync>, String> {
     let b: String = m
         .value_of(args::GCS_BUCKET)
         .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_BUCKET))?
@@ -181,12 +183,12 @@ fn start_ftp(log: &Logger, m: &clap::ArgMatches, runtime: &mut TokioRuntime) -> 
 fn start_ftp_with_storage<S>(
     log: &Logger,
     arg_matches: &ArgMatches,
-    storage_backend: Box<dyn (Fn() -> S) + Send>,
+    storage_backend: Box<dyn (Fn() -> S) + Send + Sync>,
     runtime: &mut TokioRuntime,
 ) -> Result<(), String>
 where
     S: StorageBackend<AnonymousUser> + Send + Sync + 'static,
-    S::File: tokio01::io::AsyncRead + Send,
+    S::File: libunftp::storage::AsAsyncReads + Send + Sync,
     S::Metadata: Sync + Send,
 {
     let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());
@@ -254,7 +256,7 @@ where
         }
     };
 
-    runtime.spawn(server.listener(&addr));
+    runtime.spawn_std(server.listener(addr));
     Ok(())
 }
 
