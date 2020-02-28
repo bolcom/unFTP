@@ -711,7 +711,7 @@ dependencies = [
 [[package]]
 name = "libunftp"
 version = "0.5.1"
-source = "git+https://github.com/bolcom/libunftp?branch=hannes/tokio-compat#d3995499aec10f40845bcbc8f53a363f3e2b3d59"
+source = "git+https://github.com/bolcom/libunftp#af052ea4c6fa7a6b36a40e3625f8acf7e1b21aa0"
 dependencies = [
  "async-trait 0.1.24 (registry+https://github.com/rust-lang/crates.io-index)",
  "bytes 0.4.12 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -736,7 +736,7 @@ dependencies = [
  "serde_json 1.0.40 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio 0.1.22 (registry+https://github.com/rust-lang/crates.io-index)",
  "tokio 0.2.6 (registry+https://github.com/rust-lang/crates.io-index)",
- "tokio-util 0.2.0 (git+https://github.com/bolcom/libunftp?branch=hannes/tokio-compat)",
+ "tokio-util 0.2.0 (git+https://github.com/bolcom/libunftp)",
  "url 1.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "uuid 0.7.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "yup-oauth2 3.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1822,7 +1822,7 @@ dependencies = [
 [[package]]
 name = "tokio-util"
 version = "0.2.0"
-source = "git+https://github.com/bolcom/libunftp?branch=hannes/tokio-compat#d3995499aec10f40845bcbc8f53a363f3e2b3d59"
+source = "git+https://github.com/bolcom/libunftp#af052ea4c6fa7a6b36a40e3625f8acf7e1b21aa0"
 dependencies = [
  "bytes 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures-core 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1877,7 +1877,7 @@ dependencies = [
  "hyper 0.12.35 (registry+https://github.com/rust-lang/crates.io-index)",
  "hyper 0.13.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "libunftp 0.5.1 (git+https://github.com/bolcom/libunftp?branch=hannes/tokio-compat)",
+ "libunftp 0.5.1 (git+https://github.com/bolcom/libunftp)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "prometheus 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "r2d2 0.8.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -2187,7 +2187,7 @@ dependencies = [
 "checksum lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 "checksum libc 0.2.65 (registry+https://github.com/rust-lang/crates.io-index)" = "1a31a0627fdf1f6a39ec0dd577e101440b7db22672c0901fe00a9a6fbb5c24e8"
 "checksum libgit2-sys 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)" = "a30f8637eb59616ee3b8a00f6adff781ee4ddd8343a615b8238de756060cc1b3"
-"checksum libunftp 0.5.1 (git+https://github.com/bolcom/libunftp?branch=hannes/tokio-compat)" = "<none>"
+"checksum libunftp 0.5.1 (git+https://github.com/bolcom/libunftp)" = "<none>"
 "checksum libz-sys 1.0.25 (registry+https://github.com/rust-lang/crates.io-index)" = "2eb5e43362e38e2bca2fd5f5134c4d4564a23a5c28e9b95411652021a8675ebe"
 "checksum lock_api 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ed946d4529956a20f2d63ebe1b69996d5a2137c91913fe3ebbeff957f5bca7ff"
 "checksum lock_api 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)" = "f8912e782533a93a167888781b836336a6ca5da6175c05944c86cf28c31104dc"
@@ -2304,7 +2304,7 @@ dependencies = [
 "checksum tokio-timer 0.2.12 (registry+https://github.com/rust-lang/crates.io-index)" = "1739638e364e558128461fc1ad84d997702c8e31c2e6b18fb99842268199e827"
 "checksum tokio-udp 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)" = "f02298505547f73e60f568359ef0d016d5acd6e830ab9bc7c4a5b3403440121b"
 "checksum tokio-uds 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)" = "037ffc3ba0e12a0ab4aca92e5234e0dedeb48fddf6ccd260f1f150a36a9f2445"
-"checksum tokio-util 0.2.0 (git+https://github.com/bolcom/libunftp?branch=hannes/tokio-compat)" = "<none>"
+"checksum tokio-util 0.2.0 (git+https://github.com/bolcom/libunftp)" = "<none>"
 "checksum tokio-util 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "571da51182ec208780505a32528fc5512a8fe1443ab960b3f2f3ef093cd16930"
 "checksum toml 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)" = "01d1404644c8b12b16bfcffa4322403a91a451584daaaa7c28d3152e6cbc98cf"
 "checksum tower-service 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e987b6bf443f4b5b3b6f38704195592cca41c5bb7aedd3c3693c7081f8289860"

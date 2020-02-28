@@ -61,6 +61,7 @@ fn make_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<Anonymo
         None | Some("anonymous") => Ok(make_anon_auth()),
         Some("pam") => make_pam_auth(m),
         Some("rest") => make_rest_auth(m),
+        Some("json") => make_json_auth(m),
         unkown_type => Err(format!("unknown auth type: {}", unkown_type.unwrap())),
     }
 }
@@ -116,6 +117,15 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<An
         }
         _ => Err("for auth type rest please specify all auth-rest-* options".to_string()),
     }
+}
+
+fn make_json_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync>, String> {
+    let path = m
+        .value_of(args::AUTH_JSON_PATH)
+        .ok_or_else(|| "please provide the json credentials file by specifying auth-json-path".to_string())?;
+
+    let authenticator = auth::jsonfile_auth::JsonFileAuthenticator::new(path).map_err(|e| e.to_string())?;
+    Ok(Arc::new(authenticator))
 }
 
 async fn metrics_service(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
