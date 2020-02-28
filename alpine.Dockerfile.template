@@ -10,6 +10,8 @@ RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --no-default-features --featur
 
 FROM alpine:latest
 
+RUN apk add lftp
+
 # we could also RUN 'apk add ca-certificates', but we prefer to be consistent with the -minimal image
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
