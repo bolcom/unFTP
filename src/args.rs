@@ -7,6 +7,7 @@ pub const AUTH_REST_METHOD: &str = "auth-rest-method";
 pub const AUTH_REST_REGEX: &str = "auth-rest-regex";
 pub const AUTH_REST_SELECTOR: &str = "auth-rest-selector";
 pub const AUTH_REST_URL: &str = "auth-rest-url";
+pub const AUTH_JSON_PATH: &str = "auth-json-path";
 pub const AUTH_TYPE: &str = "auth-type";
 pub const BIND_ADDRESS: &str = "bind-address";
 pub const FTPS_CERTS_FILE: &str = "ftps-certs-file";
@@ -29,7 +30,8 @@ arg_enum! {
     enum AuthType {
         anonymous,
         pam,
-        rest
+        rest,
+        json,
     }
 }
 
@@ -188,6 +190,14 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .value_name("REGEX")
                 .help("Regular expression to try match against value extracted via selector")
                 .env("UNFTP_AUTH_REST_REGEX")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name(AUTH_JSON_PATH)
+                .long("auth-json-path")
+                .value_name("PATH")
+                .help("The path to the json authentication file")
+                .env("UNFTP_AUTH_JSON_PATH")
                 .takes_value(true),
         )
         .arg(

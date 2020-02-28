@@ -18,7 +18,7 @@ readme = "README.md"
 
 [dependencies]
 #libunftp = "0.5.1"
-libunftp = { git="https://github.com/bolcom/libunftp", branch="hannes/tokio-compat"}
+libunftp = { git="https://github.com/bolcom/libunftp" }
 log = "0.4"
 env_logger = "0.6"
 redis = "0.9.0"
@@ -47,6 +47,7 @@ lazy_static = "1.3.0"
 pam = ["libunftp/pam"]
 cloud_storage = ["libunftp/cloud_storage"]
 rest = ["libunftp/rest"]
+jsonfile_auth = ["libunftp/jsonfile_auth"]
 
 # build everything by default to make sure build works
 default = ["rest", "cloud_storage", "pam"]
