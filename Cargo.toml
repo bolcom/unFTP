@@ -50,7 +50,7 @@ rest = ["libunftp/rest"]
 jsonfile_auth = ["libunftp/jsonfile_auth"]
 
 # build everything by default to make sure build works
-default = ["rest", "cloud_storage", "pam"]
+default = ["rest", "cloud_storage", "pam", "jsonfile_auth"]
 
 # features that are compatible with docker builds
 # pam is disabled in most docker images as it requires libc (consequently, cannot compile static either)
