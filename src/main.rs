@@ -90,42 +90,60 @@ fn make_pam_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<Ano
 
 // FIXME: add user support
 fn make_rest_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync>, String> {
-    match (
-        m.value_of(args::AUTH_REST_URL),
-        m.value_of(args::AUTH_REST_REGEX),
-        m.value_of(args::AUTH_REST_SELECTOR),
-        m.value_of(args::AUTH_REST_METHOD),
-    ) {
-        (Some(url), Some(regex), Some(selector), Some(method)) => {
-            if method.to_uppercase() != "GET" && m.value_of(args::AUTH_REST_BODY).is_none() {
-                return Err("REST authenticator error: no body provided for rest request".to_string());
+    #[cfg(not(feature = "rest"))]
+    {
+        let _ = m;
+        Err(format!("the rest authentication module was disabled at build time"))
+    }
+
+    #[cfg(feature = "rest")]
+    {
+        match (
+            m.value_of(args::AUTH_REST_URL),
+            m.value_of(args::AUTH_REST_REGEX),
+            m.value_of(args::AUTH_REST_SELECTOR),
+            m.value_of(args::AUTH_REST_METHOD),
+        ) {
+            (Some(url), Some(regex), Some(selector), Some(method)) => {
+                if method.to_uppercase() != "GET" && m.value_of(args::AUTH_REST_BODY).is_none() {
+                    return Err("REST authenticator error: no body provided for rest request".to_string());
+                }
+
+                log::info!("Using REST authenticator ({})", url);
+
+                let authenticator: auth::rest::RestAuthenticator = auth::rest::Builder::new()
+                    .with_username_placeholder("{USER}".to_string())
+                    .with_password_placeholder("{PASS}".to_string())
+                    .with_url(String::from(url))
+                    .with_method(hyper12::Method::from_str(method).map_err(|e| format!("error creating REST auth: {}", e))?)
+                    .with_body(String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or("")))
+                    .with_selector(String::from(selector))
+                    .with_regex(String::from(regex))
+                    .build();
+
+                Ok(Arc::new(authenticator))
             }
-
-            log::info!("Using REST authenticator ({})", url);
-
-            let authenticator: auth::rest::RestAuthenticator = auth::rest::Builder::new()
-                .with_username_placeholder("{USER}".to_string())
-                .with_password_placeholder("{PASS}".to_string())
-                .with_url(String::from(url))
-                .with_method(hyper12::Method::from_str(method).map_err(|e| format!("error creating REST auth: {}", e))?)
-                .with_body(String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or("")))
-                .with_selector(String::from(selector))
-                .with_regex(String::from(regex))
-                .build();
-
-            Ok(Arc::new(authenticator))
+            _ => Err("for auth type rest please specify all auth-rest-* options".to_string()),
         }
-        _ => Err("for auth type rest please specify all auth-rest-* options".to_string()),
     }
 }
 
 fn make_json_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync>, String> {
-    let path = m
-        .value_of(args::AUTH_JSON_PATH)
-        .ok_or_else(|| "please provide the json credentials file by specifying auth-json-path".to_string())?;
+    #[cfg(not(feature = "jsonfile_auth"))]
+    {
+        let _ = m;
+        Err(format!("the jsonfile authentication module was disabled at build time"))
+    }
 
-    let authenticator = auth::jsonfile_auth::JsonFileAuthenticator::new(path).map_err(|e| e.to_string())?;
-    Ok(Arc::new(authenticator))
+    #[cfg(feature = "jsonfile_auth")]
+    {
+        let path = m
+            .value_of(args::AUTH_JSON_PATH)
+            .ok_or_else(|| "please provide the json credentials file by specifying auth-json-path".to_string())?;
+
+        let authenticator = auth::jsonfile_auth::JsonFileAuthenticator::new(path).map_err(|e| e.to_string())?;
+        Ok(Arc::new(authenticator))
+    }
 }
 
 async fn metrics_service(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
