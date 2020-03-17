@@ -11,7 +11,7 @@ pub const AUTH_JSON_PATH: &str = "auth-json-path";
 pub const AUTH_TYPE: &str = "auth-type";
 pub const BIND_ADDRESS: &str = "bind-address";
 pub const FTPS_CERTS_FILE: &str = "ftps-certs-file";
-pub const FTPS_KEY_FILE: &str = "ftps-key-file";
+pub const FTPS_CERTS_PASSWORD: &str = "ftps-certs-password";
 pub const GCS_BUCKET: &str = "sbe-gcs-bucket";
 pub const GCS_KEY_FILE: &str = "sbe-gcs-key-file";
 pub const HTTP_BIND_ADDR: &str = "bind-address-http";
@@ -77,17 +77,17 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
         .arg(
             Arg::with_name(FTPS_CERTS_FILE)
                 .long("ftps-certs-file")
-                .value_name("PEM_FILE")
-                .help("Sets the path the the certificates used for TLS security")
+                .value_name("PKCS12_ARCHIVE")
+                .help("Sets the path the the certificates used for TLS security/FTPS")
                 .env("UNFTP_FTPS_CERTS_FILE")
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(FTPS_KEY_FILE)
-                .long("ftps-key-file")
-                .value_name("PEM_FILE")
-                .help("Sets the path to the private key file used for TLS security")
-                .env("UNFTP_FTPS_KEY_FILE")
+            Arg::with_name(FTPS_CERTS_PASSWORD)
+                .long("ftps-certs-password")
+                .value_name("PASSWORD")
+                .help("Sets password used to unlock the archive specified in ftps-certs-file")
+                .env("UNFTP_FTPS_CERTS_PASSWORD")
                 .takes_value(true),
         )
         .arg(

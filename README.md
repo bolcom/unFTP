@@ -6,20 +6,20 @@ When you need to FTP, but don't want to.
 
 ![logo](logo.png)
 
-unFTP is a FTP server written in [Rust](https://www.rust-lang.org) and built on top of [libunftp](https://github.com/bolcom/libunftp) and the [Tokio](https://tokio.rs) asynchronous run-time. It is **un**like your normal FTP server in that it provides:
+unFTP is a FTP(S) server written in [Rust](https://www.rust-lang.org) and built on top of [libunftp](https://github.com/bolcom/libunftp) and the [Tokio](https://tokio.rs) asynchronous run-time. It is **un**like your normal FTP server in that it provides:
 
-- Configurable Authentication (e.g. Anonymous, [PAM](https://en.wikipedia.org/wiki/Linux_PAM) or a REST service).
+- Configurable Authentication (e.g. Anonymous, [PAM](https://en.wikipedia.org/wiki/Linux_PAM) or a JSON file).
 - Configurable storage back-ends (e.g. [GCS](https://cloud.google.com/storage/) or filesystem)
 - Integration with [Prometheus](https://prometheus.io) for monitoring.
 
-With unFTP, you can present RFC compliant FTP to the outside world while freeing yourself to use modern APIs and techniques on the inside of your perimeter.
+With unFTP, you can present RFC compliant FTP(S) to the outside world while freeing yourself to use modern APIs and 
+techniques on the inside of your perimeter.
 
-**unFTP is in its early development stages and therefore not suitable for use in production yet.**
+**unFTP is still in development and therefore not suitable for use in production yet.**
 
 ## Prerequisites
 
-You'll need [Rust](https://rust-lang.org) 1.40 (including `cargo`) or higher to build unFTP.
-There are no runtime dependencies besides the OS and libc.
+You'll need [Rust](https://rust-lang.org) 1.41 (including `cargo`) or higher to build unFTP.
 
 Run `make help` to see an overview of the supplied *make* targets.
 
@@ -59,11 +59,14 @@ openssl req \
    -days 3650 \
    -subj '/CN=www.myunftp.domain/O=My Company Name LTD./C=NL'
 
+# Put the cert and keypair in a DER-formatted PKCS #12 archive
+openssl pkcs12 -export -out unftp.pfx -inkey unftp.key -in unftp.crt
+
 # Run, pointing to cert and key
 cargo run -- \
   --root-dir=/home/unftp/data \
-  --ftps-certs-file=/home/unftp/unftp.crt \
-  --ftps-key-file=/home/unftp/unftp.key
+  --ftps-certs-file=/home/unftp/unftp.pfx \
+  --ftps-certs-password=thesecret
 ```
 
 Enabling the [Prometheus](https://prometheus.io) exporter, binding to port 8080:
@@ -115,24 +118,8 @@ make docker-run
 unFTP offers optional features in its Cargo.toml:
 
 - `pam`: enables the PAM authentication module
-- `rest`: enables the REST authentication module
+- `jsonfile_auth`: enables the JSON file authentication module
 - `cloud_storage`: enables the Google Cloud Storage (GCS) storage backend
-
-### Rest authentication
-
-When enabled this feature allows authentication against a remote REST service.
-
-It's a very generic REST client that fetches the endpoint specified in `--auth-rest-url` with the method specified in `--auth-rest-method`. *WARNING*: https is not yet supported.
-
-If necessary, you can specify a request body in `--auth-rest-body`.
-
-The special placeholders `{USER}` and `{PASS}` are replaced by the (clear-text) credentials provided by the user in the request url and body.
-
-The response body is parsed as JSON. From here, a [JSON Pointer (RFC6901)](https://tools.ietf.org/html/rfc6901) compliant selector specified via `--auth-rest-selector` can be used to extract a value. For more info and examples, consult `serde_json`'s [manual](https://docs.serde.rs/serde_json/value/enum.Value.html#method.pointer).
-
-The extracted value is matched against a regular expression specified via `--auth-rest-regex`. See [their documentation](https://crates.io/crates/regex) for more details.
-
-If the regular expression matches, the user is authenticated. In any other case (lookup failure, timeout, non-matching regex) the authentication is refused.
 
 ## License
 

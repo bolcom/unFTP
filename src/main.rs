@@ -263,18 +263,18 @@ where
     // Setup FTPS
     server = match (
         arg_matches.value_of(args::FTPS_CERTS_FILE),
-        arg_matches.value_of(args::FTPS_KEY_FILE),
+        arg_matches.value_of(args::FTPS_CERTS_PASSWORD),
     ) {
-        (Some(certs_file), Some(key_file)) => {
+        (Some(certs_file), Some(certs_password)) => {
             info!(log, "FTPS enabled");
-            server.certs(certs_file, key_file)
+            server.with_ftps(certs_file, certs_password)
         }
         (Some(_), None) | (None, Some(_)) => {
             warn!(
                 log,
                 "Need to set both {} and {}. FTPS still disabled.",
                 args::FTPS_CERTS_FILE,
-                args::FTPS_KEY_FILE
+                args::FTPS_CERTS_PASSWORD
             );
             server
         }
@@ -350,7 +350,10 @@ fn run(arg_matches: ArgMatches) -> Result<(), String> {
     "sbe-type" => sbe_type,
     );
 
-    let mut runtime = TokioRuntime::new().unwrap();
+    let mut runtime= tokio_compat::runtime::Builder::new()
+         .core_threads(4)
+         .build()
+         .unwrap();
 
     if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDR) {
         let addr = String::from(addr);
