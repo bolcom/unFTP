@@ -1,4 +1,4 @@
-RUST_VERSION=1.41.1
+RUST_VERSION=1.42
 DOCKER_TAG=$(shell git describe --tags)
 DOCKER_TEMPLATES:=$(wildcard *.Dockerfile.template)
 DOCKER_FILES=$(DOCKER_TEMPLATES:%.template=%)
@@ -43,13 +43,13 @@ docker-run-%: docker-image-% # Run the % docker image in the foreground
 
 ##
 .PHONY: docker-image
-docker-image: alpine.Dockerfile # Build the default docker image
+docker-image: muslrust.Dockerfile # Build the default docker image
 	cargo clean
-	docker build -t bolcom/unftp:alpine-$(DOCKER_TAG) -f alpine.Dockerfile .
+	docker build -t bolcom/unftp:muslrust-$(DOCKER_TAG) -f muslrust.Dockerfile .
 
 .PHONY: docker-run
 docker-run: docker-image # Run the default docker image in the foreground
-	docker run -ti --rm --net host --init bolcom/unftp:$(DOCKER_TAG)
+	docker run -ti --rm --net host --init bolcom/unftp:muslrust-$(DOCKER_TAG)
 
 .PHONY: docker-list
 docker-list: # List the available docker images
