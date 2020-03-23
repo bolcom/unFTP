@@ -1,6 +1,6 @@
 [package]
 name = "unftp"
-version = "0.7.0"
+version = "0.8.0"
 authors = [
     "Agoston Horvath <ahorvath@bol.com>",
     "Dávid Kosztka <dkosztka@bol.com>",
@@ -17,9 +17,7 @@ license = "Apache-2.0"
 readme = "README.md"
 
 [dependencies]
-#libunftp = "0.5.1"
-libunftp = { git="https://github.com/bolcom/libunftp" }
-#libunftp = { path = "../libunftp" }
+libunftp = "0.6.0"
 log = "0.4"
 env_logger = "0.6"
 redis = "0.9.0"
@@ -32,8 +30,6 @@ slog-term = "2.4.0"
 slog-async = "2.3.0"
 slog-stdlog = "4.0.0"
 slog-scope = "4.0.0"
-# Hyper 12 is only needed because the auth plugin needs a type from it
-hyper12 = { package="hyper", version = "0.12.25"}
 hyper = "0.13"
 http = "0.1"
 prometheus = "0.7"

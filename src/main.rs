@@ -115,7 +115,7 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<An
                     .with_username_placeholder("{USER}".to_string())
                     .with_password_placeholder("{PASS}".to_string())
                     .with_url(String::from(url))
-                    .with_method(hyper12::Method::from_str(method).map_err(|e| format!("error creating REST auth: {}", e))?)
+                    .with_method(hyper::Method::from_str(method).map_err(|e| format!("error creating REST auth: {}", e))?)
                     .with_body(String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or("")))
                     .with_selector(String::from(selector))
                     .with_regex(String::from(regex))
