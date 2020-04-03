@@ -9,7 +9,6 @@
 #ENV RUSTFLAGS="-C target-feature=+crt-static"
 #RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --no-default-features --features docker --release --target=x86_64-unknown-linux-musl
 
-
 FROM clux/muslrust:%%RUST_VERSION%% AS builder
 WORKDIR /usr/src/unftp
 COPY . .
@@ -17,17 +16,11 @@ ENV RUSTFLAGS="-C target-feature=+crt-static"
 RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --no-default-features --features docker --release
 
 
-FROM alpine:latest
+FROM scratch
 
-# we could also RUN 'apk add ca-certificates', but we prefer to be consistent with the -minimal image
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 # run as user for security
-RUN mkdir /unftp
-RUN addgroup -S unftp && adduser -S unftp -G unftp
-COPY --from=builder /usr/src/unftp/target/x86_64-unknown-linux-musl/release/unftp /unftp
-RUN chown -R unftp:unftp /unftp
-
-WORKDIR /unftp
-USER unftp
-CMD ["/unftp/unftp"]
+COPY --chown=1010:1010 --from=builder /usr/src/unftp/target/x86_64-unknown-linux-musl/release/unftp /unftp
+USER 1010
+CMD ["/unftp"]

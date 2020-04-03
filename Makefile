@@ -1,4 +1,4 @@
-RUST_VERSION=1.42
+RUST_VERSION=stable
 DOCKER_TAG=$(shell git describe --tags)
 DOCKER_TEMPLATES:=$(wildcard *.Dockerfile.template)
 DOCKER_FILES=$(DOCKER_TEMPLATES:%.template=%)
@@ -16,10 +16,10 @@ help: # Show available `make` commands
 				for (i=1; i<=n; ++i) { \
 					$$0 = line; \
 					gsub(/%/, docker_images[i]); \
-					printf("%-20s %s\n", $$1, $$2) \
+					printf("%-25s %s\n", $$1, $$2) \
 				} \
 			} else { \
-				printf("%-20s %s\n", $$1, $$2) \
+				printf("%-25s %s\n", $$1, $$2) \
 			} \
 		} \
 	}\
@@ -40,16 +40,6 @@ docker-image-%: %.Dockerfile # Build the % docker image
 .PHONY: docker-run-%
 docker-run-%: docker-image-% # Run the % docker image in the foreground
 	@echo docker run -ti --rm --net host --init $@
-
-##
-.PHONY: docker-image
-docker-image: muslrust.Dockerfile # Build the default docker image
-	cargo clean
-	docker build -t bolcom/unftp:muslrust-$(DOCKER_TAG) -f muslrust.Dockerfile .
-
-.PHONY: docker-run
-docker-run: docker-image # Run the default docker image in the foreground
-	docker run -ti --rm --net host --init bolcom/unftp:muslrust-$(DOCKER_TAG)
 
 .PHONY: docker-list
 docker-list: # List the available docker images

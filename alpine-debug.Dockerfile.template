@@ -1,15 +1,15 @@
 # we switched to muslrust from rust:slim because it has built-in support for static compilation of libssl
-# FIXME: make version number a makefile setting
-FROM clux/muslrust:1.42.0-stable AS builder
+FROM clux/muslrust:%%RUST_VERSION%% AS builder
 WORKDIR /usr/src/unftp
 COPY . .
 ENV RUSTFLAGS="-C target-feature=+crt-static"
-RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --no-default-features --features docker --release
+RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --no-default-features --features docker
 
 FROM alpine:latest
 
 # for devel only
 RUN apk add lftp
+RUN apk add --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing curlftpfs
 
 # we could also RUN 'apk add ca-certificates', but we prefer to be consistent with the -minimal image
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
@@ -17,7 +17,7 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certifi
 # run as user for security
 RUN mkdir /unftp
 RUN addgroup -S unftp && adduser -S unftp -G unftp
-COPY --from=builder /usr/src/unftp/target/x86_64-unknown-linux-musl/release/unftp /unftp
+COPY --from=builder /usr/src/unftp/target/x86_64-unknown-linux-musl/debug/unftp /unftp
 RUN chown -R unftp:unftp /unftp
 
 WORKDIR /unftp
