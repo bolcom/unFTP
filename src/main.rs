@@ -111,7 +111,7 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<An
 
                 log::info!("Using REST authenticator ({})", url);
 
-                let authenticator: auth::rest::RestAuthenticator = auth::rest::Builder::new()
+                let authenticator: auth::rest::RestAuthenticator = match auth::rest::Builder::new()
                     .with_username_placeholder("{USER}".to_string())
                     .with_password_placeholder("{PASS}".to_string())
                     .with_url(String::from(url))
@@ -119,7 +119,10 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<An
                     .with_body(String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or("")))
                     .with_selector(String::from(selector))
                     .with_regex(String::from(regex))
-                    .build();
+                    .build() {
+                        Ok(res) => res,
+                        Err(e) => return Err(format!("Unable to create RestAuthenticator: {}", e)),
+                    };
 
                 Ok(Arc::new(authenticator))
             }
