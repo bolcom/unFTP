@@ -115,14 +115,17 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<An
                     .with_username_placeholder("{USER}".to_string())
                     .with_password_placeholder("{PASS}".to_string())
                     .with_url(String::from(url))
-                    .with_method(hyper::Method::from_str(method).map_err(|e| format!("error creating REST auth: {}", e))?)
+                    .with_method(
+                        hyper::Method::from_str(method).map_err(|e| format!("error creating REST auth: {}", e))?,
+                    )
                     .with_body(String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or("")))
                     .with_selector(String::from(selector))
                     .with_regex(String::from(regex))
-                    .build() {
-                        Ok(res) => res,
-                        Err(e) => return Err(format!("Unable to create RestAuthenticator: {}", e)),
-                    };
+                    .build()
+                {
+                    Ok(res) => res,
+                    Err(e) => return Err(format!("Unable to create RestAuthenticator: {}", e)),
+                };
 
                 Ok(Arc::new(authenticator))
             }
@@ -182,6 +185,7 @@ fn fs_storage_backend(
 // Creates the GCS storage back-end
 fn gcs_storage_backend(
     m: &clap::ArgMatches,
+    runtime: &mut TokioRuntime,
 ) -> Result<Box<dyn (Fn() -> libunftp::storage::cloud_storage::CloudStorage) + Send + Sync>, String> {
     let b: String = m
         .value_of(args::GCS_BUCKET)
@@ -191,13 +195,14 @@ fn gcs_storage_backend(
         .value_of(args::GCS_KEY_FILE)
         .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_KEY_FILE))?
         .into();
+
+    let service_account_key = runtime
+        .block_on_std(yup_oauth2::read_service_account_key(&p))
+        .map_err(|e| format!("could not load GCS back-end key file: {}", e))
+        .unwrap();
+
     Ok(Box::new(move || {
-        libunftp::storage::cloud_storage::CloudStorage::new(
-            b.clone(),
-            yup_oauth2::service_account_key_from_file(p.clone())
-                .map_err(|e| format!("could not load GCS back-end key file: {}", e))
-                .unwrap(),
-        )
+        libunftp::storage::cloud_storage::CloudStorage::new(b.clone(), service_account_key.clone())
     }))
 }
 
@@ -205,7 +210,7 @@ fn gcs_storage_backend(
 fn start_ftp(log: &Logger, m: &clap::ArgMatches, runtime: &mut TokioRuntime) -> Result<(), String> {
     match m.value_of(args::STORAGE_BACKEND_TYPE) {
         None | Some("filesystem") => start_ftp_with_storage(&log, m, fs_storage_backend(m), runtime),
-        Some("gcs") => start_ftp_with_storage(&log, m, gcs_storage_backend(m)?, runtime),
+        Some("gcs") => start_ftp_with_storage(&log, m, gcs_storage_backend(m, runtime)?, runtime),
         Some(x) => Err(format!("unknown storage back-end type {}", x)),
     }
 }
@@ -353,10 +358,7 @@ fn run(arg_matches: ArgMatches) -> Result<(), String> {
     "sbe-type" => sbe_type,
     );
 
-    let mut runtime= tokio_compat::runtime::Builder::new()
-         .core_threads(4)
-         .build()
-         .unwrap();
+    let mut runtime = tokio_compat::runtime::Builder::new().core_threads(4).build().unwrap();
 
     if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDR) {
         let addr = String::from(addr);
