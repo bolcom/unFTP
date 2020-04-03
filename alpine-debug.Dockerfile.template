@@ -10,16 +10,14 @@ FROM alpine:latest
 # for devel only
 RUN apk add lftp
 RUN apk add --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing curlftpfs
+RUN apk add --repository http://dl-cdn.alpinelinux.org/alpine/edge/main fuse
 
 # we could also RUN 'apk add ca-certificates', but we prefer to be consistent with the -minimal image
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
-# run as user for security
+# no security measures, run as root
+USER root
 RUN mkdir /unftp
-RUN addgroup -S unftp && adduser -S unftp -G unftp
 COPY --from=builder /usr/src/unftp/target/x86_64-unknown-linux-musl/debug/unftp /unftp
-RUN chown -R unftp:unftp /unftp
-
 WORKDIR /unftp
-USER unftp
 CMD ["/unftp/unftp"]
