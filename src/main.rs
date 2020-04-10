@@ -17,7 +17,6 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use clap::ArgMatches;
-use futures01::future::Future;
 use hyper::{
     service::{make_service_fn, service_fn},
     Body, Method, Request, Response, StatusCode,
@@ -29,7 +28,8 @@ use libunftp::{
 };
 use prometheus::{Encoder, TextEncoder};
 use slog::*;
-use tokio_compat::runtime::Runtime as TokioRuntime;
+use tokio::runtime::Runtime;
+use tokio::signal::unix::{signal, SignalKind};
 
 #[cfg(feature = "pam")]
 use libunftp::auth::pam;
@@ -185,7 +185,6 @@ fn fs_storage_backend(
 // Creates the GCS storage back-end
 fn gcs_storage_backend(
     m: &clap::ArgMatches,
-    runtime: &mut TokioRuntime,
 ) -> Result<Box<dyn (Fn() -> libunftp::storage::cloud_storage::CloudStorage) + Send + Sync>, String> {
     let b: String = m
         .value_of(args::GCS_BUCKET)
@@ -196,8 +195,7 @@ fn gcs_storage_backend(
         .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_KEY_FILE))?
         .into();
 
-    let service_account_key = runtime
-        .block_on_std(yup_oauth2::read_service_account_key(&p))
+    let service_account_key = futures::executor::block_on(yup_oauth2::read_service_account_key(&p))
         .map_err(|e| format!("could not load GCS back-end key file: {}", e))
         .unwrap();
 
@@ -207,10 +205,10 @@ fn gcs_storage_backend(
 }
 
 // starts the FTP server as a Tokio task.
-fn start_ftp(log: &Logger, m: &clap::ArgMatches, runtime: &mut TokioRuntime) -> Result<(), String> {
+fn start_ftp(log: &Logger, m: &clap::ArgMatches) -> Result<(), String> {
     match m.value_of(args::STORAGE_BACKEND_TYPE) {
-        None | Some("filesystem") => start_ftp_with_storage(&log, m, fs_storage_backend(m), runtime),
-        Some("gcs") => start_ftp_with_storage(&log, m, gcs_storage_backend(m, runtime)?, runtime),
+        None | Some("filesystem") => start_ftp_with_storage(&log, m, fs_storage_backend(m)),
+        Some("gcs") => start_ftp_with_storage(&log, m, gcs_storage_backend(m)?),
         Some(x) => Err(format!("unknown storage back-end type {}", x)),
     }
 }
@@ -220,7 +218,6 @@ fn start_ftp_with_storage<S>(
     log: &Logger,
     arg_matches: &ArgMatches,
     storage_backend: Box<dyn (Fn() -> S) + Send + Sync>,
-    runtime: &mut TokioRuntime,
 ) -> Result<(), String>
 where
     S: StorageBackend<AnonymousUser> + Send + Sync + 'static,
@@ -292,7 +289,7 @@ where
         }
     };
 
-    runtime.spawn_std(server.listener(addr));
+    tokio::spawn(server.listener(addr));
     Ok(())
 }
 
@@ -316,6 +313,25 @@ async fn start_http(log: &Logger, bind_addr: &str) -> Result<(), String> {
     if let Err(e) = http_server.await {
         error!(log, "HTTP Server error: {}", e)
     }
+    Ok(())
+}
+
+async fn main_task<'a>(arg_matches: ArgMatches<'a>, log: &Logger) -> Result<(), String> {
+    if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDR) {
+        let addr = String::from(addr);
+        let log = log.clone();
+        tokio::spawn(async move {
+            if let Err(e) = start_http(&log, &*addr).await {
+                error!(log, "HTTP Server error: {}", e)
+            }
+        });
+    }
+
+    start_ftp(&log, &arg_matches)?;
+
+    let mut stream = signal(SignalKind::terminate()).map_err(|e| format!("Could not listen for signals: {}", e))?;
+    stream.recv().await;
+    info!(log, "Received signal SIGTERM, shutting down...");
     Ok(())
 }
 
@@ -358,22 +374,8 @@ fn run(arg_matches: ArgMatches) -> Result<(), String> {
     "sbe-type" => sbe_type,
     );
 
-    let mut runtime = tokio_compat::runtime::Builder::new().core_threads(4).build().unwrap();
-
-    if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDR) {
-        let addr = String::from(addr);
-        let log = log.clone();
-        runtime.spawn_std(async move {
-            if let Err(e) = start_http(&log, &*addr).await {
-                error!(log, "HTTP Server error: {}", e)
-            }
-        });
-    }
-
-    start_ftp(&log, &arg_matches, &mut runtime)?;
-    runtime.shutdown_on_idle().wait().unwrap();
-
-    Ok(())
+    let mut runtime = Runtime::new().map_err(|e| format!("could not construct runtime: {}", e))?;
+    runtime.block_on(main_task(arg_matches, &log))
 }
 
 fn main() {
