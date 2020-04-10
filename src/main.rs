@@ -31,7 +31,7 @@ use slog::*;
 use tokio::runtime::Runtime;
 use tokio::signal::unix::{signal, SignalKind};
 
-#[cfg(feature = "pam")]
+#[cfg(feature = "pam_auth")]
 use libunftp::auth::pam;
 
 fn redis_logger(m: &clap::ArgMatches) -> Result<Option<redislog::Logger>, String> {
@@ -72,13 +72,13 @@ fn make_anon_auth() -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync>
 }
 
 fn make_pam_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync>, String> {
-    #[cfg(not(feature = "pam"))]
+    #[cfg(not(feature = "pam_auth"))]
     {
         let _ = m;
         Err(format!("the pam authentication module was disabled at build time"))
     }
 
-    #[cfg(feature = "pam")]
+    #[cfg(feature = "pam_auth")]
     {
         if let Some(service) = m.value_of(args::AUTH_PAM_SERVICE) {
             log::info!("Using pam authenticator");
@@ -90,13 +90,13 @@ fn make_pam_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<Ano
 
 // FIXME: add user support
 fn make_rest_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync>, String> {
-    #[cfg(not(feature = "rest"))]
+    #[cfg(not(feature = "rest_auth"))]
     {
         let _ = m;
         Err(format!("the rest authentication module was disabled at build time"))
     }
 
-    #[cfg(feature = "rest")]
+    #[cfg(feature = "rest_auth")]
     {
         match (
             m.value_of(args::AUTH_REST_URL),
@@ -147,7 +147,7 @@ fn make_json_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<An
             .value_of(args::AUTH_JSON_PATH)
             .ok_or_else(|| "please provide the json credentials file by specifying auth-json-path".to_string())?;
 
-        let authenticator = auth::jsonfile_auth::JsonFileAuthenticator::new(path).map_err(|e| e.to_string())?;
+        let authenticator = auth::jsonfile::JsonFileAuthenticator::new(path).map_err(|e| e.to_string())?;
         Ok(Arc::new(authenticator))
     }
 }
@@ -221,7 +221,7 @@ fn start_ftp_with_storage<S>(
 ) -> Result<(), String>
 where
     S: StorageBackend<AnonymousUser> + Send + Sync + 'static,
-    S::File: libunftp::storage::AsAsyncReads + Send + Sync,
+    S::File: tokio::io::AsyncRead + Send + Sync,
     S::Metadata: Sync + Send,
 {
     let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());
