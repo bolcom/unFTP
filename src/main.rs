@@ -263,7 +263,7 @@ where
         .authenticator(make_auth(&arg_matches)?)
         .passive_ports(start_port..end_port)
         .idle_session_timeout(idle_timeout)
-        .with_metrics();
+        .metrics();
 
     // Setup FTPS
     server = match (
@@ -272,7 +272,7 @@ where
     ) {
         (Some(certs_file), Some(certs_password)) => {
             info!(log, "FTPS enabled");
-            server.with_ftps(certs_file, certs_password)
+            server.ftps(certs_file, certs_password)
         }
         (Some(_), None) | (None, Some(_)) => {
             warn!(
@@ -289,7 +289,7 @@ where
         }
     };
 
-    tokio::spawn(server.listener(addr));
+    tokio::spawn(server.listen(addr));
     Ok(())
 }
 
@@ -383,7 +383,7 @@ fn main() {
     let tmp_dir = tmp_dir.as_path().to_str().unwrap();
     let arg_matches = args::clap_app(tmp_dir).get_matches();
     if let Err(e) = run(arg_matches) {
-        println!("\nError: {}", e);
+        eprintln!("\nError: {}", e);
         process::exit(1);
     };
 }
