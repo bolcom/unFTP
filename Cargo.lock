@@ -801,8 +801,9 @@ dependencies = [
 
 [[package]]
 name = "libunftp"
-version = "0.7.0"
-source = "git+https://github.com/bolcom/libunftp.git#4b3d586c637addc2ab16ac456c3ad0cc76adea11"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f8a39e1f6c4b35524c99efbcf3ca84aa675215ad692079355b3218ee40648f7d"
 dependencies = [
  "async-trait",
  "bytes 0.5.4",
@@ -2021,7 +2022,7 @@ checksum = "e604eb7b43c06650e854be16a2a03155743d3752dd1c943f6829e26b7a36e382"
 
 [[package]]
 name = "unftp"
-version = "0.8.3"
+version = "0.8.4"
 dependencies = [
  "built",
  "chrono",
