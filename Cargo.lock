@@ -801,9 +801,9 @@ dependencies = [
 
 [[package]]
 name = "libunftp"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8a39e1f6c4b35524c99efbcf3ca84aa675215ad692079355b3218ee40648f7d"
+checksum = "4e8ecadd5e9bcc4ae9ed40c9c8a1e50c06a1ddde9caacf0b2f79a03fe492e796"
 dependencies = [
  "async-trait",
  "bytes 0.5.4",
@@ -811,7 +811,6 @@ dependencies = [
  "failure",
  "failure_derive",
  "futures 0.3.4",
- "http",
  "hyper",
  "hyper-rustls 0.20.0",
  "itertools",
@@ -2024,6 +2023,7 @@ checksum = "e604eb7b43c06650e854be16a2a03155743d3752dd1c943f6829e26b7a36e382"
 name = "unftp"
 version = "0.8.4"
 dependencies = [
+ "async-trait",
  "built",
  "chrono",
  "clap",

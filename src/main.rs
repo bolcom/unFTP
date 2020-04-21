@@ -8,6 +8,7 @@ extern crate clap;
 mod app;
 mod args;
 mod redislog;
+mod user;
 
 use std::env;
 use std::path::PathBuf;
@@ -21,11 +22,7 @@ use hyper::{
     service::{make_service_fn, service_fn},
     Body, Method, Request, Response, StatusCode,
 };
-use libunftp::{
-    auth::{self, AnonymousUser},
-    storage::StorageBackend,
-    Server,
-};
+use libunftp::{auth, storage::StorageBackend, Server};
 use prometheus::{Encoder, TextEncoder};
 use slog::*;
 use tokio::runtime::Runtime;
@@ -33,6 +30,8 @@ use tokio::signal::unix::{signal, SignalKind};
 
 #[cfg(feature = "pam_auth")]
 use libunftp::auth::pam;
+
+use user::LookupAuthenticator;
 
 fn redis_logger(m: &clap::ArgMatches) -> Result<Option<redislog::Logger>, String> {
     match (
@@ -56,7 +55,7 @@ fn redis_logger(m: &clap::ArgMatches) -> Result<Option<redislog::Logger>, String
     }
 }
 
-fn make_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync>, String> {
+fn make_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<user::User> + Send + Sync>, String> {
     match m.value_of(args::AUTH_TYPE) {
         None | Some("anonymous") => Ok(make_anon_auth()),
         Some("pam") => make_pam_auth(m),
@@ -66,12 +65,12 @@ fn make_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<Anonymo
     }
 }
 
-fn make_anon_auth() -> Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync> {
+fn make_anon_auth() -> Arc<dyn auth::Authenticator<user::User> + Send + Sync> {
     log::info!("Using anonymous authenticator");
-    Arc::new(auth::AnonymousAuthenticator {})
+    Arc::new(LookupAuthenticator::new(auth::AnonymousAuthenticator))
 }
 
-fn make_pam_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync>, String> {
+fn make_pam_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<user::User> + Send + Sync>, String> {
     #[cfg(not(feature = "pam_auth"))]
     {
         let _ = m;
@@ -89,7 +88,7 @@ fn make_pam_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<Ano
 }
 
 // FIXME: add user support
-fn make_rest_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync>, String> {
+fn make_rest_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<user::User> + Send + Sync>, String> {
     #[cfg(not(feature = "rest_auth"))]
     {
         let _ = m;
@@ -127,14 +126,14 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<An
                     Err(e) => return Err(format!("Unable to create RestAuthenticator: {}", e)),
                 };
 
-                Ok(Arc::new(authenticator))
+                Ok(Arc::new(LookupAuthenticator::new(authenticator)))
             }
             _ => Err("for auth type rest please specify all auth-rest-* options".to_string()),
         }
     }
 }
 
-fn make_json_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<AnonymousUser> + Send + Sync>, String> {
+fn make_json_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<user::User> + Send + Sync>, String> {
     #[cfg(not(feature = "jsonfile_auth"))]
     {
         let _ = m;
@@ -148,7 +147,7 @@ fn make_json_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<An
             .ok_or_else(|| "please provide the json credentials file by specifying auth-json-path".to_string())?;
 
         let authenticator = auth::jsonfile::JsonFileAuthenticator::new(path).map_err(|e| e.to_string())?;
-        Ok(Arc::new(authenticator))
+        Ok(Arc::new(LookupAuthenticator::new(authenticator)))
     }
 }
 
@@ -220,7 +219,7 @@ fn start_ftp_with_storage<S>(
     storage_backend: Box<dyn (Fn() -> S) + Send + Sync>,
 ) -> Result<(), String>
 where
-    S: StorageBackend<AnonymousUser> + Send + Sync + 'static,
+    S: StorageBackend<user::User> + Send + Sync + 'static,
     S::File: tokio::io::AsyncRead + Send + Sync,
     S::Metadata: Sync + Send,
 {
@@ -258,9 +257,8 @@ where
 
     info!(log, "Idle session timeout is set to {} seconds", idle_timeout);
 
-    let mut server = Server::new(storage_backend)
+    let mut server = Server::new_with_authenticator(storage_backend, make_auth(&arg_matches)?)
         .greeting("Welcome to unFTP")
-        .authenticator(make_auth(&arg_matches)?)
         .passive_ports(start_port..end_port)
         .idle_session_timeout(idle_timeout)
         .metrics();
