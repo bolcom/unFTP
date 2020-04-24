@@ -266,7 +266,7 @@ where
         .metrics();
 
     // Setup proxy protocol mode.
-    if let Some(addr) = arg_matches.value_of(args::PROXY_EXTERNAL_CONTROL_ADDRES) {
+    if let Some(addr) = arg_matches.value_of(args::PROXY_EXTERNAL_CONTROL_ADDRESS) {
         let addr: SocketAddr = String::from(addr).parse().map_err(|e| {
             format!(
                 "unable to parse proxy protocol external control port address {}: {}",
@@ -330,7 +330,7 @@ async fn start_http(log: &Logger, bind_addr: &str) -> Result<(), String> {
 }
 
 async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger) -> Result<(), String> {
-    if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDR) {
+    if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDRESS) {
         let addr = String::from(addr);
         let log = log.clone();
         tokio::spawn(async move {

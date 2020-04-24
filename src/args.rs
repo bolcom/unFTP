@@ -14,10 +14,10 @@ pub const FTPS_CERTS_FILE: &str = "ftps-certs-file";
 pub const FTPS_CERTS_PASSWORD: &str = "ftps-certs-password";
 pub const GCS_BUCKET: &str = "sbe-gcs-bucket";
 pub const GCS_KEY_FILE: &str = "sbe-gcs-key-file";
-pub const HTTP_BIND_ADDR: &str = "bind-address-http";
+pub const HTTP_BIND_ADDRESS: &str = "bind-address-http";
 pub const IDLE_SESSION_TIMEOUT: &str = "idle-session-timeout";
 pub const PASSIVE_PORTS: &str = "passive-ports";
-pub const PROXY_EXTERNAL_CONTROL_ADDRES: &str = "proxy-external-control-address";
+pub const PROXY_EXTERNAL_CONTROL_ADDRESS: &str = "proxy-external-control-address";
 pub const REDIS_HOST: &str = "log-redis-host";
 pub const REDIS_KEY: &str = "log-redis-key";
 pub const REDIS_PORT: &str = "log-redis-port";
@@ -116,7 +116,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(HTTP_BIND_ADDR)
+            Arg::with_name(HTTP_BIND_ADDRESS)
                 .long("bind-address-http")
                 .value_name("HOST_PORT")
                 .help("Sets the host and port for the HTTP server used by prometheus metrics collection")
@@ -237,7 +237,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .default_value("600"),
         )
         .arg(
-            Arg::with_name(PROXY_EXTERNAL_CONTROL_ADDRES)
+            Arg::with_name(PROXY_EXTERNAL_CONTROL_ADDRESS)
                 .long("proxy-external-control-address")
                 .value_name("HOST_PORT")
                 .help("This switches on proxy protocol mode and sets the external IP and external control port number for example 10.0.0.1:2121.")
