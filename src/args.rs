@@ -17,6 +17,7 @@ pub const GCS_KEY_FILE: &str = "sbe-gcs-key-file";
 pub const HTTP_BIND_ADDR: &str = "bind-address-http";
 pub const IDLE_SESSION_TIMEOUT: &str = "idle-session-timeout";
 pub const PASSIVE_PORTS: &str = "passive-ports";
+pub const PROXY_EXTERNAL_CONTROL_ADDRES: &str = "proxy-external-control-address";
 pub const REDIS_HOST: &str = "log-redis-host";
 pub const REDIS_KEY: &str = "log-redis-key";
 pub const REDIS_PORT: &str = "log-redis-port";
@@ -60,7 +61,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
             Arg::with_name(BIND_ADDRESS)
                 .long("bind-address")
                 .value_name("HOST_PORT")
-                .help("Sets the host and port to listen on for FTP control connections")
+                .help("Sets the host and port to listen on for FTP(S) connections.")
                 .env("UNFTP_BIND_ADDRESS")
                 .takes_value(true)
                 .default_value("0.0.0.0:2121"),
@@ -69,7 +70,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
             Arg::with_name(ROOT_DIR)
                 .long("root-dir")
                 .value_name("PATH")
-                .help("Sets the FTP root directory")
+                .help("When the storage backend type is 'filesystem' this sets the path where files are stored.")
                 .env("UNFTP_ROOT_DIR")
                 .takes_value(true)
                 .default_value(tmp_dir),
@@ -127,7 +128,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
             Arg::with_name(PASSIVE_PORTS)
                 .long("passive-ports")
                 .value_name("PORT_RANGE")
-                .help("Sets the port range for data ports.")
+                .help("Sets the port range for data connections. In proxy protocol mode this resembles ports on the proxy.")
                 .env("UNFTP_PASSIVE_PORTS")
                 .takes_value(true)
                 .default_value("49152-65535"),
@@ -234,5 +235,13 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .env("UNFTP_IDLE_SESSION_TIMEOUT")
                 .takes_value(true)
                 .default_value("600"),
+        )
+        .arg(
+            Arg::with_name(PROXY_EXTERNAL_CONTROL_ADDRES)
+                .long("proxy-external-control-address")
+                .value_name("HOST_PORT")
+                .help("This switches on proxy protocol mode and sets the external IP and external control port number for example 10.0.0.1:2121.")
+                .env("UNFTP_PROXY_EXTERNAL_CONTROL_ADDRES")
+                .takes_value(true),
         )
 }

@@ -31,6 +31,7 @@ use tokio::signal::unix::{signal, SignalKind};
 #[cfg(feature = "pam_auth")]
 use libunftp::auth::pam;
 
+use std::net::SocketAddr;
 use user::LookupAuthenticator;
 
 fn redis_logger(m: &clap::ArgMatches) -> Result<Option<redislog::Logger>, String> {
@@ -74,14 +75,15 @@ fn make_pam_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<use
     #[cfg(not(feature = "pam_auth"))]
     {
         let _ = m;
-        Err(format!("the pam authentication module was disabled at build time"))
+        Err(String::from("the pam authentication module was disabled at build time"))
     }
 
     #[cfg(feature = "pam_auth")]
     {
         if let Some(service) = m.value_of(args::AUTH_PAM_SERVICE) {
             log::info!("Using pam authenticator");
-            return Ok(Arc::new(pam::PAMAuthenticator::new(service)));
+            let pam_auth = pam::PAMAuthenticator::new(service);
+            return Ok(Arc::new(LookupAuthenticator::new(pam_auth)));
         }
         Err(format!("--{} is required when using pam auth", args::AUTH_PAM_SERVICE))
     }
@@ -263,6 +265,19 @@ where
         .idle_session_timeout(idle_timeout)
         .metrics();
 
+    // Setup proxy protocol mode.
+    if let Some(addr) = arg_matches.value_of(args::PROXY_EXTERNAL_CONTROL_ADDRES) {
+        let addr: SocketAddr = String::from(addr).parse().map_err(|e| {
+            format!(
+                "unable to parse proxy protocol external control port address {}: {}",
+                addr, e
+            )
+        })?;
+        server = server
+            .proxy_protocol_mode(addr.ip().to_string().as_str(), addr.port())
+            .map_err(|e| format!("could not set proxy protocl mode: {:?}", e))?;
+    }
+
     // Setup FTPS
     server = match (
         arg_matches.value_of(args::FTPS_CERTS_FILE),
@@ -293,7 +308,7 @@ where
 
 // starts an HTTP server and exports Prometheus metrics.
 async fn start_http(log: &Logger, bind_addr: &str) -> Result<(), String> {
-    let http_addr = bind_addr
+    let http_addr: SocketAddr = bind_addr
         .parse()
         .map_err(|e| format!("unable to parse HTTP address {}: {}", bind_addr, e))?;
 
@@ -314,7 +329,7 @@ async fn start_http(log: &Logger, bind_addr: &str) -> Result<(), String> {
     Ok(())
 }
 
-async fn main_task<'a>(arg_matches: ArgMatches<'a>, log: &Logger) -> Result<(), String> {
+async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger) -> Result<(), String> {
     if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDR) {
         let addr = String::from(addr);
         let log = log.clone();
