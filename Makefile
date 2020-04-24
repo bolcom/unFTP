@@ -44,3 +44,12 @@ docker-run-%: docker-image-% # Run the % docker image in the foreground
 .PHONY: docker-list
 docker-list: # List the available docker images
 	@echo $(DOCKER_IMAGES)
+
+##
+.PHONY: pr-prep
+pr-prep: # Runs checks to ensure you're ready for a pull request
+	cargo fmt --all -- --check
+	cargo clippy --all-features -- -D warnings
+	cargo build --verbose --all --features rest_auth,jsonfile_auth,cloud_storage
+	cargo test --verbose --all --features rest_auth,jsonfile_auth,cloud_storage
+	cargo doc --all-features --no-deps
