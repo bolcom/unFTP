@@ -17,7 +17,7 @@ pub const GCS_KEY_FILE: &str = "sbe-gcs-key-file";
 pub const HTTP_BIND_ADDRESS: &str = "bind-address-http";
 pub const IDLE_SESSION_TIMEOUT: &str = "idle-session-timeout";
 pub const PASSIVE_PORTS: &str = "passive-ports";
-pub const PROXY_EXTERNAL_CONTROL_ADDRESS: &str = "proxy-external-control-address";
+pub const PROXY_EXTERNAL_CONTROL_PORT: &str = "proxy-external-control-port";
 pub const REDIS_HOST: &str = "log-redis-host";
 pub const REDIS_KEY: &str = "log-redis-key";
 pub const REDIS_PORT: &str = "log-redis-port";
@@ -239,11 +239,11 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .default_value("600"),
         )
         .arg(
-            Arg::with_name(PROXY_EXTERNAL_CONTROL_ADDRESS)
-                .long("proxy-external-control-address")
-                .value_name("HOST_PORT")
-                .help("This switches on proxy protocol mode and sets the external IP and external control port number for example 10.0.0.1:2121.")
-                .env("UNFTP_PROXY_EXTERNAL_CONTROL_ADDRES")
+            Arg::with_name(PROXY_EXTERNAL_CONTROL_PORT)
+                .long("proxy-external-control-port")
+                .value_name("PORT")
+                .help("This switches on proxy protocol mode and sets the external control port number exposed on the proxy.")
+                .env("UNFTP_PROXY_EXTERNAL_CONTROL_PORT")
                 .takes_value(true),
         )
 }
