@@ -59,14 +59,11 @@ openssl req \
    -days 3650 \
    -subj '/CN=www.myunftp.domain/O=My Company Name LTD./C=NL'
 
-# Put the cert and keypair in a DER-formatted PKCS #12 archive
-openssl pkcs12 -export -out unftp.pfx -inkey unftp.key -in unftp.crt
-
 # Run, pointing to cert and key
 cargo run -- \
   --root-dir=/home/unftp/data \
-  --ftps-certs-file=/home/unftp/unftp.pfx \
-  --ftps-certs-password=thesecret
+  --ftps-certs-file=/home/unftp/unftp.crt \
+  --ftps-key-file=/home/unftp/unftp.key
 ```
 
 Enabling the [Prometheus](https://prometheus.io) exporter, binding to port 8080:
