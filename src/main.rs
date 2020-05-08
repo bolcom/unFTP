@@ -281,18 +281,18 @@ where
     // Setup FTPS
     server = match (
         arg_matches.value_of(args::FTPS_CERTS_FILE),
-        arg_matches.value_of(args::FTPS_CERTS_PASSWORD),
+        arg_matches.value_of(args::FTPS_KEY_FILE),
     ) {
-        (Some(certs_file), Some(certs_password)) => {
+        (Some(certs_file), Some(key_file)) => {
             info!(log, "FTPS enabled");
-            server.ftps(certs_file, certs_password)
+            server.ftps(certs_file, key_file)
         }
         (Some(_), None) | (None, Some(_)) => {
             warn!(
                 log,
                 "Need to set both {} and {}. FTPS still disabled.",
                 args::FTPS_CERTS_FILE,
-                args::FTPS_CERTS_PASSWORD
+                args::FTPS_KEY_FILE
             );
             server
         }
