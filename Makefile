@@ -1,4 +1,4 @@
-RUST_VERSION=stable
+RUST_VERSION=1.43.1
 DOCKER_TAG=$(shell git describe --tags)
 DOCKER_TEMPLATES:=$(wildcard *.Dockerfile.template)
 DOCKER_FILES=$(DOCKER_TEMPLATES:%.template=%)
@@ -34,7 +34,7 @@ help: # Show available `make` commands
 .PHONY: docker-%
 docker-image-%: %.Dockerfile # Build the % docker image
 	cargo clean
-	docker build -t bolcom/unftp:$*-$(DOCKER_TAG) -f $< .
+	docker build -t bolcom/unftp:$(DOCKER_TAG)-$* -f $< .
 
 ##
 .PHONY: docker-run-%
@@ -53,3 +53,7 @@ pr-prep: # Runs checks to ensure you're ready for a pull request
 	cargo build --verbose --all --features rest_auth,jsonfile_auth,cloud_storage
 	cargo test --verbose --all --features rest_auth,jsonfile_auth,cloud_storage
 	cargo doc --all-features --no-deps
+
+clean:
+	cargo clean
+	rm *.Dockerfile
