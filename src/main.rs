@@ -266,16 +266,15 @@ where
         .metrics();
 
     // Setup proxy protocol mode.
-    if let Some(addr) = arg_matches.value_of(args::PROXY_EXTERNAL_CONTROL_ADDRESS) {
-        let addr: SocketAddr = String::from(addr).parse().map_err(|e| {
+    if let Some(port) = arg_matches.value_of(args::PROXY_EXTERNAL_CONTROL_PORT) {
+        let port_num = String::from(port).parse::<u16>().map_err(|e| {
             format!(
-                "unable to parse proxy protocol external control port address {}: {}",
-                addr, e
+                "unable to parse proxy protocol external control port {}: {}",
+                port, e
             )
         })?;
         server = server
-            .proxy_protocol_mode(addr.ip().to_string().as_str(), addr.port())
-            .map_err(|e| format!("could not set proxy protocl mode: {:?}", e))?;
+            .proxy_protocol_mode(port_num);
     }
 
     // Setup FTPS
