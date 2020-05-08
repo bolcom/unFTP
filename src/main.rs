@@ -41,7 +41,13 @@ fn redis_logger(m: &clap::ArgMatches) -> Result<Option<redislog::Logger>, String
         m.value_of(args::REDIS_PORT),
     ) {
         (Some(key), Some(host), Some(port)) => {
-            let logger = redislog::Builder::new(app::NAME)
+            let instance_name = m.value_of(args::INSTANCE_NAME).unwrap();
+            let app_name = if instance_name == app::NAME {
+                String::from(app::NAME)
+            } else {
+                format!("{}-{}", app::NAME, instance_name)
+            };
+            let logger = redislog::Builder::new(&*app_name)
                 .redis(
                     String::from(host),
                     String::from(port).parse::<u32>().unwrap(),

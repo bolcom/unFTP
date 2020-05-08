@@ -16,6 +16,7 @@ pub const GCS_BUCKET: &str = "sbe-gcs-bucket";
 pub const GCS_KEY_FILE: &str = "sbe-gcs-key-file";
 pub const HTTP_BIND_ADDRESS: &str = "bind-address-http";
 pub const IDLE_SESSION_TIMEOUT: &str = "idle-session-timeout";
+pub const INSTANCE_NAME: &str = "instance-name";
 pub const PASSIVE_PORTS: &str = "passive-ports";
 pub const PROXY_EXTERNAL_CONTROL_PORT: &str = "proxy-external-control-port";
 pub const REDIS_HOST: &str = "log-redis-host";
@@ -125,6 +126,15 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .env("UNFTP_BIND_ADDRESS_HTTP")
                 .takes_value(true)
                 .default_value("0.0.0.0:8080"),
+        )
+        .arg(
+            Arg::with_name(INSTANCE_NAME)
+                .long("instance-name")
+                .value_name("NAME")
+                .help("Gives a user friendly name to this instance. This is for used for example as part of the app name during logging.")
+                .env("UNFTP_INSTANCE_NAME")
+                .takes_value(true)
+                .default_value("unFTP"),
         )
         .arg(
             Arg::with_name(PASSIVE_PORTS)
