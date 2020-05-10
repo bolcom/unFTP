@@ -43,7 +43,7 @@ Example running an instance with a filesystem back-end and custom port
 ```sh
 cargo run -- \
   --root-dir=/home/unftp/data \
-  --bind-address=0.0.0.0:2100
+  --bind-address=0.0.0.0:2121
 ```
 
 With FTPS enabled:
@@ -66,7 +66,7 @@ cargo run -- \
   --ftps-key-file=/home/unftp/unftp.key
 ```
 
-Enabling the [Prometheus](https://prometheus.io) exporter, binding to port 8080:
+Enabling the [Prometheus](https://prometheus.io) exporter on (`http://../metrics`), binding to port 8080:
 
 ```sh
 cargo run -- \
@@ -84,9 +84,9 @@ cargo run -- \
   --sbe-gcs-key-file=file
 ```
 
-## Docker
+## Docker image
 
-Dockerfile is templated. To get a list of available commands, run:
+The project contains templated Dockerfiles . To get a list of available commands, run:
 
 ```sh
 make
@@ -94,20 +94,14 @@ make
 
 We offer 3 different options for building an unFTP docker image:
 
-- `minimal`: an empty image containing a static build of unFTP. *WARNING*: this is broken right now, as Cargo can only compile static binary if all the dependent libraries is also statically built.
-- `alpine` (default): build unftp in rust-slim and deploy in alpine. This image is built with musl instead of a full-blown libc. Resulting image is about 20MB.
-- `full`: build & run on the rust-slim base. Resulting image is over 1GB.
+- `scratch`
+- `alpine` (default): build unftp in rust-slim and deploy in alpine. This image is built with musl instead of a full-blown libc.
+- `alpine-debug`: build & run on the rust-slim base and adds some tools like libunftp
 
-To build the default docker image:
-
-```sh
-make docker-image
-```
-
-To build and run unFTP inside the default docker image in the foreground:
+To build the alpine docker image:
 
 ```sh
-make docker-run
+make docker-image-alpine
 ```
 
 ## Features

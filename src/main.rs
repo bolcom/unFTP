@@ -273,14 +273,10 @@ where
 
     // Setup proxy protocol mode.
     if let Some(port) = arg_matches.value_of(args::PROXY_EXTERNAL_CONTROL_PORT) {
-        let port_num = String::from(port).parse::<u16>().map_err(|e| {
-            format!(
-                "unable to parse proxy protocol external control port {}: {}",
-                port, e
-            )
-        })?;
-        server = server
-            .proxy_protocol_mode(port_num);
+        let port_num = String::from(port)
+            .parse::<u16>()
+            .map_err(|e| format!("unable to parse proxy protocol external control port {}: {}", port, e))?;
+        server = server.proxy_protocol_mode(port_num);
     }
 
     // Setup FTPS
