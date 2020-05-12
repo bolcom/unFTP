@@ -354,7 +354,7 @@ fn run(arg_matches: ArgMatches) -> Result<(), String> {
     let min_log_level = match arg_matches.occurrences_of(args::VERBOSITY) {
         0 => (slog::Level::Info, log::Level::Info),
         1 => (slog::Level::Debug, log::Level::Debug),
-        2 | _ => (slog::Level::Trace, log::Level::Trace),
+        _ => (slog::Level::Trace, log::Level::Trace),
     };
     let drain = match redis_logger(&arg_matches)? {
         Some(l) => slog_async::Async::new(l.filter_level(min_log_level.0).fuse())

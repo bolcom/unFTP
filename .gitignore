@@ -3,3 +3,5 @@
 *.Dockerfile
 /.idea
 /.vscode
+.DS_Store
+/release

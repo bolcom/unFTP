@@ -1,4 +1,4 @@
-RUST_VERSION=1.43.1
+RUST_VERSION=1.44.0
 DOCKER_TAG=$(shell git describe --tags)
 DOCKER_TEMPLATES:=$(wildcard *.Dockerfile.template)
 DOCKER_FILES=$(DOCKER_TEMPLATES:%.template=%)
@@ -54,6 +54,18 @@ pr-prep: # Runs checks to ensure you're ready for a pull request
 	cargo test --verbose --all --features rest_auth,jsonfile_auth,cloud_storage
 	cargo doc --all-features --no-deps
 
+release-artifacts:
+	rm -rf release && mkdir release
+	cargo build --release --target x86_64-apple-darwin --features rest_auth,jsonfile_auth,cloud_storage
+	cp target/x86_64-apple-darwin/release/unftp ./release/unftp_x86_64-apple-darwin
+	md5 -r release/unftp_x86_64-apple-darwin > release/unftp_x86_64-apple-darwin.md5
+	$(MAKE) docker-image-alpine
+	docker run --name unftp-release-maker -d bolcom/unftp:$(DOCKER_TAG)-alpine sh
+	docker cp unftp-release-maker:/unftp/unftp release/unftp_x86_64-unknown-linux-musl
+	docker rm -vf unftp-release-maker
+	md5 -r release/unftp_x86_64-unknown-linux-musl > release/unftp_x86_64-unknown-linux-musl.md5
+
 clean:
 	cargo clean
+	rm -rf release
 	rm *.Dockerfile
