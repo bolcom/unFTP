@@ -36,6 +36,7 @@ impl std::fmt::Display for User {
     }
 }
 
+#[derive(Debug)]
 pub struct LookupAuthenticator {
     inner: Box<dyn libunftp::auth::Authenticator<DefaultUser>>,
 }
