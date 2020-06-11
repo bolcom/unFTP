@@ -8,6 +8,7 @@ extern crate clap;
 mod app;
 mod args;
 mod redislog;
+mod storage;
 mod user;
 
 use std::env;
@@ -182,17 +183,15 @@ fn gather_metrics() -> Vec<u8> {
 }
 
 // Creates the filesystem storage back-end
-fn fs_storage_backend(
-    m: &clap::ArgMatches,
-) -> Box<dyn (Fn() -> libunftp::storage::filesystem::Filesystem) + Send + Sync> {
+fn fs_storage_backend(m: &clap::ArgMatches) -> Box<dyn (Fn() -> storage::StorageBE) + Send + Sync> {
     let p: PathBuf = m.value_of(args::ROOT_DIR).unwrap().into();
-    Box::new(move || libunftp::storage::filesystem::Filesystem::new(p.clone()))
+    Box::new(move || storage::StorageBE {
+        inner: storage::InnerStorage::File(libunftp::storage::filesystem::Filesystem::new(p.clone())),
+    })
 }
 
 // Creates the GCS storage back-end
-fn gcs_storage_backend(
-    m: &clap::ArgMatches,
-) -> Result<Box<dyn (Fn() -> libunftp::storage::cloud_storage::CloudStorage) + Send + Sync>, String> {
+fn gcs_storage_backend(m: &clap::ArgMatches) -> Result<Box<dyn (Fn() -> storage::StorageBE) + Send + Sync>, String> {
     let b: String = m
         .value_of(args::GCS_BUCKET)
         .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_BUCKET))?
@@ -206,8 +205,11 @@ fn gcs_storage_backend(
         .map_err(|e| format!("could not load GCS back-end key file: {}", e))
         .unwrap();
 
-    Ok(Box::new(move || {
-        libunftp::storage::cloud_storage::CloudStorage::new(b.clone(), service_account_key.clone())
+    Ok(Box::new(move || storage::StorageBE {
+        inner: storage::InnerStorage::Cloud(libunftp::storage::cloud_storage::CloudStorage::new(
+            b.clone(),
+            service_account_key.clone(),
+        )),
     }))
 }
 
