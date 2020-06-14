@@ -1,6 +1,6 @@
 [package]
 name = "unftp"
-version = "0.10.0"
+version = "0.10.1"
 authors = [
     "Agoston Horvath <ahorvath@bol.com>",
     "Dávid Kosztka <dkosztka@bol.com>",
@@ -18,7 +18,7 @@ readme = "README.md"
 
 [dependencies]
 async-trait = "0.1.30"
-libunftp = {git = "https://github.com/bolcom/libunftp.git", rev = "0b811f77e3f207d82c749383734d8396a9bd789b"}
+libunftp = "0.11.1"
 log = "0.4"
 env_logger = "0.6"
 redis = "0.9.0"
