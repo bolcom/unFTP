@@ -1,19 +1,12 @@
-# we switched to muslrust from rust:slim because it has built-in support for static compilation of libssl
-#FROM rust:%%RUST_VERSION%%-slim AS builder
-#WORKDIR /usr/src/unftp
-#COPY . .
-#RUN apt-get update && apt-get install -y \
-#  musl-dev \
-#  musl-tools
-#RUN rustup target add x86_64-unknown-linux-musl
-#ENV RUSTFLAGS="-C target-feature=+crt-static"
-#RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --no-default-features --features docker --release --target=x86_64-unknown-linux-musl
-
-FROM clux/muslrust:%%RUST_VERSION%% AS builder
+FROM rust:%%RUST_VERSION%%-slim AS builder
 WORKDIR /usr/src/unftp
 COPY . .
+RUN apt-get update && apt-get install -y \
+  musl-dev \
+  musl-tools
+RUN rustup target add x86_64-unknown-linux-musl
 ENV RUSTFLAGS="-C target-feature=+crt-static"
-RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --no-default-features --features docker --release
+RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --no-default-features --features docker --release --target=x86_64-unknown-linux-musl
 
 
 FROM scratch

@@ -3,6 +3,7 @@ DOCKER_TAG=$(shell git describe --tags)
 DOCKER_TEMPLATES:=$(wildcard *.Dockerfile.template)
 DOCKER_FILES=$(DOCKER_TEMPLATES:%.template=%)
 DOCKER_IMAGES=$(DOCKER_FILES:%.Dockerfile=%)
+DOCKER_DEFAULT=alpine
 
 .PHONY: help
 help: # Show available `make` commands
@@ -41,6 +42,17 @@ docker-image-%: %.Dockerfile # Build the % docker image
 docker-run-%: docker-image-% # Run the % docker image in the foreground
 	@echo docker run -ti --rm --net host --init $@
 
+
+##
+.PHONY: docker-image
+docker-image: $(DOCKER_DEFAULT).Dockerfile # Build the default docker image
+	cargo clean
+	docker build -t bolcom/unftp:$(DOCKER_DEFAULT)-$(DOCKER_TAG) -f $(DOCKER_DEFAULT).Dockerfile .
+
+.PHONY: docker-run
+docker-run: docker-image # Run the default docker image in the foreground
+	docker run -ti --rm --net host --init bolcom/unftp:$(DOCKER_DEFAULT)-$(DOCKER_TAG)
+
 .PHONY: docker-list
 docker-list: # List the available docker images
 	@echo $(DOCKER_IMAGES)
@@ -54,7 +66,8 @@ pr-prep: # Runs checks to ensure you're ready for a pull request
 	cargo test --verbose --all --features rest_auth,jsonfile_auth,cloud_storage
 	cargo doc --all-features --no-deps
 
-release-artifacts:
+.PHONY: release-artifacts
+release-artifacts: # Generates artifacts for a release
 	rm -rf release && mkdir release
 	cargo build --release --target x86_64-apple-darwin --features rest_auth,jsonfile_auth,cloud_storage
 	cp target/x86_64-apple-darwin/release/unftp ./release/unftp_x86_64-apple-darwin
@@ -65,7 +78,8 @@ release-artifacts:
 	docker rm -vf unftp-release-maker
 	md5 -r release/unftp_x86_64-unknown-linux-musl > release/unftp_x86_64-unknown-linux-musl.md5
 
-clean:
+.PHONY: clean
+clean: # Removes generated files
 	cargo clean
 	rm -rf release
 	rm *.Dockerfile
