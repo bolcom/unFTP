@@ -96,9 +96,9 @@ make
 
 We offer 3 different options for building an unFTP docker image:
 
-- `scratch`
-- `alpine` (default): build unftp in rust-slim and deploy in alpine. This image is built with musl instead of a full-blown libc.
-- `alpine-debug`: build & run on the rust-slim base and adds some tools like libunftp
+- `scratch`: builds the binary in [rust:slim](https://hub.docker.com/_/rust) and deploys in a `FROM scratch` image.
+- `alpine` (default): builds in [rust:slim](https://hub.docker.com/_/rust) and deploy in alpine. This image is built with musl instead of a full-blown libc.
+- `alpine-debug`: same images as `alpine` but using the debug build of unftp and adds tools like [lftp](https://lftp.yar.ru/)
 
 To build the alpine docker image:
 
