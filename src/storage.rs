@@ -4,6 +4,7 @@ use libunftp::storage::Result;
 use libunftp::storage::{Fileinfo, StorageBackend};
 use std::fmt::Debug;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 use std::time::SystemTime;
 use tokio::io::AsyncRead;
 
@@ -16,6 +17,7 @@ pub enum InnerStorage {
 #[derive(Debug)]
 pub struct StorageBE {
     pub inner: InnerStorage,
+    pub log: Arc<slog::Logger>,
 }
 
 #[derive(Debug)]
@@ -75,6 +77,17 @@ impl libunftp::storage::Metadata for SBEMeta {
     }
 }
 
+impl StorageBE {
+    fn log<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: &P) -> slog::Logger {
+        let username = user.as_ref().map_or("unknown".to_string(), |u| u.username.to_string());
+        let path_str = path.as_ref().to_string_lossy().to_string();
+        self.log.new(slog::o!(
+        "username" => username,
+        "path" => path_str.clone()
+        ))
+    }
+}
+
 #[async_trait]
 impl StorageBackend<User> for StorageBE {
     type File = Box<dyn AsyncRead + Sync + Send + Unpin>;
@@ -95,6 +108,7 @@ impl StorageBackend<User> for StorageBE {
     where
         <Self as StorageBackend<User>>::Metadata: libunftp::storage::Metadata,
     {
+        slog::info!(self.log(user, &path), "Client requested to list a directory");
         match &self.inner {
             InnerStorage::Cloud(i) => i.list(user, path).await.map(|v| {
                 v.into_iter()
@@ -121,6 +135,7 @@ impl StorageBackend<User> for StorageBE {
         path: P,
         start_pos: u64,
     ) -> Result<Self::File> {
+        slog::info!(self.log(user, &path), "Client requested to retrieve a file");
         match &self.inner {
             InnerStorage::Cloud(i) => i.get(user, path, start_pos).await.map(castc),
             InnerStorage::File(i) => i.get(user, path, start_pos).await.map(castf),
@@ -134,6 +149,7 @@ impl StorageBackend<User> for StorageBE {
         path: P,
         start_pos: u64,
     ) -> Result<u64> {
+        slog::info!(self.log(user, &path), "Client requested to store a file");
         match &self.inner {
             InnerStorage::Cloud(i) => i.put(user, input, path, start_pos).await,
             InnerStorage::File(i) => i.put(user, input, path, start_pos).await,
@@ -141,6 +157,7 @@ impl StorageBackend<User> for StorageBE {
     }
 
     async fn del<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> Result<()> {
+        slog::info!(self.log(user, &path), "Client requested to delete a file");
         match &self.inner {
             InnerStorage::Cloud(i) => i.del(user, path).await,
             InnerStorage::File(i) => i.del(user, path).await,
@@ -148,6 +165,7 @@ impl StorageBackend<User> for StorageBE {
     }
 
     async fn mkd<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> Result<()> {
+        slog::info!(self.log(user, &path), "Client requested to create a directory");
         match &self.inner {
             InnerStorage::Cloud(i) => i.mkd(user, path).await,
             InnerStorage::File(i) => i.mkd(user, path).await,
@@ -155,6 +173,8 @@ impl StorageBackend<User> for StorageBE {
     }
 
     async fn rename<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, from: P, to: P) -> Result<()> {
+        let path_str = &*to.as_ref().to_string_lossy();
+        slog::info!(self.log(user, &from), "Client requested to rename a path"; "new-path" => path_str);
         match &self.inner {
             InnerStorage::Cloud(i) => i.rename(user, from, to).await,
             InnerStorage::File(i) => i.rename(user, from, to).await,
@@ -162,6 +182,7 @@ impl StorageBackend<User> for StorageBE {
     }
 
     async fn rmd<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> Result<()> {
+        slog::info!(self.log(user, &path), "Client requested to remove a directory");
         match &self.inner {
             InnerStorage::Cloud(i) => i.rmd(user, path).await,
             InnerStorage::File(i) => i.rmd(user, path).await,
@@ -169,6 +190,7 @@ impl StorageBackend<User> for StorageBE {
     }
 
     async fn cwd<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> Result<()> {
+        slog::info!(self.log(user, &path), "Client requested to change into a directory");
         match &self.inner {
             InnerStorage::Cloud(i) => i.cwd(user, path).await,
             InnerStorage::File(i) => i.cwd(user, path).await,
