@@ -83,7 +83,7 @@ impl StorageBE {
         let path_str = path.as_ref().to_string_lossy().to_string();
         self.log.new(slog::o!(
         "username" => username,
-        "path" => path_str.clone()
+        "path" => path_str
         ))
     }
 }

@@ -26,15 +26,13 @@ use hyper::{
 use libunftp::{auth, storage::StorageBackend, Server};
 use prometheus::{Encoder, TextEncoder};
 use slog::*;
+use std::net::SocketAddr;
 use tokio::runtime::Runtime;
 use tokio::signal::unix::{signal, SignalKind};
+use user::LookupAuthenticator;
 
 #[cfg(feature = "pam_auth")]
 use libunftp::auth::pam;
-
-use slog_scope::GlobalLoggerGuard;
-use std::net::SocketAddr;
-use user::LookupAuthenticator;
 
 fn redis_logger(m: &clap::ArgMatches) -> Result<Option<redislog::Logger>, String> {
     match (
@@ -220,8 +218,8 @@ fn gcs_storage_backend(
 // starts the FTP server as a Tokio task.
 fn start_ftp(log: &Logger, root_log: &Logger, m: &clap::ArgMatches) -> Result<(), String> {
     match m.value_of(args::STORAGE_BACKEND_TYPE) {
-        None | Some("filesystem") => start_ftp_with_storage(&log, m, fs_storage_backend(root_log, m)),
-        Some("gcs") => start_ftp_with_storage(&log, m, gcs_storage_backend(root_log, m)?),
+        None | Some("filesystem") => start_ftp_with_storage(log, root_log, m, fs_storage_backend(root_log, m)),
+        Some("gcs") => start_ftp_with_storage(log, root_log, m, gcs_storage_backend(root_log, m)?),
         Some(x) => Err(format!("unknown storage back-end type {}", x)),
     }
 }
@@ -229,6 +227,7 @@ fn start_ftp(log: &Logger, root_log: &Logger, m: &clap::ArgMatches) -> Result<()
 // Given a storage back-end, starts the FTP server as a Tokio task.
 fn start_ftp_with_storage<S>(
     log: &Logger,
+    root_log: &Logger,
     arg_matches: &ArgMatches,
     storage_backend: Box<dyn (Fn() -> S) + Send + Sync>,
 ) -> Result<(), String>
@@ -275,6 +274,7 @@ where
         .greeting("Welcome to unFTP")
         .passive_ports(start_port..end_port)
         .idle_session_timeout(idle_timeout)
+        .logger(root_log.new(o!("lib" => "libunftp")))
         .metrics();
 
     // Setup proxy protocol mode.
@@ -355,23 +355,23 @@ async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger, root_log: &Logger)
     Ok(())
 }
 
-fn log(arg_matches: &ArgMatches) -> Result<(slog::Logger, GlobalLoggerGuard), String> {
+fn log(arg_matches: &ArgMatches) -> Result<slog::Logger, String> {
     let min_log_level = match arg_matches.occurrences_of(args::VERBOSITY) {
-        0 => (slog::Level::Info, log::Level::Info),
-        1 => (slog::Level::Debug, log::Level::Debug),
-        _ => (slog::Level::Trace, log::Level::Trace),
+        0 => slog::Level::Info,
+        1 => slog::Level::Debug,
+        _ => slog::Level::Trace,
     };
 
     let decorator = slog_term::TermDecorator::new().force_color().build();
     let term_drain = slog_term::FullFormat::new(decorator)
         .build()
-        .filter_level(min_log_level.0)
+        .filter_level(min_log_level)
         .fuse();
 
     let drain = match redis_logger(&arg_matches)? {
         Some(redis_logger) => {
             let both = slog::Duplicate::new(redis_logger, term_drain).fuse();
-            slog_async::Async::new(both.filter_level(min_log_level.0).fuse())
+            slog_async::Async::new(both.filter_level(min_log_level).fuse())
                 .build()
                 .fuse()
         }
@@ -379,13 +379,11 @@ fn log(arg_matches: &ArgMatches) -> Result<(slog::Logger, GlobalLoggerGuard), St
     };
     let root = Logger::root(drain, o!());
     let log = root.new(o!());
-    let scope_guard = slog_scope::set_global_logger(root);
-    slog_stdlog::init_with_level(min_log_level.1).unwrap();
-    Ok((log, scope_guard))
+    Ok(log)
 }
 
 fn run(arg_matches: ArgMatches) -> Result<(), String> {
-    let (root_logger, _scope_guard) = log(&arg_matches)?;
+    let root_logger = log(&arg_matches)?;
     let log = root_logger.new(o!("module" => "main"));
 
     let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());

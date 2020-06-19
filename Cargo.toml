@@ -18,7 +18,8 @@ readme = "README.md"
 
 [dependencies]
 async-trait = "0.1.30"
-libunftp = "0.11.1"
+#libunftp = "0.11.1"
+libunftp = {git = "https://github.com/bolcom/libunftp.git", rev = "8f7b446ebfef37f68f583076bd7355699e739b09"}
 log = "0.4"
 env_logger = "0.6"
 redis = "0.9.0"
@@ -29,8 +30,6 @@ r2d2_redis = "0.8.0"
 slog = { version = "2.4.1", features = ["max_level_trace", "release_max_level_warn"] }
 slog-term = "2.4.0"
 slog-async = "2.3.0"
-slog-stdlog = "4.0.0"
-slog-scope = "4.0.0"
 hyper = "0.13.5"
 http = "0.2.1"
 prometheus = "0.8"
