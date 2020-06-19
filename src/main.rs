@@ -32,6 +32,7 @@ use tokio::signal::unix::{signal, SignalKind};
 #[cfg(feature = "pam_auth")]
 use libunftp::auth::pam;
 
+use slog_scope::GlobalLoggerGuard;
 use std::net::SocketAddr;
 use user::LookupAuthenticator;
 
@@ -69,12 +70,11 @@ fn make_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<user::U
         Some("pam") => make_pam_auth(m),
         Some("rest") => make_rest_auth(m),
         Some("json") => make_json_auth(m),
-        unkown_type => Err(format!("unknown auth type: {}", unkown_type.unwrap())),
+        unknown_type => Err(format!("unknown auth type: {}", unknown_type.unwrap())),
     }
 }
 
 fn make_anon_auth() -> Arc<dyn auth::Authenticator<user::User> + Send + Sync> {
-    log::info!("Using anonymous authenticator");
     Arc::new(LookupAuthenticator::new(auth::AnonymousAuthenticator))
 }
 
@@ -116,8 +116,6 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<us
                 if method.to_uppercase() != "GET" && m.value_of(args::AUTH_REST_BODY).is_none() {
                     return Err("REST authenticator error: no body provided for rest request".to_string());
                 }
-
-                log::info!("Using REST authenticator ({})", url);
 
                 let authenticator: auth::rest::RestAuthenticator = match auth::rest::Builder::new()
                     .with_username_placeholder("{USER}".to_string())
@@ -351,30 +349,38 @@ async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger) -> Result<(), Stri
     Ok(())
 }
 
-fn run(arg_matches: ArgMatches) -> Result<(), String> {
-    // Logging
+fn log(arg_matches: &ArgMatches) -> Result<(slog::Logger, GlobalLoggerGuard), String> {
     let min_log_level = match arg_matches.occurrences_of(args::VERBOSITY) {
         0 => (slog::Level::Info, log::Level::Info),
         1 => (slog::Level::Debug, log::Level::Debug),
         _ => (slog::Level::Trace, log::Level::Trace),
     };
+
+    let decorator = slog_term::TermDecorator::new().force_color().build();
+    let term_drain = slog_term::FullFormat::new(decorator)
+        .build()
+        .filter_level(min_log_level.0)
+        .fuse();
+
     let drain = match redis_logger(&arg_matches)? {
-        Some(l) => slog_async::Async::new(l.filter_level(min_log_level.0).fuse())
-            .build()
-            .fuse(),
-        None => {
-            let decorator = slog_term::PlainDecorator::new(std::io::stdout());
-            let drain = slog_term::CompactFormat::new(decorator)
+        Some(redis_logger) => {
+            let both = slog::Duplicate::new(redis_logger, term_drain).fuse();
+            slog_async::Async::new(both.filter_level(min_log_level.0).fuse())
                 .build()
-                .filter_level(min_log_level.0)
-                .fuse();
-            slog_async::Async::new(drain).build().fuse()
+                .fuse()
         }
+        None => slog_async::Async::new(term_drain).build().fuse(),
     };
     let root = Logger::root(drain, o!());
-    let log = root.new(o!("module" => "main"));
-    let _scope_guard = slog_scope::set_global_logger(root);
+    let log = root.new(o!());
+    let scope_guard = slog_scope::set_global_logger(root);
     slog_stdlog::init_with_level(min_log_level.1).unwrap();
+    Ok((log, scope_guard))
+}
+
+fn run(arg_matches: ArgMatches) -> Result<(), String> {
+    let (root_logger, _scope_guard) = log(&arg_matches)?;
+    let log = root_logger.new(o!("module" => "main"));
 
     let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());
     let home_dir = String::from(arg_matches.value_of(args::ROOT_DIR).unwrap());
