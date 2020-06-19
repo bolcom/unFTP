@@ -88,7 +88,6 @@ fn make_pam_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<use
     #[cfg(feature = "pam_auth")]
     {
         if let Some(service) = m.value_of(args::AUTH_PAM_SERVICE) {
-            log::info!("Using pam authenticator");
             let pam_auth = pam::PAMAuthenticator::new(service);
             return Ok(Arc::new(LookupAuthenticator::new(pam_auth)));
         }
@@ -181,15 +180,20 @@ fn gather_metrics() -> Vec<u8> {
 }
 
 // Creates the filesystem storage back-end
-fn fs_storage_backend(m: &clap::ArgMatches) -> Box<dyn (Fn() -> storage::StorageBE) + Send + Sync> {
+fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Box<dyn (Fn() -> storage::StorageBE) + Send + Sync> {
     let p: PathBuf = m.value_of(args::ROOT_DIR).unwrap().into();
+    let sub_log = Arc::new(log.new(o!("module" => "storage")));
     Box::new(move || storage::StorageBE {
         inner: storage::InnerStorage::File(libunftp::storage::filesystem::Filesystem::new(p.clone())),
+        log: sub_log.clone(),
     })
 }
 
 // Creates the GCS storage back-end
-fn gcs_storage_backend(m: &clap::ArgMatches) -> Result<Box<dyn (Fn() -> storage::StorageBE) + Send + Sync>, String> {
+fn gcs_storage_backend(
+    log: &Logger,
+    m: &clap::ArgMatches,
+) -> Result<Box<dyn (Fn() -> storage::StorageBE) + Send + Sync>, String> {
     let b: String = m
         .value_of(args::GCS_BUCKET)
         .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_BUCKET))?
@@ -203,19 +207,21 @@ fn gcs_storage_backend(m: &clap::ArgMatches) -> Result<Box<dyn (Fn() -> storage:
         .map_err(|e| format!("could not load GCS back-end key file: {}", e))
         .unwrap();
 
+    let sub_log = Arc::new(log.new(o!("module" => "storage")));
     Ok(Box::new(move || storage::StorageBE {
         inner: storage::InnerStorage::Cloud(libunftp::storage::cloud_storage::CloudStorage::new(
             b.clone(),
             service_account_key.clone(),
         )),
+        log: sub_log.clone(),
     }))
 }
 
 // starts the FTP server as a Tokio task.
-fn start_ftp(log: &Logger, m: &clap::ArgMatches) -> Result<(), String> {
+fn start_ftp(log: &Logger, root_log: &Logger, m: &clap::ArgMatches) -> Result<(), String> {
     match m.value_of(args::STORAGE_BACKEND_TYPE) {
-        None | Some("filesystem") => start_ftp_with_storage(&log, m, fs_storage_backend(m)),
-        Some("gcs") => start_ftp_with_storage(&log, m, gcs_storage_backend(m)?),
+        None | Some("filesystem") => start_ftp_with_storage(&log, m, fs_storage_backend(root_log, m)),
+        Some("gcs") => start_ftp_with_storage(&log, m, gcs_storage_backend(root_log, m)?),
         Some(x) => Err(format!("unknown storage back-end type {}", x)),
     }
 }
@@ -330,7 +336,7 @@ async fn start_http(log: &Logger, bind_addr: &str) -> Result<(), String> {
     Ok(())
 }
 
-async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger) -> Result<(), String> {
+async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger, root_log: &Logger) -> Result<(), String> {
     if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDRESS) {
         let addr = String::from(addr);
         let log = log.clone();
@@ -341,7 +347,7 @@ async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger) -> Result<(), Stri
         });
     }
 
-    start_ftp(&log, &arg_matches)?;
+    start_ftp(&log, &root_log, &arg_matches)?;
 
     let mut stream = signal(SignalKind::terminate()).map_err(|e| format!("Could not listen for signals: {}", e))?;
     stream.recv().await;
@@ -397,7 +403,7 @@ fn run(arg_matches: ArgMatches) -> Result<(), String> {
     );
 
     let mut runtime = Runtime::new().map_err(|e| format!("could not construct runtime: {}", e))?;
-    runtime.block_on(main_task(arg_matches, &log))
+    runtime.block_on(main_task(arg_matches, &log, &root_logger))
 }
 
 fn main() {
