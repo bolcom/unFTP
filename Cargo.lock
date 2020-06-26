@@ -751,8 +751,7 @@ dependencies = [
 [[package]]
 name = "libunftp"
 version = "0.11.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a120dba5a266aff32dbc99b63ad791023f263d3e9e3614d4a84b41658f4cbb70"
+source = "git+https://github.com/bolcom/libunftp.git?rev=8f7b446ebfef37f68f583076bd7355699e739b09#8f7b446ebfef37f68f583076bd7355699e739b09"
 dependencies = [
  "async-trait",
  "bytes 0.5.4",
@@ -764,7 +763,6 @@ dependencies = [
  "hyper-rustls",
  "itertools",
  "lazy_static",
- "log",
  "mime",
  "pam",
  "path_abs",
@@ -776,6 +774,8 @@ dependencies = [
  "rustls",
  "serde",
  "serde_json",
+ "slog",
+ "slog-stdlog",
  "tokio 0.2.20",
  "tokio-rustls",
  "tokio-util",
@@ -2016,8 +2016,6 @@ dependencies = [
  "serde_json",
  "slog",
  "slog-async",
- "slog-scope",
- "slog-stdlog",
  "slog-term",
  "tokio 0.2.20",
  "yup-oauth2",
