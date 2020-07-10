@@ -7,18 +7,15 @@ extern crate clap;
 #[allow(dead_code)]
 mod app;
 mod args;
+mod http;
+mod metrics;
 mod redislog;
 mod storage;
 mod user;
 
 use clap::ArgMatches;
 use futures::prelude::*;
-use hyper::{
-    service::{make_service_fn, service_fn},
-    Body, Method, Request, Response, StatusCode,
-};
 use libunftp::{auth, storage::StorageBackend, Server};
-use prometheus::{Encoder, TextEncoder};
 use slog::*;
 use std::{
     env,
@@ -158,28 +155,6 @@ fn make_json_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<us
         let authenticator = auth::jsonfile::JsonFileAuthenticator::new(path).map_err(|e| e.to_string())?;
         Ok(Arc::new(LookupAuthenticator::new(authenticator)))
     }
-}
-
-async fn metrics_service(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
-    let mut response = Response::new(Body::empty());
-    match (req.method(), req.uri().path()) {
-        (&Method::GET, "/metrics") => {
-            *response.body_mut() = Body::from(gather_metrics());
-        }
-        _ => {
-            *response.status_mut() = StatusCode::NOT_FOUND;
-        }
-    }
-
-    Ok(response)
-}
-
-fn gather_metrics() -> Vec<u8> {
-    let encoder = TextEncoder::new();
-    let metric_families = prometheus::gather();
-    let mut buffer = vec![];
-    encoder.encode(&metric_families, &mut buffer).unwrap();
-    buffer
 }
 
 // Creates the filesystem storage back-end
@@ -355,29 +330,6 @@ where
     Ok(())
 }
 
-// starts an HTTP server and exports Prometheus metrics.
-async fn start_http(log: &Logger, bind_addr: &str) -> Result<(), String> {
-    let http_addr: SocketAddr = bind_addr
-        .parse()
-        .map_err(|e| format!("unable to parse HTTP address {}: {}", bind_addr, e))?;
-
-    let make_svc = make_service_fn(|_conn| {
-        async {
-            // service_fn converts our function into a `Service`
-            Ok::<_, hyper::Error>(service_fn(metrics_service))
-        }
-    });
-
-    let http_server = hyper::Server::bind(&http_addr).serve(make_svc);
-
-    info!(log, "Starting Prometheus {} exporter.", app::NAME; "address" => &http_addr);
-
-    if let Err(e) = http_server.await {
-        error!(log, "HTTP Server error: {}", e)
-    }
-    Ok(())
-}
-
 struct ExitSignal(pub &'static str);
 
 async fn listen_for_signals() -> Result<ExitSignal, String> {
@@ -404,7 +356,7 @@ async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger, root_log: &Logger)
         let addr = String::from(addr);
         let log = log.clone();
         tokio::spawn(async move {
-            if let Err(e) = start_http(&log, &*addr).await {
+            if let Err(e) = http::start(&log, &*addr).await {
                 error!(log, "HTTP Server error: {}", e)
             }
         });
