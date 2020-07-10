@@ -8,6 +8,11 @@ fn main() {
     };
     println!("cargo:rustc-env=BUILD_VERSION={}", version);
 
+    println!(
+        "cargo:rustc-env=PROJ_WEB_DIR={}",
+        format!("{}/{}", std::env::var("CARGO_MANIFEST_DIR").unwrap(), "web")
+    );
+
     #[cfg(feature = "static")]
     {
         println!("cargo:rustc-link-lib=static=pam");

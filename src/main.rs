@@ -321,7 +321,7 @@ where
             server
         }
         _ => {
-            info!(log, "FTPS not enabled");
+            warn!(log, "FTPS not enabled");
             server
         }
     };
