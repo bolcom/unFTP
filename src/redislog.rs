@@ -192,27 +192,6 @@ impl Logger {
     }
 }
 
-impl log::Log for Logger {
-    fn enabled(&self, metadata: &log::Metadata) -> bool {
-        metadata.level() <= log::Level::Info
-    }
-
-    fn log(&self, record: &log::Record) {
-        if self.enabled(record.metadata()) {
-            let msg = format!("{}", record.args());
-            let level_string = record.level().to_string();
-            let log_line = self.v0_msg(level_string.as_str(), msg.as_str(), None);
-            let mut prefix = String::from("");
-            if let Err(e) = self.send_to_redis(log_line.as_str()) {
-                prefix = format!("fallback logger: [{}]", e);
-            }
-            println!("{}{}", prefix, msg);
-        }
-    }
-
-    fn flush(&self) {}
-}
-
 impl slog::Drain for Logger {
     type Ok = ();
     type Err = self::Error;

@@ -1918,7 +1918,6 @@ dependencies = [
  "hyper",
  "lazy_static",
  "libunftp",
- "log",
  "prometheus 0.8.0",
  "r2d2",
  "r2d2_redis",
