@@ -12,6 +12,7 @@ mod storage;
 mod user;
 
 use clap::ArgMatches;
+use futures::prelude::*;
 use hyper::{
     service::{make_service_fn, service_fn},
     Body, Method, Request, Response, StatusCode,
@@ -377,7 +378,28 @@ async fn start_http(log: &Logger, bind_addr: &str) -> Result<(), String> {
     Ok(())
 }
 
-async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger, root_log: &Logger) -> Result<(), String> {
+struct ExitSignal(pub &'static str);
+
+async fn listen_for_signals() -> Result<ExitSignal, String> {
+    let mut term_stream = signal(SignalKind::terminate())
+        .map_err(|e| format!("could not listen for TERM signals: {}", e))?
+        .fuse();
+    let mut int_stream = signal(SignalKind::interrupt())
+        .map_err(|e| format!("Could not listen for signals: {}", e))?
+        .fuse();
+
+    let sig_name = tokio::select! {
+        Some(_signal) = term_stream.next() => {
+            "SIG_TERM"
+        },
+        Some(_signal) = int_stream.next() => {
+            "SIG_INT"
+        },
+    };
+    Ok(ExitSignal(sig_name))
+}
+
+async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger, root_log: &Logger) -> Result<ExitSignal, String> {
     if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDRESS) {
         let addr = String::from(addr);
         let log = log.clone();
@@ -390,10 +412,7 @@ async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger, root_log: &Logger)
 
     start_ftp(&log, &root_log, &arg_matches)?;
 
-    let mut stream = signal(SignalKind::terminate()).map_err(|e| format!("Could not listen for signals: {}", e))?;
-    stream.recv().await;
-    info!(log, "Received signal SIGTERM, shutting down...");
-    Ok(())
+    listen_for_signals().await
 }
 
 fn create_logger(arg_matches: &ArgMatches) -> Result<slog::Logger, String> {
@@ -442,7 +461,9 @@ fn run(arg_matches: ArgMatches) -> Result<(), String> {
     );
 
     let mut runtime = Runtime::new().map_err(|e| format!("could not construct runtime: {}", e))?;
-    runtime.block_on(main_task(arg_matches, &log, &root_logger))
+    let ExitSignal(signal) = runtime.block_on(main_task(arg_matches, &log, &root_logger))?;
+    info!(log, "Received signal {}, shutting down...", signal);
+    Ok(())
 }
 
 fn main() {
