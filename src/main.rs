@@ -11,13 +11,6 @@ mod redislog;
 mod storage;
 mod user;
 
-use std::env;
-use std::path::PathBuf;
-use std::process;
-use std::result::Result;
-use std::str::FromStr;
-use std::sync::Arc;
-
 use clap::ArgMatches;
 use hyper::{
     service::{make_service_fn, service_fn},
@@ -26,13 +19,24 @@ use hyper::{
 use libunftp::{auth, storage::StorageBackend, Server};
 use prometheus::{Encoder, TextEncoder};
 use slog::*;
-use std::net::SocketAddr;
-use tokio::runtime::Runtime;
-use tokio::signal::unix::{signal, SignalKind};
+use std::{
+    env,
+    net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs},
+    path::PathBuf,
+    process,
+    result::Result,
+    str::FromStr,
+    sync::Arc,
+};
+use tokio::{
+    runtime::Runtime,
+    signal::unix::{signal, SignalKind},
+};
 use user::LookupAuthenticator;
 
 #[cfg(feature = "pam_auth")]
 use libunftp::auth::pam;
+use libunftp::options;
 
 fn redis_logger(m: &clap::ArgMatches) -> Result<Option<redislog::Logger>, String> {
     match (
@@ -224,6 +228,39 @@ fn start_ftp(log: &Logger, root_log: &Logger, m: &clap::ArgMatches) -> Result<()
     }
 }
 
+fn resolve_dns(log: &Logger, dns_name: &str) -> Result<Ipv4Addr, String> {
+    slog::info!(log, "Resolving domain name '{}'", dns_name);
+    // Normalize the address. If lookup_host (https://doc.rust-lang.org/1.6.0/std/net/fn.lookup_host.html)
+    // is stable we won't need this.
+    let host_port = dns_name.split(':').take(1).map(|s| format!("{}:21", s)).next().unwrap();
+    let mut addrs_iter = host_port.to_socket_addrs().unwrap();
+    loop {
+        match addrs_iter.next() {
+            None => break Err(format!("Could not resolve DNS address '{}'", dns_name)),
+            Some(SocketAddr::V4(addr)) => {
+                slog::info!(log, "Resolved '{}' to {}", dns_name, addr.ip());
+                break Ok(*addr.ip());
+            }
+            Some(SocketAddr::V6(_)) => continue,
+        }
+    }
+}
+
+fn get_passive_host_option(log: &Logger, arg_matches: &ArgMatches) -> Result<options::PassiveHost, String> {
+    let passive_host_str = arg_matches.value_of(args::PASSIVE_HOST);
+    match passive_host_str {
+        None | Some("from-connection") => Ok(options::PassiveHost::FromConnection),
+        Some(ip_or_dns) => match ip_or_dns.parse() {
+            Ok(IpAddr::V4(ip)) => Ok(options::PassiveHost::IP(ip)),
+            Ok(IpAddr::V6(_)) => Err(format!(
+                "an IP is valid for the '--{}' argument, but it needs to be an IP v4 address",
+                args::PASSIVE_HOST
+            )),
+            Err(_) => resolve_dns(log, ip_or_dns).map(options::PassiveHost::IP),
+        },
+    }
+}
+
 // Given a storage back-end, starts the FTP server as a Tokio task.
 fn start_ftp_with_storage<S>(
     log: &Logger,
@@ -258,6 +295,9 @@ where
 
     info!(log, "Using passive port range {}..{}", start_port, end_port);
 
+    let passive_host = get_passive_host_option(log, arg_matches)?;
+    info!(log, "Using passive host option '{:?}'", passive_host);
+
     let idle_timeout_str = arg_matches.value_of(args::IDLE_SESSION_TIMEOUT).unwrap();
     let idle_timeout = String::from(idle_timeout_str).parse::<u64>().map_err(move |e| {
         format!(
@@ -275,6 +315,7 @@ where
         .passive_ports(start_port..end_port)
         .idle_session_timeout(idle_timeout)
         .logger(root_log.new(o!("lib" => "libunftp")))
+        .passive_host(passive_host)
         .metrics();
 
     // Setup proxy protocol mode.
@@ -355,7 +396,7 @@ async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger, root_log: &Logger)
     Ok(())
 }
 
-fn log(arg_matches: &ArgMatches) -> Result<slog::Logger, String> {
+fn create_logger(arg_matches: &ArgMatches) -> Result<slog::Logger, String> {
     let min_log_level = match arg_matches.occurrences_of(args::VERBOSITY) {
         0 => slog::Level::Info,
         1 => slog::Level::Debug,
@@ -383,7 +424,7 @@ fn log(arg_matches: &ArgMatches) -> Result<slog::Logger, String> {
 }
 
 fn run(arg_matches: ArgMatches) -> Result<(), String> {
-    let root_logger = log(&arg_matches)?;
+    let root_logger = create_logger(&arg_matches)?;
     let log = root_logger.new(o!("module" => "main"));
 
     let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());
