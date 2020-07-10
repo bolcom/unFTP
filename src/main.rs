@@ -369,8 +369,9 @@ async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger, root_log: &Logger)
 
 fn create_logger(arg_matches: &ArgMatches) -> Result<slog::Logger, String> {
     let min_log_level = match arg_matches.occurrences_of(args::VERBOSITY) {
-        0 => slog::Level::Info,
-        1 => slog::Level::Debug,
+        0 => slog::Level::Warning,
+        1 => slog::Level::Info,
+        2 => slog::Level::Debug,
         _ => slog::Level::Trace,
     };
 
