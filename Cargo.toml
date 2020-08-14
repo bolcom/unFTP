@@ -17,24 +17,22 @@ license = "Apache-2.0"
 readme = "README.md"
 
 [dependencies]
-async-trait = "0.1.30"
-# libunftp = "0.11.2"
-# libunftp = { path = "../libunftp" }
-libunftp = {git = "https://github.com/bolcom/libunftp.git", rev = "ac05c6f1ab12c422641265defb4ca66275bdce47"}
+async-trait = "0.1.37"
+libunftp = {git = "https://github.com/bolcom/libunftp.git", rev = "7324fe5cc39e84448c11c843ef5acc00e54018bc"}
 redis = "0.9.0"
-serde_json = "1.0.52"
+serde_json = "1.0.57"
 chrono = "0.4.6"
 r2d2 = "0.8.3"
 r2d2_redis = "0.8.0"
 slog = { version = "2.4.1", features = ["max_level_trace", "release_max_level_info"] }
-slog-term = "2.4.0"
+slog-term = "2.6.0"
 slog-async = "2.3.0"
-hyper = "0.13.5"
+hyper = "0.13.7"
 http = "0.2.1"
-prometheus = "0.8"
+prometheus = "0.9.0"
 futures = "0.3"
 tokio = { version = "0.2", features = ["full"]}
-clap = "2.33.0"
+clap = "2.33.3"
 yup-oauth2 = {version = "4.1.0", optional = true}
 lazy_static = "1.4.0"
 

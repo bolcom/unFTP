@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use libunftp::auth::{DefaultUser, UserDetail};
+use libunftp::auth::{DefaultUser, UserDetail, AuthenticationError};
 use std::fmt::Formatter;
 
 #[derive(Debug, PartialEq)]
@@ -53,7 +53,7 @@ impl libunftp::auth::Authenticator<User> for LookupAuthenticator {
         &self,
         username: &str,
         password: &str,
-    ) -> Result<User, Box<dyn std::error::Error + Send + Sync>> {
+    ) -> Result<User, AuthenticationError> {
         self.inner.authenticate(username, password).await?;
         // TODO: User successfully authenticated, now lookup user details from repository e.g. PostgreSql
         Ok(User {
