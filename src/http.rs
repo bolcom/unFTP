@@ -7,6 +7,7 @@ use hyper::{
 };
 use slog::*;
 use std::{net::SocketAddr, result::Result};
+use tokio::prelude::*;
 
 const PATH_HOME: &str = "/";
 const PATH_METRICS: &str = "/metrics";
@@ -40,11 +41,6 @@ pub async fn start(log: &Logger, bind_addr: &str) -> Result<(), String> {
     Ok(())
 }
 
-fn service_home() -> Body {
-    let index_html = include_str!(concat!(env!("PROJ_WEB_DIR"), "/index.html"));
-    Body::from(index_html.replace("{{ .AppVersion }}", app::VERSION))
-}
-
 async fn router(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
     let mut response: Response<Body> = Response::new(Body::empty());
     match (req.method(), req.uri().path()) {
@@ -59,8 +55,7 @@ async fn router(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
             *response.status_mut() = StatusCode::OK;
         }
         (&Method::GET, PATH_HEALTH) => {
-            *response.body_mut() = Body::from("<html>OK!</html>");
-            *response.status_mut() = StatusCode::OK;
+            health(&mut response).await;
         }
         _ => {
             *response.status_mut() = StatusCode::NOT_FOUND;
@@ -68,4 +63,54 @@ async fn router(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
     }
 
     Ok(response)
+}
+
+fn service_home() -> Body {
+    let index_html = include_str!(concat!(env!("PROJ_WEB_DIR"), "/index.html"));
+    Body::from(index_html.replace("{{ .AppVersion }}", app::VERSION))
+}
+
+async fn health(response: &mut Response<Body>) {
+    match ftp_probe().await {
+        Ok(_) => {
+            *response.body_mut() = Body::from("<html>OK!</html>");
+            *response.status_mut() = StatusCode::OK;
+        }
+        Err(_e) => {
+            // TODO: Log error
+            *response.body_mut() = Body::from("<html>Service unavailable!</html>");
+            *response.status_mut() = StatusCode::SERVICE_UNAVAILABLE;
+        }
+    }
+}
+
+async fn ftp_probe() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let mut line_buf = String::new();
+    // TODO: Don't hardcode
+    let connection = tokio::net::TcpStream::connect("127.0.0.1:2122").await?;
+    let (rx, mut tx) = tokio::io::split(connection);
+    let mut reader = tokio::io::BufReader::new(rx);
+    reader.read_line(&mut line_buf).await?;
+
+    // Note: we do FEAT because currently NOOP needs authentication first. Perhaps later we can
+    // call something that returns useful health info.
+    tx.write_all(b"FEAT\r\n").await?;
+    let mut i = 0;
+    loop {
+        if i > 100 {
+            return Err("loop got stuck".into());
+        }
+        line_buf.clear();
+        reader.read_line(&mut line_buf).await?;
+        if line_buf.ends_with("211 END\r\n") {
+            break;
+        }
+        i += 1;
+    }
+
+    tx.write_all(b"QUIT\r\n").await?;
+    line_buf.clear();
+    reader.read_line(&mut line_buf).await?;
+
+    Ok(())
 }
