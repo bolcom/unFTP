@@ -172,23 +172,28 @@ fn gcs_storage_backend(
     log: &Logger,
     m: &clap::ArgMatches,
 ) -> Result<Box<dyn (Fn() -> storage::StorageBE) + Send + Sync>, String> {
-    let b: String = m
+    let bucket: String = m
         .value_of(args::GCS_BUCKET)
         .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_BUCKET))?
         .into();
-    let p: PathBuf = m
+    let base_url: String = m
+        .value_of(args::GCS_BASE_URL)
+        .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_BUCKET))?
+        .into();
+    let key_file: PathBuf = m
         .value_of(args::GCS_KEY_FILE)
         .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_KEY_FILE))?
         .into();
 
-    let service_account_key = futures::executor::block_on(yup_oauth2::read_service_account_key(&p))
+    let service_account_key = futures::executor::block_on(yup_oauth2::read_service_account_key(&key_file))
         .map_err(|e| format!("could not load GCS back-end key file: {}", e))
         .unwrap();
 
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
     Ok(Box::new(move || storage::StorageBE {
         inner: storage::InnerStorage::Cloud(libunftp::storage::cloud_storage::CloudStorage::new(
-            b.clone(),
+            base_url.clone(),
+            bucket.clone(),
             service_account_key.clone(),
         )),
         log: sub_log.clone(),

@@ -758,7 +758,7 @@ dependencies = [
 [[package]]
 name = "libunftp"
 version = "0.11.2"
-source = "git+https://github.com/bolcom/libunftp.git?rev=74fd8e243c88a92c3951e6155c081e900c9ef2aa#74fd8e243c88a92c3951e6155c081e900c9ef2aa"
+source = "git+https://github.com/bolcom/libunftp.git?rev=0526e7077dd83e28b69264dd36a35e7fda6d4fc3#0526e7077dd83e28b69264dd36a35e7fda6d4fc3"
 dependencies = [
  "async-trait",
  "bytes 0.5.6",
