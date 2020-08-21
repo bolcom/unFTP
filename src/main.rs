@@ -352,11 +352,16 @@ async fn listen_for_signals() -> Result<ExitSignal, String> {
 }
 
 async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger, root_log: &Logger) -> Result<ExitSignal, String> {
+    let ftp_addr: SocketAddr = arg_matches
+        .value_of(args::BIND_ADDRESS)
+        .unwrap()
+        .parse()
+        .map_err(|_| "could not parse FTP address")?;
     if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDRESS) {
         let addr = String::from(addr);
         let log = log.clone();
         tokio::spawn(async move {
-            if let Err(e) = http::start(&log, &*addr).await {
+            if let Err(e) = http::start(&log, &*addr, ftp_addr).await {
                 error!(log, "HTTP Server error: {}", e)
             }
         });

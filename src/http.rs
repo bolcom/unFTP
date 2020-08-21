@@ -2,10 +2,12 @@
 use crate::{app, metrics};
 
 use hyper::{
+    server::conn::AddrStream,
     service::{make_service_fn, service_fn},
     Body, Method, Request, Response, StatusCode,
 };
 use slog::*;
+use std::net::{IpAddr, Ipv4Addr};
 use std::{net::SocketAddr, result::Result};
 use tokio::prelude::*;
 
@@ -15,15 +17,18 @@ const PATH_HEALTH: &str = "/health";
 const PATH_READINESS: &str = "/ready";
 
 // starts an HTTP server and exports Prometheus metrics.
-pub async fn start(log: &Logger, bind_addr: &str) -> Result<(), String> {
+pub async fn start(log: &Logger, bind_addr: &str, ftp_addr: SocketAddr) -> Result<(), String> {
     let http_addr: SocketAddr = bind_addr
         .parse()
         .map_err(|e| format!("unable to parse HTTP address {}: {}", bind_addr, e))?;
 
-    let make_svc = make_service_fn(|_conn| {
-        async {
+    let make_svc = make_service_fn(|_socket: &AddrStream| {
+        async move {
             // service_fn converts our function into a `Service`
-            Ok::<_, hyper::Error>(service_fn(router))
+            Ok::<_, hyper::Error>(service_fn(move |req: Request<Body>| async move {
+                let handler = HttpHandler { ftp_addr };
+                handler.router(req).await
+            }))
         }
     });
 
@@ -41,76 +46,73 @@ pub async fn start(log: &Logger, bind_addr: &str) -> Result<(), String> {
     Ok(())
 }
 
-async fn router(req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
-    let mut response: Response<Body> = Response::new(Body::empty());
-    match (req.method(), req.uri().path()) {
-        (&Method::GET, PATH_HOME) | (&Method::GET, "/index.html") => {
-            *response.body_mut() = service_home();
+struct HttpHandler {
+    pub ftp_addr: SocketAddr,
+}
+
+impl HttpHandler {
+    async fn router(&self, req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
+        let mut response: Response<Body> = Response::new(Body::empty());
+        match (req.method(), req.uri().path()) {
+            (&Method::GET, PATH_HOME) | (&Method::GET, "/index.html") => {
+                *response.body_mut() = self.service_home();
+            }
+            (&Method::GET, PATH_METRICS) => {
+                *response.body_mut() = Body::from(metrics::gather());
+            }
+            (&Method::GET, PATH_HEALTH) | (&Method::GET, PATH_READINESS) => {
+                self.health(&mut response).await;
+            }
+            _ => {
+                *response.status_mut() = StatusCode::NOT_FOUND;
+            }
         }
-        (&Method::GET, PATH_METRICS) => {
-            *response.body_mut() = Body::from(metrics::gather());
-        }
-        (&Method::GET, PATH_READINESS) => {
-            *response.body_mut() = Body::from("<html>Ready!</html>");
-            *response.status_mut() = StatusCode::OK;
-        }
-        (&Method::GET, PATH_HEALTH) => {
-            health(&mut response).await;
-        }
-        _ => {
-            *response.status_mut() = StatusCode::NOT_FOUND;
+
+        Ok(response)
+    }
+
+    fn service_home(&self) -> Body {
+        let index_html = include_str!(concat!(env!("PROJ_WEB_DIR"), "/index.html"));
+        Body::from(index_html.replace("{{ .AppVersion }}", app::VERSION))
+    }
+
+    async fn health(&self, response: &mut Response<Body>) {
+        match self.ftp_probe().await {
+            Ok(_) => {
+                *response.body_mut() = Body::from("<html>OK!</html>");
+                *response.status_mut() = StatusCode::OK;
+            }
+            Err(_e) => {
+                // TODO: Log error
+                *response.body_mut() = Body::from("<html>Service unavailable!</html>");
+                *response.status_mut() = StatusCode::SERVICE_UNAVAILABLE;
+            }
         }
     }
 
-    Ok(response)
-}
+    async fn ftp_probe(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+        let connect_to_addr = if self.ftp_addr.ip().is_unspecified() {
+            SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), self.ftp_addr.port())
+        } else {
+            self.ftp_addr
+        };
 
-fn service_home() -> Body {
-    let index_html = include_str!(concat!(env!("PROJ_WEB_DIR"), "/index.html"));
-    Body::from(index_html.replace("{{ .AppVersion }}", app::VERSION))
-}
+        let connection = tokio::net::TcpStream::connect(connect_to_addr).await?;
+        let (rx, mut tx) = tokio::io::split(connection);
+        let mut reader = tokio::io::BufReader::new(rx);
 
-async fn health(response: &mut Response<Body>) {
-    match ftp_probe().await {
-        Ok(_) => {
-            *response.body_mut() = Body::from("<html>OK!</html>");
-            *response.status_mut() = StatusCode::OK;
-        }
-        Err(_e) => {
-            // TODO: Log error
-            *response.body_mut() = Body::from("<html>Service unavailable!</html>");
-            *response.status_mut() = StatusCode::SERVICE_UNAVAILABLE;
-        }
-    }
-}
+        // Consume welcome message
+        let mut line_buf = String::new();
+        reader.read_line(&mut line_buf).await?;
 
-async fn ftp_probe() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let mut line_buf = String::new();
-    // TODO: Don't hardcode
-    let connection = tokio::net::TcpStream::connect("127.0.0.1:2122").await?;
-    let (rx, mut tx) = tokio::io::split(connection);
-    let mut reader = tokio::io::BufReader::new(rx);
-    reader.read_line(&mut line_buf).await?;
-
-    // Note: we do FEAT because currently NOOP needs authentication first. Perhaps later we can
-    // call something that returns useful health info.
-    tx.write_all(b"FEAT\r\n").await?;
-    let mut i = 0;
-    loop {
-        if i > 100 {
-            return Err("loop got stuck".into());
-        }
+        tx.write_all(b"NOOP\r\n").await?;
         line_buf.clear();
         reader.read_line(&mut line_buf).await?;
-        if line_buf.ends_with("211 END\r\n") {
-            break;
-        }
-        i += 1;
+
+        tx.write_all(b"QUIT\r\n").await?;
+        line_buf.clear();
+        reader.read_line(&mut line_buf).await?;
+
+        Ok(())
     }
-
-    tx.write_all(b"QUIT\r\n").await?;
-    line_buf.clear();
-    reader.read_line(&mut line_buf).await?;
-
-    Ok(())
 }
