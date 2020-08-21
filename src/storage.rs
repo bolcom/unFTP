@@ -198,7 +198,7 @@ impl StorageBackend<User> for StorageBE {
     }
 }
 
-fn castf(f: tokio::fs::File) -> Box<dyn AsyncRead + Sync + Send + Unpin> {
+fn castf(f: tokio::io::BufReader<tokio::fs::File>) -> Box<dyn AsyncRead + Sync + Send + Unpin> {
     Box::new(f)
 }
 
