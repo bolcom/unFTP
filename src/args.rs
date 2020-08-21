@@ -12,6 +12,7 @@ pub const AUTH_TYPE: &str = "auth-type";
 pub const BIND_ADDRESS: &str = "bind-address";
 pub const FTPS_CERTS_FILE: &str = "ftps-certs-file";
 pub const FTPS_KEY_FILE: &str = "ftps-key-file";
+pub const GCS_BASE_URL: &str = "sbe-gcs-base-url";
 pub const GCS_BUCKET: &str = "sbe-gcs-bucket";
 pub const GCS_KEY_FILE: &str = "sbe-gcs-key-file";
 pub const HTTP_BIND_ADDRESS: &str = "bind-address-http";
@@ -237,6 +238,15 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .env("UNFTP_SBE_TYPE")
                 .takes_value(true)
                 .default_value("filesystem"),
+        )
+        .arg(
+            Arg::with_name(GCS_BASE_URL)
+                .long("sbe-gcs-base-url")
+                .value_name("URL")
+                .help("The base url of Google Cloud Storage API")
+                .env("UNFTP_SBE_GCS_BASE_URL")
+                .default_value("https://www.googleapis.com")
+                .takes_value(true),
         )
         .arg(
             Arg::with_name(GCS_BUCKET)
