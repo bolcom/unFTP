@@ -18,8 +18,7 @@ readme = "README.md"
 
 [dependencies]
 async-trait = "0.1.37"
-#libunftp = { path="../libunftp" }
-libunftp = {git = "https://github.com/bolcom/libunftp.git", rev = "0526e7077dd83e28b69264dd36a35e7fda6d4fc3"}
+libunftp = {git = "https://github.com/bolcom/libunftp.git", rev = "e4ef636ecf8f5ba31ec083bb15f288f31e05ffb2"}
 redis = "0.9.0"
 serde_json = "1.0.57"
 chrono = "0.4.6"
