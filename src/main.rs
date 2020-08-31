@@ -251,7 +251,6 @@ fn start_ftp_with_storage<S>(
 ) -> Result<(), String>
 where
     S: StorageBackend<user::User> + Send + Sync + 'static,
-    S::File: tokio::io::AsyncRead + Send + Sync,
     S::Metadata: Sync + Send,
 {
     let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());

@@ -6,7 +6,6 @@ use std::fmt::Debug;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::SystemTime;
-use tokio::io::AsyncRead;
 
 #[derive(Debug)]
 pub enum InnerStorage {
@@ -90,7 +89,6 @@ impl StorageBE {
 
 #[async_trait]
 impl StorageBackend<User> for StorageBE {
-    type File = Box<dyn AsyncRead + Sync + Send + Unpin>;
     type Metadata = SBEMeta;
 
     async fn metadata<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> Result<Self::Metadata> {
@@ -134,11 +132,11 @@ impl StorageBackend<User> for StorageBE {
         user: &Option<User>,
         path: P,
         start_pos: u64,
-    ) -> Result<Self::File> {
+    ) -> Result<Box<dyn tokio::io::AsyncRead + Send + Sync + Unpin>> {
         slog::info!(self.log(user, &path), "Client requested to retrieve a file");
         match &self.inner {
-            InnerStorage::Cloud(i) => i.get(user, path, start_pos).await.map(castc),
-            InnerStorage::File(i) => i.get(user, path, start_pos).await.map(castf),
+            InnerStorage::Cloud(i) => i.get(user, path, start_pos).await,
+            InnerStorage::File(i) => i.get(user, path, start_pos).await,
         }
     }
 
@@ -196,12 +194,4 @@ impl StorageBackend<User> for StorageBE {
             InnerStorage::File(i) => i.cwd(user, path).await,
         }
     }
-}
-
-fn castf(f: tokio::io::BufReader<tokio::fs::File>) -> Box<dyn AsyncRead + Sync + Send + Unpin> {
-    Box::new(f)
-}
-
-fn castc(f: libunftp::storage::cloud_storage::object::Object) -> Box<dyn AsyncRead + Sync + Send + Unpin> {
-    Box::new(f)
 }
