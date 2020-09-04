@@ -15,7 +15,7 @@ mod user;
 
 use clap::ArgMatches;
 use futures::prelude::*;
-use libunftp::{auth, storage::StorageBackend, Server};
+use libunftp::{auth, options, storage::StorageBackend, Server};
 use slog::*;
 use std::{
     env,
@@ -34,7 +34,6 @@ use user::LookupAuthenticator;
 
 #[cfg(feature = "pam_auth")]
 use libunftp::auth::pam;
-use libunftp::options;
 
 fn redis_logger(m: &clap::ArgMatches) -> Result<Option<redislog::Logger>, String> {
     match (
@@ -313,7 +312,17 @@ where
     ) {
         (Some(certs_file), Some(key_file)) => {
             info!(log, "FTPS enabled");
-            server.ftps(certs_file, key_file)
+            let server = server.ftps(certs_file, key_file);
+            let ftps_required = match arg_matches.value_of(args::FTPS_REQUIRED_ON_CONTROL_CHANNEL) {
+                None => libunftp::options::FtpsRequired::None,
+                Some(str) => match str.parse::<args::FtpsRequiredType>()? {
+                    args::FtpsRequiredType::all => libunftp::options::FtpsRequired::All,
+                    args::FtpsRequiredType::accounts => libunftp::options::FtpsRequired::Logins,
+                    args::FtpsRequiredType::none => libunftp::options::FtpsRequired::None,
+                },
+            };
+            info!(log, "FTPS requirement for clients: {}", ftps_required; "mode" => format!("{:?}", ftps_required));
+            server.ftps_required(ftps_required)
         }
         (Some(_), None) | (None, Some(_)) => {
             warn!(

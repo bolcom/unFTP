@@ -12,6 +12,7 @@ pub const AUTH_TYPE: &str = "auth-type";
 pub const BIND_ADDRESS: &str = "bind-address";
 pub const FTPS_CERTS_FILE: &str = "ftps-certs-file";
 pub const FTPS_KEY_FILE: &str = "ftps-key-file";
+pub const FTPS_REQUIRED_ON_CONTROL_CHANNEL: &str = "ftps-required-on-control-channel";
 pub const GCS_BASE_URL: &str = "sbe-gcs-base-url";
 pub const GCS_BUCKET: &str = "sbe-gcs-bucket";
 pub const GCS_KEY_FILE: &str = "sbe-gcs-key-file";
@@ -31,7 +32,7 @@ pub const VERBOSITY: &str = "verbosity";
 arg_enum! {
     #[derive(Debug)]
     #[allow(non_camel_case_types)]
-    enum AuthType {
+    pub enum AuthType {
         anonymous,
         pam,
         rest,
@@ -42,9 +43,19 @@ arg_enum! {
 arg_enum! {
     #[derive(Debug)]
     #[allow(non_camel_case_types)]
-    enum StorageBackendType {
+    pub enum StorageBackendType {
         filesystem,
         gcs,
+    }
+}
+
+arg_enum! {
+    #[derive(Debug)]
+    #[allow(non_camel_case_types)]
+    pub enum FtpsRequiredType {
+        all,
+        accounts,
+        none,
     }
 }
 
@@ -94,6 +105,19 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .help("Sets the path to the private key file (PEM format) used for TLS security")
                 .env("UNFTP_FTPS_KEY_FILE")
                 .takes_value(true)
+                .requires(FTPS_CERTS_FILE),
+        )
+        .arg(
+            Arg::with_name(FTPS_REQUIRED_ON_CONTROL_CHANNEL)
+                .long("ftps-required-on-control-channel")
+                .value_name("REQUIRE_SETTING")
+                .help("Sets whether FTP clients are required to upgrade to FTPS. The difference \
+                          between 'all' and 'accounts' is that the latter does not enforce FTPS on \
+                          anonymous logins i.e. it applies to accounts only")
+                .env("UNFTP_FTPS_REQUIRED_ON_CONTROL_CHANNEL")
+                .possible_values(&FtpsRequiredType::variants())
+                .takes_value(true)
+                .default_value("none")
                 .requires(FTPS_CERTS_FILE),
         )
         .arg(
