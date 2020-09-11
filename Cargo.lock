@@ -346,6 +346,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "derive_more"
+version = "0.99.9"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "298998b1cf6b5b2c8a7b023dfd45821825ce3ba8a8af55c921a0e734e4653f76"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "dirs"
 version = "2.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -773,11 +784,12 @@ dependencies = [
 [[package]]
 name = "libunftp"
 version = "0.12.0"
-source = "git+https://github.com/bolcom/libunftp.git?rev=b1e75bd305d5060992bda64c13f139b35275677b#b1e75bd305d5060992bda64c13f139b35275677b"
+source = "git+https://github.com/bolcom/libunftp.git?rev=d91004c27260e0b040125465f09d61fba26a0ec3#d91004c27260e0b040125465f09d61fba26a0ec3"
 dependencies = [
  "async-trait",
  "bytes 0.5.6",
  "chrono",
+ "derive_more",
  "failure",
  "failure_derive",
  "futures 0.3.5",
@@ -798,6 +810,7 @@ dependencies = [
  "serde_json",
  "slog",
  "slog-stdlog",
+ "thiserror",
  "tokio",
  "tokio-rustls 0.14.1",
  "tokio-util",
@@ -1761,18 +1774,18 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "1.0.15"
+version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "54b3d3d2ff68104100ab257bb6bb0cb26c901abe4bd4ba15961f3bf867924012"
+checksum = "7dfdd070ccd8ccb78f4ad66bf1982dc37f620ef696c6b5028fe2ed83dd3d0d08"
 dependencies = [
  "thiserror-impl",
 ]
 
 [[package]]
 name = "thiserror-impl"
-version = "1.0.15"
+version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ca972988113b7715266f91250ddb98070d033c62a011fa0fcc57434a649310dd"
+checksum = "bd80fc12f73063ac132ac92aceea36734f04a1d93c1240c6944e23a3b8841793"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -2033,6 +2046,7 @@ dependencies = [
  "slog",
  "slog-async",
  "slog-term",
+ "thiserror",
  "tokio",
  "tokio-rustls 0.14.1",
  "yup-oauth2",

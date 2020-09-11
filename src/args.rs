@@ -13,6 +13,7 @@ pub const BIND_ADDRESS: &str = "bind-address";
 pub const FTPS_CERTS_FILE: &str = "ftps-certs-file";
 pub const FTPS_KEY_FILE: &str = "ftps-key-file";
 pub const FTPS_REQUIRED_ON_CONTROL_CHANNEL: &str = "ftps-required-on-control-channel";
+pub const FTPS_REQUIRED_ON_DATA_CHANNEL: &str = "ftps-required-on-data-channel";
 pub const GCS_BASE_URL: &str = "sbe-gcs-base-url";
 pub const GCS_BUCKET: &str = "sbe-gcs-bucket";
 pub const GCS_KEY_FILE: &str = "sbe-gcs-key-file";
@@ -111,7 +112,20 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
             Arg::with_name(FTPS_REQUIRED_ON_CONTROL_CHANNEL)
                 .long("ftps-required-on-control-channel")
                 .value_name("REQUIRE_SETTING")
-                .help("Sets whether FTP clients are required to upgrade to FTPS. The difference \
+                .help("Sets whether FTP clients are required to upgrade to FTPS on the control channel. The difference \
+                          between 'all' and 'accounts' is that the latter does not enforce FTPS on \
+                          anonymous logins i.e. it applies to accounts only")
+                .env("UNFTP_FTPS_REQUIRED_ON_CONTROL_CHANNEL")
+                .possible_values(&FtpsRequiredType::variants())
+                .takes_value(true)
+                .default_value("none")
+                .requires(FTPS_CERTS_FILE),
+        )
+        .arg(
+            Arg::with_name(FTPS_REQUIRED_ON_DATA_CHANNEL)
+                .long("ftps-required-on-data-channel")
+                .value_name("REQUIRE_SETTING")
+                .help("Sets whether FTP clients are required to upgrade to FTPS on the data channel. The difference \
                           between 'all' and 'accounts' is that the latter does not enforce FTPS on \
                           anonymous logins i.e. it applies to accounts only")
                 .env("UNFTP_FTPS_REQUIRED_ON_CONTROL_CHANNEL")
