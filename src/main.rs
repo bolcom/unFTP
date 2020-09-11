@@ -34,6 +34,7 @@ use user::LookupAuthenticator;
 
 #[cfg(feature = "pam_auth")]
 use libunftp::auth::pam;
+use libunftp::options::FtpsRequired;
 
 fn redis_logger(m: &clap::ArgMatches) -> Result<Option<redislog::Logger>, String> {
     match (
@@ -289,7 +290,7 @@ where
 
     info!(log, "Idle session timeout is set to {} seconds", idle_timeout);
 
-    let mut server = Server::new_with_authenticator(storage_backend, make_auth(&arg_matches)?)
+    let mut server = Server::with_authenticator(storage_backend, make_auth(&arg_matches)?)
         .greeting("Welcome to unFTP")
         .passive_ports(start_port..end_port)
         .idle_session_timeout(idle_timeout)
@@ -313,16 +314,29 @@ where
         (Some(certs_file), Some(key_file)) => {
             info!(log, "FTPS enabled");
             let server = server.ftps(certs_file, key_file);
-            let ftps_required = match arg_matches.value_of(args::FTPS_REQUIRED_ON_CONTROL_CHANNEL) {
-                None => libunftp::options::FtpsRequired::None,
-                Some(str) => match str.parse::<args::FtpsRequiredType>()? {
-                    args::FtpsRequiredType::all => libunftp::options::FtpsRequired::All,
-                    args::FtpsRequiredType::accounts => libunftp::options::FtpsRequired::Logins,
-                    args::FtpsRequiredType::none => libunftp::options::FtpsRequired::None,
-                },
-            };
-            info!(log, "FTPS requirement for clients: {}", ftps_required; "mode" => format!("{:?}", ftps_required));
-            server.ftps_required(ftps_required)
+            let ftps_req_args: Result<Vec<FtpsRequired>, String> = [
+                args::FTPS_REQUIRED_ON_CONTROL_CHANNEL,
+                args::FTPS_REQUIRED_ON_DATA_CHANNEL,
+            ]
+            .iter()
+            .map(|arg| -> Result<FtpsRequired, String> {
+                let ftps_required = match arg_matches.value_of(arg) {
+                    None => libunftp::options::FtpsRequired::None,
+                    Some(str) => match str.parse::<args::FtpsRequiredType>()? {
+                        args::FtpsRequiredType::all => libunftp::options::FtpsRequired::All,
+                        args::FtpsRequiredType::accounts => libunftp::options::FtpsRequired::Accounts,
+                        args::FtpsRequiredType::none => libunftp::options::FtpsRequired::None,
+                    },
+                };
+                Ok(ftps_required)
+            })
+            .collect();
+            let ftps_req_args = ftps_req_args?;
+            let (ftps_required_control, ftps_required_data) = (ftps_req_args[0], ftps_req_args[1]);
+
+            info!(log, "FTPS requirement for clients on control channel: {}", ftps_required_control; "mode" => format!("{:?}", ftps_required_control));
+            info!(log, "FTPS requirement for clients on data channel: {}", ftps_required_data; "mode" => format!("{:?}", ftps_required_data));
+            server.ftps_required(ftps_required_control, ftps_required_data)
         }
         (Some(_), None) | (None, Some(_)) => {
             warn!(
