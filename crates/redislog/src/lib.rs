@@ -1,3 +1,5 @@
+//! This crate implements a [slog](https://crates.io/crates/slog) logger that outputs to a Redis list in a structured way.
+
 use std::cell::RefCell;
 use std::fmt;
 use std::process::Command;
@@ -12,6 +14,7 @@ use slog::{OwnedKVList, Record, KV};
 
 /// A logger that sends JSON formatted logs to a list in a Redis instance. It uses this format
 ///
+/// ```json
 ///   {
 ///     "@timestamp": ${timeRFC3339},
 ///     "@source_host": ${hostname},
@@ -23,14 +26,11 @@ use slog::{OwnedKVList, Record, KV};
 ///        ... // logged field 2
 ///        ...
 ///    }
+/// ```
 ///
-/// It supports structured logging via [`slog`][slog-url] and also implements the `Log`
-/// trait from the [`log` crate][log-crate-url].
+/// It supports structured logging via [`slog`][slog-url]. You can use the [`Builder`] to
+/// construct it and then use it as an slog drain.
 ///
-/// You can use the [`Builder`] to construct it and then use it as an slog drain or install it with
-/// the [`log` crate][log-crate-url].
-///
-/// [log-crate-url]: https://docs.rs/log/
 /// [`Builder`]: struct.Builder.html
 /// [slog-url]: https://github.com/slog-rs/slog
 #[derive(Debug)]
