@@ -407,6 +407,17 @@ fn create_logger(arg_matches: &ArgMatches) -> Result<slog::Logger, String> {
         _ => slog::Level::Trace,
     };
 
+    let min_log_level = match arg_matches.value_of(args::LOG_LEVEL) {
+        Some(level) => match level.parse::<args::LogLevelType>()? {
+            args::LogLevelType::error => slog::Level::Error,
+            args::LogLevelType::warn => slog::Level::Warning,
+            args::LogLevelType::info => slog::Level::Info,
+            args::LogLevelType::debug => slog::Level::Debug,
+            args::LogLevelType::trace => slog::Level::Trace,
+        },
+        None => min_log_level,
+    };
+
     let decorator = slog_term::TermDecorator::new().force_color().build();
     let term_drain = slog_term::FullFormat::new(decorator)
         .build()
