@@ -3,12 +3,10 @@ use async_trait::async_trait;
 use libunftp::storage::Result;
 use libunftp::storage::{Fileinfo, StorageBackend};
 use std::fmt::Debug;
+use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::SystemTime;
-use std::io::Cursor;
-use libunftp::storage::cloud_storage::CloudStorage;
-use libunftp::storage::filesystem::Filesystem;
 
 #[derive(Debug)]
 pub enum InnerStorage {
@@ -137,27 +135,39 @@ impl StorageBackend<User> for StorageBE {
         }
     }
 
-    async fn list_fmt<P>(&self, user: &Option<User>, path: P) -> Result<Cursor<Vec<u8>>> where
+    async fn list_fmt<P>(&self, user: &Option<User>, path: P) -> Result<Cursor<Vec<u8>>>
+    where
         P: AsRef<Path> + Send + Debug,
-        Self::Metadata: libunftp::storage::Metadata + 'static, {
+        Self::Metadata: libunftp::storage::Metadata + 'static,
+    {
         match &self.inner {
             InnerStorage::Cloud(i) => i.list_fmt(user, path).await,
             InnerStorage::File(i) => i.list_fmt(user, path).await,
         }
     }
 
-    async fn nlst<P>(&self, user: &Option<User>, path: P) -> std::io::Result<Cursor<Vec<u8>>> where
+    async fn nlst<P>(&self, user: &Option<User>, path: P) -> std::io::Result<Cursor<Vec<u8>>>
+    where
         P: AsRef<Path> + Send + Debug,
-        Self::Metadata: libunftp::storage::Metadata + 'static, {
+        Self::Metadata: libunftp::storage::Metadata + 'static,
+    {
         match &self.inner {
             InnerStorage::Cloud(i) => i.nlst(user, path).await,
             InnerStorage::File(i) => i.nlst(user, path).await,
         }
     }
 
-    async fn get_into<'a, P, W: ?Sized>(&self, user: &Option<User>, path: P, start_pos: u64, output: &'a mut W) -> Result<u64> where
+    async fn get_into<'a, P, W: ?Sized>(
+        &self,
+        user: &Option<User>,
+        path: P,
+        start_pos: u64,
+        output: &'a mut W,
+    ) -> Result<u64>
+    where
         W: tokio::io::AsyncWrite + Unpin + Sync + Send,
-        P: AsRef<Path> + Send + Debug, {
+        P: AsRef<Path> + Send + Debug,
+    {
         match &self.inner {
             InnerStorage::Cloud(i) => i.get_into(user, path, start_pos, output).await,
             InnerStorage::File(i) => i.get_into(user, path, start_pos, output).await,
@@ -231,6 +241,4 @@ impl StorageBackend<User> for StorageBE {
             InnerStorage::File(i) => i.cwd(user, path).await,
         }
     }
-
-
 }

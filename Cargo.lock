@@ -771,7 +771,7 @@ dependencies = [
  "pam",
  "path_abs",
  "percent-encoding 2.1.0",
- "prometheus 0.10.0",
+ "prometheus",
  "proxy-protocol",
  "rand",
  "regex",
@@ -1142,20 +1142,6 @@ dependencies = [
 
 [[package]]
 name = "prometheus"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dd0ced56dee39a6e960c15c74dc48849d614586db2eaada6497477af7c7811cd"
-dependencies = [
- "cfg-if",
- "fnv",
- "lazy_static",
- "protobuf",
- "spin",
- "thiserror",
-]
-
-[[package]]
-name = "prometheus"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "30d70cf4412832bcac9cffe27906f4a66e450d323525e977168c70d1b36120ae"
@@ -1271,6 +1257,18 @@ dependencies = [
  "tokio-io",
  "tokio-tcp",
  "url 1.7.2",
+]
+
+[[package]]
+name = "redislog"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "r2d2",
+ "r2d2_redis",
+ "redis",
+ "serde_json",
+ "slog",
 ]
 
 [[package]]
@@ -1966,18 +1964,14 @@ version = "0.12.0"
 dependencies = [
  "async-trait",
  "built",
- "chrono",
  "clap",
  "futures 0.3.5",
  "http",
  "hyper",
  "lazy_static",
  "libunftp",
- "prometheus 0.9.0",
- "r2d2",
- "r2d2_redis",
- "redis",
- "serde_json",
+ "prometheus",
+ "redislog",
  "slog",
  "slog-async",
  "slog-term",
