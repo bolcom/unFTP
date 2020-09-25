@@ -30,17 +30,25 @@ pub fn create_logger(arg_matches: &ArgMatches) -> Result<slog::Logger, String> {
         .filter_level(min_log_level)
         .fuse();
 
-    let drain = match redis_logger(&arg_matches)? {
-        Some(redis_logger) => {
+    let mut err: Option<String> = None;
+    let drain = match redis_logger(&arg_matches) {
+        Ok(Some(redis_logger)) => {
             let both = slog::Duplicate::new(redis_logger, term_drain).fuse();
             slog_async::Async::new(both.filter_level(min_log_level).fuse())
                 .build()
                 .fuse()
         }
-        None => slog_async::Async::new(term_drain).build().fuse(),
+        Ok(None) => slog_async::Async::new(term_drain).build().fuse(),
+        Err(e) => {
+            err = e.into();
+            slog_async::Async::new(term_drain).build().fuse()
+        }
     };
     let root = Logger::root(drain, o!());
     let log = root.new(o!());
+    if let Some(err_str) = err {
+        error!(log, "Continuing only with terminal logger: {}", err_str)
+    }
     Ok(log)
 }
 
