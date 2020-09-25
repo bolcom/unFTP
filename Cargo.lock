@@ -347,9 +347,9 @@ dependencies = [
 
 [[package]]
 name = "derive_more"
-version = "0.99.9"
+version = "0.99.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "298998b1cf6b5b2c8a7b023dfd45821825ce3ba8a8af55c921a0e734e4653f76"
+checksum = "1dcfabdab475c16a93d669dddfc393027803e347d09663f524447f642fbb84ba"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1737,9 +1737,9 @@ dependencies = [
 
 [[package]]
 name = "synstructure"
-version = "0.12.3"
+version = "0.12.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "67656ea1dc1b41b1451851562ea232ec2e5a80242139f7e679ceccfb5d61f545"
+checksum = "b834f2d66f734cb897113e34aaff2f1ab4719ca946f9a7358dba8f8064148701"
 dependencies = [
  "proc-macro2",
  "quote",

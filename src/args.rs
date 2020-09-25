@@ -29,6 +29,7 @@ pub const REDIS_PORT: &str = "log-redis-port";
 pub const ROOT_DIR: &str = "root-dir";
 pub const STORAGE_BACKEND_TYPE: &str = "sbe-type";
 pub const VERBOSITY: &str = "verbosity";
+pub const LOG_LEVEL: &str = "log-level";
 
 arg_enum! {
     #[derive(Debug)]
@@ -60,6 +61,18 @@ arg_enum! {
     }
 }
 
+arg_enum! {
+    #[derive(Debug)]
+    #[allow(non_camel_case_types)]
+    pub enum LogLevelType {
+        error,
+        warn,
+        info,
+        debug,
+        trace,
+    }
+}
+
 pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
     App::new(app::NAME)
         .version(app::VERSION)
@@ -70,7 +83,16 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
             Arg::with_name(VERBOSITY)
                 .short("v")
                 .multiple(true)
-                .help("verbosity level"),
+                .help("verbosity level")
+        )
+        .arg(
+            Arg::with_name(LOG_LEVEL)
+                .long("log-level")
+                .value_name("LEVEL")
+                .help("Sets the logging level. This overrides the verbosity flag -v if it is also specified.")
+                .env("UNFTP_LOG_LEVEL")
+                .possible_values(&LogLevelType::variants())
+                .takes_value(true)
         )
         .arg(
             Arg::with_name(BIND_ADDRESS)
@@ -119,7 +141,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .possible_values(&FtpsRequiredType::variants())
                 .takes_value(true)
                 .default_value("none")
-                .requires(FTPS_CERTS_FILE),
         )
         .arg(
             Arg::with_name(FTPS_REQUIRED_ON_DATA_CHANNEL)
@@ -132,7 +153,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .possible_values(&FtpsRequiredType::variants())
                 .takes_value(true)
                 .default_value("none")
-                .requires(FTPS_CERTS_FILE),
         )
         .arg(
             Arg::with_name(REDIS_KEY)
