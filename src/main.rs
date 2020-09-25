@@ -443,6 +443,7 @@ fn run(arg_matches: ArgMatches) -> Result<(), String> {
     let log = root_logger.new(o!("module" => "main"));
 
     let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());
+    let http_addr = String::from(arg_matches.value_of(args::HTTP_BIND_ADDRESS).unwrap());
     let home_dir = String::from(arg_matches.value_of(args::ROOT_DIR).unwrap());
     let auth_type = String::from(arg_matches.value_of(args::AUTH_TYPE).unwrap());
     let sbe_type = String::from(arg_matches.value_of(args::STORAGE_BACKEND_TYPE).unwrap());
@@ -450,7 +451,8 @@ fn run(arg_matches: ArgMatches) -> Result<(), String> {
     info!(log, "Starting {} server.", app::NAME;
     "version" => app::VERSION,
     "libunftp-version" => app::libunftp_version(),
-    "address" => &addr,
+    "ftp-address" => &addr,
+    "http-address" => &http_addr,
     "home" => home_dir,
     "auth-type" => auth_type,
     "sbe-type" => sbe_type,
