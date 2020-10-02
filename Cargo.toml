@@ -1,6 +1,6 @@
 [package]
 name = "unftp"
-version = "0.12.0"
+version = "0.12.1"
 authors = [
     "Agoston Horvath <ahorvath@bol.com>",
     "Dávid Kosztka <dkosztka@bol.com>",
@@ -11,19 +11,24 @@ authors = [
     "Rob klein Gunnewiek <rkleingunnewiek@bol.com>"
 ]
 edition = "2018"
-description = "When you need to FTP, but don't want to."
+description = "When you need to FTP, but don't want to. An async, cloud orientated FTP(S) server built on libunftp"
 repository = "https://github.com/bolcom/unFTP"
+homepage = "https://github.com/bolcom/unFTP"
 license = "Apache-2.0"
 readme = "README.md"
+keywords = ["ftp", "ftps", "server"]
+categories = ["servers"]
+documentation = "https://github.com/bolcom/unFTP"
 
 [workspace]
 
-[dependencies.redislog]
+[dependencies.slog-redis]
 path="crates/redislog"
+version="0.1.0"
 
 [dependencies]
 async-trait = "0.1.37"
-libunftp = {git = "https://github.com/bolcom/libunftp.git", rev = "52c9a9109a3b62c69ebbc4287db0ca6fdcebbcdf"}
+libunftp = { version = "0.13.0" }
 slog = { version = "2.4.1", features = ["max_level_trace", "release_max_level_info"] }
 slog-term = "2.6.0"
 slog-async = "2.3.0"
@@ -59,4 +64,5 @@ built = "0.3"
 
 [profile.release]
 debug = false
-# lto = true
+lto = "fat"
+codegen-units = 1

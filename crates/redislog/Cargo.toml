@@ -1,9 +1,17 @@
 [package]
-name = "redislog"
+name = "slog-redis"
+description = "Redis drain for slog-rs"
 version = "0.1.0"
 authors = ["Hannes de Jager <hdejager@bol.com>"]
 edition = "2018"
 license = "Apache-2.0"
+keywords = ["slog", "logging", "log", "redis"]
+categories = ["development-tools::debugging"]
+documentation = "https://docs.rs/slog-redis"
+homepage = "https://github.com/bolcom/unFTP/tree/master/crates/redislog"
+repository = "https://github.com/bolcom/unFTP/tree/master/crates/redislog"
+readme = "README.md"
+
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

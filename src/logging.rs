@@ -3,6 +3,7 @@ use crate::args;
 
 use clap::ArgMatches;
 use slog::*;
+use slog_redis as redislog;
 use std::result::Result;
 
 pub fn create_logger(arg_matches: &ArgMatches) -> Result<slog::Logger, String> {

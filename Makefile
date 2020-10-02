@@ -1,4 +1,4 @@
-RUST_VERSION=1.45.2
+RUST_VERSION=1.46.0
 DOCKER_TAG=$(shell git describe --tags)
 DOCKER_TEMPLATES:=$(wildcard *.Dockerfile.template)
 DOCKER_FILES=$(DOCKER_TEMPLATES:%.template=%)
@@ -83,3 +83,6 @@ clean: # Removes generated files
 	cargo clean
 	rm -rf release
 	rm *.Dockerfile
+
+publish:
+	cargo publish --verbose --features rest_auth,jsonfile_auth,cloud_storage
