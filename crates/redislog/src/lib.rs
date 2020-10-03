@@ -1,4 +1,5 @@
-//! This crate implements a [slog](https://crates.io/crates/slog) logger that outputs to a Redis list in a structured way.
+//! This crate implements a [slog](https://crates.io/crates/slog) drain that outputs to a Redis list
+//! in a structured way.
 
 use std::cell::RefCell;
 use std::fmt;

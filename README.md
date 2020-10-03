@@ -1,5 +1,6 @@
 # unFTP
 
+[![Crate Version](https://img.shields.io/crates/v/unftp.svg)](https://crates.io/crates/unftp)
 [![Build Status](https://travis-ci.org/bolcom/unFTP.svg)](https://travis-ci.org/bolcom/unFTP) 
 [![Docker Pulls](https://img.shields.io/docker/pulls/bolcom/unftp.svg?maxAge=2592000?style=plastic)](https://hub.docker.com/r/bolcom/unftp/)
 
@@ -26,13 +27,23 @@ techniques on the inside of your perimeter.
 [Precompiled binaries for unFTP are available](https://github.com/bolcom/unFTP/releases) for Linux and macOS. These 
 binaries are static executables.
 
+To install with Curl:
+
+```sh
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.1/unftp_x86_64-apple-darwin \
+  | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
+```
+
 ### From Source
 
-#### Prerequisites
+You'll need [Rust](https://rust-lang.org) 1.45 (including `cargo`) or higher to build unFTP. Then: 
 
-You'll need [Rust](https://rust-lang.org) 1.45 (including `cargo`) or higher to build unFTP. 
+```sh
+cargo install unftp
+```
 
-Run `make help` to see an overview of the supplied *make* targets.
+and find unftp in `~/.cargo/bin/unftp`. You may want to add `~/.cargo/bin` to your PATH if you haven't done so. The above 
+merely creates the binary there, it won't start it as a service at the moment.
 
 #### Features
 
