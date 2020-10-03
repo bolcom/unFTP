@@ -27,7 +27,16 @@ techniques on the inside of your perimeter.
 [Precompiled binaries for unFTP are available](https://github.com/bolcom/unFTP/releases) for Linux and macOS. These 
 binaries are static executables.
 
-To install with Curl:
+#### To install with Curl:
+
+Linux:
+
+```sh
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.1/unftp_x86_64-unknown-linux-musl \
+  | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
+```
+
+macOS:
 
 ```sh
 curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.1/unftp_x86_64-apple-darwin \
