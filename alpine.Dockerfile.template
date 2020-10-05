@@ -15,10 +15,12 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certifi
 
 # run as user for security
 RUN mkdir /unftp
-RUN addgroup -S unftp && adduser -S unftp -G unftp
-COPY --from=builder /usr/src/unftp/target/x86_64-unknown-linux-musl/release/unftp /unftp
-RUN chown -R unftp:unftp /unftp
+RUN addgroup -g 1010 unftp \
+    && adduser -D -s /bin/sh -u 1010 -G unftp unftp \
+    && chown -R unftp:unftp /unftp /srv
+COPY --chown=unftp:unftp --from=builder /usr/src/unftp/target/x86_64-unknown-linux-musl/release/unftp /unftp
 
+VOLUME /srv
 WORKDIR /unftp
 USER unftp
-CMD ["/unftp/unftp"]
+CMD ["/unftp/unftp", "-vv"]

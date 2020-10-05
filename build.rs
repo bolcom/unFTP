@@ -13,10 +13,11 @@ fn main() {
         format!("{}/{}", std::env::var("CARGO_MANIFEST_DIR").unwrap(), "web")
     );
 
-    #[cfg(feature = "static")]
-    {
-        println!("cargo:rustc-link-lib=static=pam");
-    }
+    // Didn't quite get that to work yet.
+    // #[cfg(feature = "static")]
+    // {
+    //     println!("cargo:rustc-link-lib=static=pam");
+    // }
 
     generate_build_info();
 }

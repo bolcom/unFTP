@@ -16,6 +16,7 @@ unFTP is a FTP(S) server written in [Rust](https://www.rust-lang.org) and built 
 - An HTTP server with health endpoints for use for example in Kubernetes for readiness and liveness probes.
 - Integration with [Prometheus](https://prometheus.io) for monitoring.
 - A proxy protocol mode for use behind proxies like HA Proxy and Nginx.
+- Structured logging and the ability to ship logs to a Redis instance.
 
 With unFTP, you can present RFC compliant FTP(S) to the outside world while freeing yourself to use modern APIs and 
 techniques on the inside of your perimeter.
@@ -24,8 +25,8 @@ techniques on the inside of your perimeter.
 
 ### Binaries
 
-[Precompiled binaries for unFTP are available](https://github.com/bolcom/unFTP/releases) for Linux and macOS. These 
-binaries are static executables.
+[Precompiled binaries for unFTP are available](https://github.com/bolcom/unFTP/releases) for Linux and macOS. The Linux 
+binary is statically linked.
 
 #### To install with Curl:
 
@@ -58,9 +59,10 @@ merely creates the binary there, it won't start it as a service at the moment.
 
 unFTP offers optional features in its Cargo.toml:
 
-- `pam`: enables the PAM authentication module
-- `jsonfile_auth`: enables the JSON file authentication module
 - `cloud_storage`: enables the Google Cloud Storage (GCS) storage backend
+- `jsonfile_auth`: enables the JSON file authentication module
+- `pam_auth`: enables the PAM authentication module
+- `rest_auth`: enables the REST authentication module
 
 ## Usage
 
@@ -175,9 +177,9 @@ make help
 
 We offer 3 different options for building an unFTP docker image:
 
-- `scratch`: builds the binary in [rust:slim](https://hub.docker.com/_/rust) and deploys in a `FROM scratch` image.
-- `alpine` (default): builds in [rust:slim](https://hub.docker.com/_/rust) and deploy in alpine. This image is built with musl instead of a full-blown libc.
-- `alpine-debug`: same images as `alpine` but using the debug build of unftp and adds tools like [lftp](https://lftp.yar.ru/)
+- `scratch`: builds the binary in [rust:slim](https://hub.docker.com/_/rust) and deploys in a `FROM scratch` image. The unFTP binary is statically linked using [musl libc](https://www.musl-libc.org/).
+- `alpine` (default): builds in [rust:slim](https://hub.docker.com/_/rust) and deploy in alpine. This image is built with musl instead of a full-blown libc. The unFTP binary is statically linked using [musl libc](https://www.musl-libc.org/).
+- `alpine-debug`: same images as `alpine` but using the debug build of unftp and adds tools like [lftp](https://lftp.yar.ru/) and [CurlFtpFS](http://curlftpfs.sourceforge.net/) while also running as root.
 
 To build the alpine docker image:
 

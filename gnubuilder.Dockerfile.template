@@ -1,0 +1,12 @@
+FROM rust:%%RUST_VERSION%% AS builder
+WORKDIR /usr/src/unftp
+#RUN rustup target add x86_64-unknown-linux-gnu
+RUN apt-get update && apt-get install -y \
+  libpam-dev
+COPY . .
+RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --no-default-features --features gnu --release --target=x86_64-unknown-linux-gnu
+
+FROM alpine:latest
+COPY --chown=1010:1010 --from=builder /usr/src/unftp/target/x86_64-unknown-linux-gnu/release/unftp /unftp
+# Output to stdout for writing to the host filesystem with a redirect '>'
+CMD ["cat", "/unftp"]

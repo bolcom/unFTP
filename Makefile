@@ -73,16 +73,17 @@ release-artifacts: # Generates artifacts for a release
 	cp target/x86_64-apple-darwin/release/unftp ./release/unftp_x86_64-apple-darwin
 	md5 -r release/unftp_x86_64-apple-darwin > release/unftp_x86_64-apple-darwin.md5
 	$(MAKE) docker-image-alpine
-	docker run --name unftp-release-maker -d bolcom/unftp:$(DOCKER_TAG)-alpine sh
-	docker cp unftp-release-maker:/unftp/unftp release/unftp_x86_64-unknown-linux-musl
-	docker rm -vf unftp-release-maker
+	docker run --rm bolcom/unftp:$(DOCKER_TAG)-alpine cat /unftp/unftp > release/unftp_x86_64-unknown-linux-musl
 	md5 -r release/unftp_x86_64-unknown-linux-musl > release/unftp_x86_64-unknown-linux-musl.md5
+	$(MAKE) docker-image-gnubuilder
+	docker run --rm bolcom/unftp:$(DOCKER_TAG)-gnubuilder > release/unftp_x86_64-unknown-linux-gnu
+	md5 -r release/unftp_x86_64-unknown-linux-gnu > release/unftp_x86_64-unknown-linux-gnu.md5
 
 .PHONY: clean
 clean: # Removes generated files
 	cargo clean
 	rm -rf release
-	rm *.Dockerfile
+	rm -f *.Dockerfile
 
 publish:
 	cargo publish --verbose --features rest_auth,jsonfile_auth,cloud_storage
