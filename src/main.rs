@@ -15,6 +15,7 @@ mod user;
 
 use clap::ArgMatches;
 use futures::prelude::*;
+use libunftp::options::FtpsRequired;
 use libunftp::{auth, options, storage::StorageBackend, Server};
 use slog::*;
 use std::{
@@ -30,11 +31,11 @@ use tokio::{
     runtime::Runtime,
     signal::unix::{signal, SignalKind},
 };
+use tokio_compat_02::FutureExt;
 use user::LookupAuthenticator;
 
 #[cfg(feature = "pam_auth")]
 use libunftp::auth::pam;
-use libunftp::options::FtpsRequired;
 
 fn make_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<user::User> + Send + Sync>, String> {
     match m.value_of(args::AUTH_TYPE) {
@@ -157,7 +158,7 @@ fn gcs_storage_backend(
         .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_KEY_FILE))?
         .into();
 
-    let service_account_key = futures::executor::block_on(yup_oauth2::read_service_account_key(&key_file))
+    let service_account_key = futures::executor::block_on(yup_oauth2::read_service_account_key(&key_file).compat())
         .map_err(|e| format!("could not load GCS back-end key file: {}", e))
         .unwrap();
 
@@ -360,7 +361,7 @@ async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger, root_log: &Logger)
         let addr = String::from(addr);
         let log = log.clone();
         tokio::spawn(async move {
-            if let Err(e) = http::start(&log, &*addr, ftp_addr).await {
+            if let Err(e) = http::start(&log, &*addr, ftp_addr).compat().await {
                 error!(log, "HTTP Server error: {}", e)
             }
         });
@@ -391,7 +392,7 @@ fn run(arg_matches: ArgMatches) -> Result<(), String> {
     "sbe-type" => sbe_type,
     );
 
-    let mut runtime = Runtime::new().map_err(|e| format!("could not construct runtime: {}", e))?;
+    let runtime = Runtime::new().map_err(|e| format!("could not construct runtime: {}", e))?;
     let ExitSignal(signal) = runtime.block_on(main_task(arg_matches, &log, &root_logger))?;
     info!(log, "Received signal {}, shutting down...", signal);
     Ok(())
