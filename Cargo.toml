@@ -28,7 +28,7 @@ version="0.1.0"
 
 [dependencies]
 async-trait = "0.1.41"
-libunftp = { version = "0.13.0" }
+libunftp = { git = "https://github.com/bolcom/libunftp.git", rev="4c28a114967e99ba2a8c158e23029f65d93cfb47" }
 slog = { version = "2.4.1", features = ["max_level_trace", "release_max_level_info"] }
 slog-term = "2.6.0"
 slog-async = "2.3.0"
