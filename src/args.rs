@@ -149,7 +149,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .help("Sets whether FTP clients are required to upgrade to FTPS on the data channel. The difference \
                           between 'all' and 'accounts' is that the latter does not enforce FTPS on \
                           anonymous logins i.e. it applies to accounts only")
-                .env("UNFTP_FTPS_REQUIRED_ON_CONTROL_CHANNEL")
+                .env("UNFTP_FTPS_REQUIRED_ON_DATA_CHANNEL")
                 .possible_values(&FtpsRequiredType::variants())
                 .takes_value(true)
                 .default_value("none")
