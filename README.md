@@ -25,22 +25,33 @@ techniques on the inside of your perimeter.
 
 ### Binaries
 
-[Precompiled binaries for unFTP are available](https://github.com/bolcom/unFTP/releases) for Linux and macOS. The Linux 
-binary is statically linked.
+[Precompiled binaries for unFTP are available](https://github.com/bolcom/unFTP/releases) for Linux and macOS. On Linux
+you can choose between a statically linked image (no PAM integration) or a dynamically linked image with PAM integration:
+
+- unftp_x86_64-apple-darwin - macOS
+- unftp_x86_64-unknown-linux-musl - Linux statically linked, no PAM support.
+- unftp_x86_64-unknown-linux-gnu - Dynamically linked with PAM support.
 
 #### To install with Curl:
 
-Linux:
+Linux (static, no PAM):
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.1/unftp_x86_64-unknown-linux-musl \
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.2/unftp_x86_64-unknown-linux-musl \
+  | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
+```
+
+Linux (dynamic with PAM support):
+
+```sh
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.2/unftp_x86_64-unknown-linux-gnu \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
 macOS:
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.1/unftp_x86_64-apple-darwin \
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.2/unftp_x86_64-apple-darwin \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
