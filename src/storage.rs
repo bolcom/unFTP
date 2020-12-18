@@ -187,6 +187,18 @@ impl StorageBackend<User> for StorageBE {
         }
     }
 
+    // async fn put<'a, P, R: ?Sized>(&self, user: &Option<User>, input: &'a mut R, path: P, start_pos: u64) -> Result<u64>
+    //     where
+    //         R: tokio::io::AsyncRead + Unpin + Sync + Send,
+    //         P: AsRef<Path> + Send + Debug,
+    // {
+    //     slog::info!(self.log(user, &path), "Client requested to store a file");
+    //     match &self.inner {
+    //         InnerStorage::Cloud(i) => i.put(user, input, path, start_pos).await,
+    //         InnerStorage::File(i) => i.put(user, input, path, start_pos).await,
+    //     }
+    // }
+
     async fn put<P: AsRef<Path> + Send + Debug, R: tokio::io::AsyncRead + Send + Sync + Unpin + 'static>(
         &self,
         user: &Option<User>,
