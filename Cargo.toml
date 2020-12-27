@@ -29,21 +29,20 @@ version="0.1.0"
 [dependencies]
 async-trait = "0.1.41"
 clap = "2.33.3"
-futures = "0.3"
+futures = "0.3.9"
 http = "0.2.2"
 hyper = { version = "0.14.1", features = ["server", "http1"] }
 lazy_static = "1.4.0"
-libunftp = { git = "https://github.com/bolcom/libunftp.git", rev="4410a94f9835de3c8f0e48ffb41ab0a4be338289" }
+libunftp = { git = "https://github.com/bolcom/libunftp.git", rev="293a8e7dc8741f372b27ee191cbda1eecc32f185" }
 prometheus = "0.10.0"
 slog = { version = "2.5.2", features = ["max_level_trace", "release_max_level_info"] }
 slog-async = "2.5.0"
 slog-term = "2.6.0"
 tokio = { version = "1.0.1", features = ["full"] }
-yup-oauth2 = {version = "5.0.1", optional = true}
 
 [features]
 all = ["pam_auth", "rest_auth", "jsonfile_auth", "cloud_storage"]
-cloud_storage = ["libunftp/cloud_storage", "yup-oauth2"]
+cloud_storage = ["libunftp/cloud_storage"]
 jsonfile_auth = ["libunftp/jsonfile_auth"]
 pam_auth = ["libunftp/pam_auth"]
 rest_auth = ["libunftp/rest_auth"]

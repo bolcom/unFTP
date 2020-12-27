@@ -13,7 +13,7 @@ FROM alpine:latest
 # for devel only
 RUN apk add lftp
 RUN apk add --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing curlftpfs
-RUN apk add --repository http://dl-cdn.alpinelinux.org/alpine/edge/main fuse
+RUN apk add --repository http://dl-cdn.alpinelinux.org/alpine/edge/main fuse curl
 
 # we could also RUN 'apk add ca-certificates', but we prefer to be consistent with the -minimal image
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
