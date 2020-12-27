@@ -14,7 +14,6 @@ mod storage;
 mod user;
 
 use clap::ArgMatches;
-use futures::prelude::*;
 use libunftp::options::FtpsRequired;
 use libunftp::{auth, options, storage::StorageBackend, Server};
 use slog::*;
@@ -31,7 +30,6 @@ use tokio::{
     runtime::Runtime,
     signal::unix::{signal, SignalKind},
 };
-use tokio_compat_02::FutureExt;
 use user::LookupAuthenticator;
 
 #[cfg(feature = "pam_auth")]
@@ -158,7 +156,7 @@ fn gcs_storage_backend(
         .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_KEY_FILE))?
         .into();
 
-    let service_account_key = futures::executor::block_on(yup_oauth2::read_service_account_key(&key_file).compat())
+    let service_account_key = futures::executor::block_on(yup_oauth2::read_service_account_key(&key_file))
         .map_err(|e| format!("could not load GCS back-end key file: {}", e))
         .unwrap();
 
@@ -333,18 +331,15 @@ where
 struct ExitSignal(pub &'static str);
 
 async fn listen_for_signals() -> Result<ExitSignal, String> {
-    let mut term_stream = signal(SignalKind::terminate())
-        .map_err(|e| format!("could not listen for TERM signals: {}", e))?
-        .fuse();
-    let mut int_stream = signal(SignalKind::interrupt())
-        .map_err(|e| format!("Could not listen for signals: {}", e))?
-        .fuse();
+    let mut term_sig =
+        signal(SignalKind::terminate()).map_err(|e| format!("could not listen for TERM signals: {}", e))?;
+    let mut int_sig = signal(SignalKind::interrupt()).map_err(|e| format!("Could not listen for INT signal: {}", e))?;
 
     let sig_name = tokio::select! {
-        Some(_signal) = term_stream.next() => {
+        Some(_signal) = term_sig.recv() => {
             "SIG_TERM"
         },
-        Some(_signal) = int_stream.next() => {
+        Some(_signal) = int_sig.recv() => {
             "SIG_INT"
         },
     };
@@ -361,7 +356,7 @@ async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger, root_log: &Logger)
         let addr = String::from(addr);
         let log = log.clone();
         tokio::spawn(async move {
-            if let Err(e) = http::start(&log, &*addr, ftp_addr).compat().await {
+            if let Err(e) = http::start(&log, &*addr, ftp_addr).await {
                 error!(log, "HTTP Server error: {}", e)
             }
         });
