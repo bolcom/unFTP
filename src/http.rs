@@ -9,7 +9,7 @@ use hyper::{
 use slog::*;
 use std::net::{IpAddr, Ipv4Addr};
 use std::{net::SocketAddr, result::Result};
-use tokio::prelude::*;
+use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
 
 const PATH_HOME: &str = "/";
 const PATH_METRICS: &str = "/metrics";
