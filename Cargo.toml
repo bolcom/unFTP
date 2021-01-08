@@ -30,12 +30,12 @@ version="0.1.0"
 async-trait = "0.1.41"
 clap = "2.33.3"
 futures = "0.3.9"
-http = "0.2.2"
+http = "0.2.3"
 hyper = { version = "0.14.1", features = ["server", "http1"] }
 lazy_static = "1.4.0"
-libunftp = { git = "https://github.com/bolcom/libunftp.git", rev="293a8e7dc8741f372b27ee191cbda1eecc32f185" }
-prometheus = "0.10.0"
-slog = { version = "2.5.2", features = ["max_level_trace", "release_max_level_info"] }
+libunftp = { git = "https://github.com/bolcom/libunftp.git", rev="5dfabf30edbda36a88d3ab1c3692687332986d1e" }
+prometheus = "0.11.0"
+slog = { version = "2.7.0", features = ["max_level_trace", "release_max_level_info"] }
 slog-async = "2.5.0"
 slog-term = "2.6.0"
 tokio = { version = "1.0.1", features = ["full"] }

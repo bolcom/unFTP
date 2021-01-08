@@ -17,6 +17,7 @@ pub const FTPS_REQUIRED_ON_DATA_CHANNEL: &str = "ftps-required-on-data-channel";
 pub const GCS_BASE_URL: &str = "sbe-gcs-base-url";
 pub const GCS_BUCKET: &str = "sbe-gcs-bucket";
 pub const GCS_KEY_FILE: &str = "sbe-gcs-key-file";
+pub const GCS_ROOT: &str = "sbe-gcs-root";
 pub const GCS_SERVICE_ACCOUNT: &str = "sbe-gcs-service-account";
 pub const HTTP_BIND_ADDRESS: &str = "bind-address-http";
 pub const IDLE_SESSION_TIMEOUT: &str = "idle-session-timeout";
@@ -321,6 +322,15 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .value_name("KEY_FILE")
                 .help("The JSON file that contains the service account key for access to Google Cloud Storage.")
                 .env("UNFTP_SBE_GCS_KEY_FILE")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name(GCS_ROOT)
+                .long("sbe-gcs-root")
+                .value_name("PATH")
+                .help("The root path in the bucket where unFTP will look for and store files.")
+                .env("UNFTP_SBE_GCS_ROOT")
+                .default_value("/unftp")
                 .takes_value(true),
         )
         .arg(
