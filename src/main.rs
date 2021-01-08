@@ -152,6 +152,10 @@ fn gcs_storage_backend(
         .value_of(args::GCS_BASE_URL)
         .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_BUCKET))?
         .into();
+    let root_dir: PathBuf = m
+        .value_of(args::GCS_ROOT)
+        .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_ROOT))?
+        .into();
     let auth_method: AuthMethod = match (m.value_of(args::GCS_SERVICE_ACCOUNT), m.value_of(args::GCS_KEY_FILE)) {
         (None, None) => AuthMethod::WorkloadIdentity(None),
         (Some(_), Some(_)) => {
@@ -175,6 +179,7 @@ fn gcs_storage_backend(
         inner: storage::InnerStorage::Cloud(libunftp::storage::cloud_storage::CloudStorage::new(
             base_url.clone(),
             bucket.clone(),
+            root_dir.clone(),
             auth_method.clone(),
         )),
         log: sub_log.clone(),
