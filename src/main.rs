@@ -34,6 +34,7 @@ use user::LookupAuthenticator;
 
 #[cfg(feature = "pam_auth")]
 use libunftp::auth::pam;
+use libunftp::storage::cloud_storage::options::AuthMethod;
 
 fn make_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<user::User> + Send + Sync>, String> {
     match m.value_of(args::AUTH_TYPE) {
@@ -151,21 +152,30 @@ fn gcs_storage_backend(
         .value_of(args::GCS_BASE_URL)
         .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_BUCKET))?
         .into();
-    let key_file: PathBuf = m
-        .value_of(args::GCS_KEY_FILE)
-        .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_KEY_FILE))?
-        .into();
-
-    let service_account_key = futures::executor::block_on(yup_oauth2::read_service_account_key(&key_file))
-        .map_err(|e| format!("could not load GCS back-end key file: {}", e))
-        .unwrap();
+    let auth_method: AuthMethod = match (m.value_of(args::GCS_SERVICE_ACCOUNT), m.value_of(args::GCS_KEY_FILE)) {
+        (None, None) => AuthMethod::WorkloadIdentity(None),
+        (Some(_), Some(_)) => {
+            return Err(format!(
+                "Please specify either --{} or --{}, not both",
+                args::GCS_SERVICE_ACCOUNT,
+                args::GCS_KEY_FILE
+            ))
+        }
+        (Some(sevice_account), None) => AuthMethod::WorkloadIdentity(Some(sevice_account.into())),
+        (None, Some(key_file_path)) => {
+            let key_file: PathBuf = key_file_path.into();
+            let service_account_key = std::fs::read(key_file)
+                .map_err(|e| format!("could not load GCS back-end service account key from file: {}", e))?;
+            AuthMethod::ServiceAccountKey(service_account_key)
+        }
+    };
 
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
     Ok(Box::new(move || storage::StorageBE {
         inner: storage::InnerStorage::Cloud(libunftp::storage::cloud_storage::CloudStorage::new(
             base_url.clone(),
             bucket.clone(),
-            service_account_key.clone(),
+            auth_method.clone(),
         )),
         log: sub_log.clone(),
     }))
