@@ -174,6 +174,8 @@ fn gcs_storage_backend(
         }
     };
 
+    slog::info!(log, "GCS back-end auth method: {}", auth_method);
+
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
     Ok(Box::new(move || storage::StorageBE {
         inner: storage::InnerStorage::Cloud(libunftp::storage::cloud_storage::CloudStorage::new(
@@ -388,9 +390,13 @@ fn run(arg_matches: ArgMatches) -> Result<(), String> {
 
     let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());
     let http_addr = String::from(arg_matches.value_of(args::HTTP_BIND_ADDRESS).unwrap());
-    let home_dir = String::from(arg_matches.value_of(args::ROOT_DIR).unwrap());
     let auth_type = String::from(arg_matches.value_of(args::AUTH_TYPE).unwrap());
     let sbe_type = String::from(arg_matches.value_of(args::STORAGE_BACKEND_TYPE).unwrap());
+
+    let home_dir = String::from(match &*sbe_type {
+        "gcs" => arg_matches.value_of(args::GCS_ROOT).unwrap(),
+        _ => arg_matches.value_of(args::ROOT_DIR).unwrap(),
+    });
 
     info!(log, "Starting {} server.", app::NAME;
     "version" => app::VERSION,
