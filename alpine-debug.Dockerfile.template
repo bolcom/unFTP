@@ -12,6 +12,7 @@ FROM alpine:latest
 
 # for devel only
 RUN apk add lftp
+RUN apk add curl
 RUN apk add --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing curlftpfs
 RUN apk add --repository http://dl-cdn.alpinelinux.org/alpine/edge/main fuse curl
 
