@@ -178,7 +178,7 @@ fn gcs_storage_backend(
 
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
     Ok(Box::new(move || storage::StorageBE {
-        inner: storage::InnerStorage::Cloud(libunftp::storage::cloud_storage::CloudStorage::new(
+        inner: storage::InnerStorage::Cloud(libunftp::storage::cloud_storage::CloudStorage::with_api_base(
             base_url.clone(),
             bucket.clone(),
             root_dir.clone(),

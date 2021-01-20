@@ -330,7 +330,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .value_name("PATH")
                 .help("The root path in the bucket where unFTP will look for and store files.")
                 .env("UNFTP_SBE_GCS_ROOT")
-                .default_value("/unftp")
+                .default_value("")
                 .takes_value(true),
         )
         .arg(

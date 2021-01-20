@@ -1,6 +1,6 @@
 [package]
 name = "unftp"
-version = "0.12.3"
+version = "0.12.4"
 authors = [
     "Agoston Horvath <ahorvath@bol.com>",
     "Dávid Kosztka <dkosztka@bol.com>",
@@ -29,16 +29,17 @@ version="0.1.0"
 [dependencies]
 async-trait = "0.1.41"
 clap = "2.33.3"
-futures = "0.3.9"
+futures = "0.3.12"
 http = "0.2.3"
 hyper = { version = "0.14.1", features = ["server", "http1"] }
 lazy_static = "1.4.0"
-libunftp = { git = "https://github.com/bolcom/libunftp.git", rev="9d64fd13f3a74e16cf6c804794ec934a3686ae2f" }
+libunftp = "0.16.0"
 prometheus = "0.11.0"
 slog = { version = "2.7.0", features = ["max_level_trace", "release_max_level_info"] }
-slog-async = "2.5.0"
+slog-async = "2.6.0"
 slog-term = "2.6.0"
-tokio = { version = "1.0.1", features = ["full"] }
+tokio = { version = "1.0.2", features = ["full"] }
+bytes = "1.0.1" # Added to resolve conflicts
 
 [features]
 all = ["pam_auth", "rest_auth", "jsonfile_auth", "cloud_storage"]
