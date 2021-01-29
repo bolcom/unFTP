@@ -3,7 +3,7 @@
 [![Crate Version](https://img.shields.io/crates/v/unftp.svg)](https://crates.io/crates/unftp)
 [![Build Status](https://travis-ci.org/bolcom/unFTP.svg)](https://travis-ci.org/bolcom/unFTP) 
 [![Docker Pulls](https://img.shields.io/docker/pulls/bolcom/unftp.svg?maxAge=2592000?style=plastic)](https://hub.docker.com/r/bolcom/unftp/)
-
+[![Follow on Telegram](https://img.shields.io/badge/follow%20on-Telegram-brightgreen.svg)](https://t.me/unftp)
 
 When you need to FTP, but don't want to.
 
@@ -37,21 +37,21 @@ you can choose between a statically linked image (no PAM integration) or a dynam
 Linux (static, no PAM):
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.2/unftp_x86_64-unknown-linux-musl \
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.4/unftp_x86_64-unknown-linux-musl \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
 Linux (dynamic with PAM support):
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.2/unftp_x86_64-unknown-linux-gnu \
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.4/unftp_x86_64-unknown-linux-gnu \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
 macOS:
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.2/unftp_x86_64-apple-darwin \
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.4/unftp_x86_64-apple-darwin \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
@@ -230,6 +230,13 @@ docker run \
   -ti \
   bolcom/unftp:v0.12.1-alpine
 ```
+
+## Getting help and staying informed
+
+Support is given on a best effort basis. You are welcome to engage us on [the discussions page](https://github.com/bolcom/unftp/discussions)
+or create a Github issue.
+
+You can also follow news and talk to us on [Telegram](https://t.me/unftp) 
 
 ## License
 
