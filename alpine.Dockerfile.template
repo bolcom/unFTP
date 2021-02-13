@@ -14,7 +14,7 @@ FROM alpine:latest
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 
 # run as user for security
-RUN mkdir /unftp
+RUN mkdir /unftp && mkdir -p /srv
 RUN addgroup -g 1010 unftp \
     && adduser -D -s /bin/sh -u 1010 -G unftp unftp \
     && chown -R unftp:unftp /unftp /srv
