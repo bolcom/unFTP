@@ -1832,7 +1832,7 @@ checksum = "e604eb7b43c06650e854be16a2a03155743d3752dd1c943f6829e26b7a36e382"
 
 [[package]]
 name = "unftp"
-version = "0.12.5"
+version = "0.12.6"
 dependencies = [
  "async-trait",
  "built",
