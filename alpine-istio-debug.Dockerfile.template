@@ -1,0 +1,26 @@
+FROM rust:%%RUST_VERSION%%-slim AS builder
+WORKDIR /usr/src/unftp
+COPY . .
+RUN apt-get update && apt-get install -y \
+  musl-dev \
+  musl-tools
+RUN rustup target add x86_64-unknown-linux-musl
+ENV RUSTFLAGS="-C target-feature=+crt-static"
+RUN BUILD_VERSION="%%BUILD_VERSION%%" cargo build --no-default-features --features docker --target=x86_64-unknown-linux-musl
+
+FROM alpine:3.13
+
+# for devel only
+RUN apk add --repository http://dl-cdn.alpinelinux.org/alpine/v3.13/main fuse lftp curl
+RUN apk add --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing curlftpfs
+
+# we could also RUN 'apk add ca-certificates', but we prefer to be consistent with the -minimal image
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=redboxoss/scuttle:latest /scuttle /bin/scuttle
+
+# no security measures, run as root
+USER root
+RUN mkdir /unftp
+COPY --from=builder /usr/src/unftp/target/x86_64-unknown-linux-musl/debug/unftp /unftp
+WORKDIR /unftp
+CMD ["scuttle", "/unftp/unftp", "-vv"]
