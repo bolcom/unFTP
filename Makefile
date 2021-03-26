@@ -1,4 +1,4 @@
-RUST_VERSION=1.50.0
+RUST_VERSION=1.51.0
 DOCKER_TAG=$(shell git describe --tags)
 DOCKER_TEMPLATES:=$(wildcard *.Dockerfile.template)
 DOCKER_FILES=$(DOCKER_TEMPLATES:%.template=%)
@@ -62,8 +62,8 @@ docker-list: # List the available docker images
 pr-prep: # Runs checks to ensure you're ready for a pull request
 	cargo fmt --all -- --check
 	cargo clippy --all-features -- -D warnings
-	cargo build --verbose --all --features rest_auth,jsonfile_auth,cloud_storage
-	cargo test --verbose --all --features rest_auth,jsonfile_auth,cloud_storage
+	cargo build --verbose --all --all-features
+	cargo test --verbose --all --all-features
 	cargo doc --all-features --no-deps
 
 .PHONY: release-artifacts
