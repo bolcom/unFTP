@@ -30,11 +30,11 @@ use tokio::{
     runtime::Runtime,
     signal::unix::{signal, SignalKind},
 };
+use unftp_sbe_gcs::options::AuthMethod;
 use user::LookupAuthenticator;
 
 #[cfg(feature = "pam_auth")]
-use libunftp::auth::pam;
-use libunftp::storage::cloud_storage::options::AuthMethod;
+use unftp_auth_pam as pam;
 
 fn make_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<user::User> + Send + Sync>, String> {
     match m.value_of(args::AUTH_TYPE) {
@@ -60,7 +60,7 @@ fn make_pam_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<use
     #[cfg(feature = "pam_auth")]
     {
         if let Some(service) = m.value_of(args::AUTH_PAM_SERVICE) {
-            let pam_auth = pam::PAMAuthenticator::new(service);
+            let pam_auth = pam::PamAuthenticator::new(service);
             return Ok(Arc::new(LookupAuthenticator::new(pam_auth)));
         }
         Err(format!("--{} is required when using pam auth", args::AUTH_PAM_SERVICE))
@@ -88,7 +88,7 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<us
                     return Err("REST authenticator error: no body provided for rest request".to_string());
                 }
 
-                let authenticator: auth::rest::RestAuthenticator = match auth::rest::Builder::new()
+                let authenticator: unftp_auth_rest::RestAuthenticator = match unftp_auth_rest::Builder::new()
                     .with_username_placeholder("{USER}".to_string())
                     .with_password_placeholder("{PASS}".to_string())
                     .with_url(String::from(url))
@@ -124,17 +124,17 @@ fn make_json_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<us
             .value_of(args::AUTH_JSON_PATH)
             .ok_or_else(|| "please provide the json credentials file by specifying auth-json-path".to_string())?;
 
-        let authenticator = auth::jsonfile::JsonFileAuthenticator::new(path).map_err(|e| e.to_string())?;
+        let authenticator = unftp_auth_jsonfile::JsonFileAuthenticator::new(path).map_err(|e| e.to_string())?;
         Ok(Arc::new(LookupAuthenticator::new(authenticator)))
     }
 }
 
 // Creates the filesystem storage back-end
-fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Box<dyn (Fn() -> storage::StorageBE) + Send + Sync> {
+fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Box<dyn (Fn() -> storage::StorageBe) + Send + Sync> {
     let p: PathBuf = m.value_of(args::ROOT_DIR).unwrap().into();
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
-    Box::new(move || storage::StorageBE {
-        inner: storage::InnerStorage::File(libunftp::storage::filesystem::Filesystem::new(p.clone())),
+    Box::new(move || storage::StorageBe {
+        inner: storage::InnerStorage::File(unftp_sbe_fs::Filesystem::new(p.clone())),
         log: sub_log.clone(),
     })
 }
@@ -143,7 +143,7 @@ fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Box<dyn (Fn() -> st
 fn gcs_storage_backend(
     log: &Logger,
     m: &clap::ArgMatches,
-) -> Result<Box<dyn (Fn() -> storage::StorageBE) + Send + Sync>, String> {
+) -> Result<Box<dyn (Fn() -> storage::StorageBe) + Send + Sync>, String> {
     let bucket: String = m
         .value_of(args::GCS_BUCKET)
         .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_BUCKET))?
@@ -177,8 +177,8 @@ fn gcs_storage_backend(
     slog::info!(log, "GCS back-end auth method: {}", auth_method);
 
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
-    Ok(Box::new(move || storage::StorageBE {
-        inner: storage::InnerStorage::Cloud(libunftp::storage::cloud_storage::CloudStorage::with_api_base(
+    Ok(Box::new(move || storage::StorageBe {
+        inner: storage::InnerStorage::Cloud(unftp_sbe_gcs::CloudStorage::with_api_base(
             base_url.clone(),
             bucket.clone(),
             root_dir.clone(),
@@ -220,12 +220,12 @@ fn get_passive_host_option(log: &Logger, arg_matches: &ArgMatches) -> Result<opt
     match passive_host_str {
         None | Some("from-connection") => Ok(options::PassiveHost::FromConnection),
         Some(ip_or_dns) => match ip_or_dns.parse() {
-            Ok(IpAddr::V4(ip)) => Ok(options::PassiveHost::IP(ip)),
+            Ok(IpAddr::V4(ip)) => Ok(options::PassiveHost::Ip(ip)),
             Ok(IpAddr::V6(_)) => Err(format!(
                 "an IP is valid for the '--{}' argument, but it needs to be an IP v4 address",
                 args::PASSIVE_HOST
             )),
-            Err(_) => resolve_dns(log, ip_or_dns).map(options::PassiveHost::IP),
+            Err(_) => resolve_dns(log, ip_or_dns).map(options::PassiveHost::Ip),
         },
     }
 }

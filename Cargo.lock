@@ -32,9 +32,9 @@ checksum = "eab1c04a571841102f5345a8fc0f6bb3d31c315dec879b5c6e42e40ce7ffa34e"
 
 [[package]]
 name = "async-trait"
-version = "0.1.45"
+version = "0.1.48"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3340571769500ddef1e94b45055fabed6b08a881269b7570c830b8f32ef84ef"
+checksum = "36ea56748e10732c49404c153638a15ec3d6211ec5ff35d9bb20e13b93576adf"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -648,30 +648,21 @@ dependencies = [
 
 [[package]]
 name = "libunftp"
-version = "0.16.2"
+version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05e0d3e9e2c53024362f5993d787dee5e9336016060de764776280f1624c5d53"
+checksum = "ffd1f741c3c67cc0ac7d788c8d84c17838a121e40bec0608447d7f7849dfea42"
 dependencies = [
  "async-trait",
  "bytes 1.0.1",
  "chrono",
  "derive_more",
  "futures 0.3.13",
- "hyper",
- "hyper-rustls",
  "itertools",
  "lazy_static",
- "mime",
- "pam",
- "path_abs",
- "percent-encoding 2.1.0",
  "prometheus",
  "proxy-protocol",
  "rand",
- "regex",
  "rustls",
- "serde",
- "serde_json",
  "slog",
  "slog-stdlog",
  "thiserror",
@@ -683,7 +674,6 @@ dependencies = [
  "tracing-attributes",
  "tracing-futures",
  "uuid",
- "yup-oauth2",
 ]
 
 [[package]]
@@ -1071,16 +1061,16 @@ dependencies = [
 
 [[package]]
 name = "prometheus"
-version = "0.11.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8425533e7122f0c3cc7a37e6244b16ad3a2cc32ae7ac6276e2a75da0d9c200d"
+checksum = "5986aa8d62380092d2f50f8b1cdba9cb9b6731ffd4b25b51fd126b6c3e05b99c"
 dependencies = [
  "cfg-if 1.0.0",
  "fnv",
  "lazy_static",
+ "memchr",
  "parking_lot 0.11.0",
  "protobuf",
- "regex",
  "thiserror",
 ]
 
@@ -1092,9 +1082,9 @@ checksum = "8e86d370532557ae7573551a1ec8235a0f8d6cb276c7c9e6aa490b511c447485"
 
 [[package]]
 name = "proxy-protocol"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "66c23609fd42234b066e0eaf3f3c37bcfa1cf06d737cdb42eaf4cf0e3a0067fc"
+checksum = "42f5b06e3438447e2b41b510996e0807ef6d776253b3c6c68b1f057652575e01"
 dependencies = [
  "bytes 1.0.1",
  "thiserror",
@@ -1621,9 +1611,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.2.0"
+version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e8190d04c665ea9e6b6a0dc45523ade572c088d2e6566244c1122671dbf4ae3a"
+checksum = "134af885d758d645f0f0505c9a8b3f9bf8a348fd822e112ab5248138348f1722"
 dependencies = [
  "autocfg",
  "bytes 1.0.1",
@@ -1829,7 +1819,7 @@ checksum = "e604eb7b43c06650e854be16a2a03155743d3752dd1c943f6829e26b7a36e382"
 
 [[package]]
 name = "unftp"
-version = "0.12.6"
+version = "0.12.7"
 dependencies = [
  "async-trait",
  "built",
@@ -1845,6 +1835,102 @@ dependencies = [
  "slog-redis",
  "slog-term",
  "tokio",
+ "unftp-auth-jsonfile",
+ "unftp-auth-pam",
+ "unftp-auth-rest",
+ "unftp-sbe-fs",
+ "unftp-sbe-gcs",
+]
+
+[[package]]
+name = "unftp-auth-jsonfile"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "89a9b5d140e57b89c03d1d6371df5a437971e2df315b1a358bb27eb3fae4cb63"
+dependencies = [
+ "async-trait",
+ "libunftp",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-attributes",
+ "unftp-sbe-fs",
+]
+
+[[package]]
+name = "unftp-auth-pam"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0f78d0bf1b768adeb970c6a9c7c871f17ebf78e68df3bc105faf97ddf933c845"
+dependencies = [
+ "async-trait",
+ "libunftp",
+ "pam",
+ "tracing",
+ "tracing-attributes",
+]
+
+[[package]]
+name = "unftp-auth-rest"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ee281d86a67ba7e1a385b62865613c94bce50303667d9c0a1afd4bc441b7fbc"
+dependencies = [
+ "async-trait",
+ "hyper",
+ "hyper-rustls",
+ "libunftp",
+ "percent-encoding 2.1.0",
+ "regex",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tracing",
+ "tracing-attributes",
+ "unftp-sbe-fs",
+]
+
+[[package]]
+name = "unftp-sbe-fs"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8edaa4ed1fa2425db1c9a7aa1aedb9327a69cff4aa18213be87428668d3f3616"
+dependencies = [
+ "async-trait",
+ "futures 0.3.13",
+ "libunftp",
+ "path_abs",
+ "tokio",
+ "tokio-stream",
+ "tracing",
+ "tracing-attributes",
+]
+
+[[package]]
+name = "unftp-sbe-gcs"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c5dcbce327800fe1b01cc380cedb20054b1ec214903bdd13a51ca60d96e01f03"
+dependencies = [
+ "async-trait",
+ "bytes 1.0.1",
+ "chrono",
+ "futures 0.3.13",
+ "hyper",
+ "hyper-rustls",
+ "libunftp",
+ "mime",
+ "percent-encoding 2.1.0",
+ "serde",
+ "serde_json",
+ "tokio",
+ "tokio-stream",
+ "tokio-util",
+ "tracing",
+ "tracing-attributes",
+ "tracing-futures",
+ "yup-oauth2",
 ]
 
 [[package]]

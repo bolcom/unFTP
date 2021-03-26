@@ -1,6 +1,6 @@
 [package]
 name = "unftp"
-version = "0.12.6"
+version = "0.12.7"
 authors = [
     "Agoston Horvath <ahorvath@bol.com>",
     "Dávid Kosztka <dkosztka@bol.com>",
@@ -33,19 +33,27 @@ futures = "0.3.13"
 http = "0.2.3"
 hyper = { version = "0.14.4", features = ["server", "http1"] }
 lazy_static = "1.4.0"
-libunftp = "0.16.2"
-prometheus = "0.11.0"
+libunftp = "0.17.0"
+prometheus = "0.12.0"
 slog = { version = "2.7.0", features = ["max_level_trace", "release_max_level_info"] }
 slog-async = "2.6.0"
 slog-term = "2.8.0"
-tokio = { version = "1.2.0", features = ["full"] }
+tokio = { version = "1.4.0", features = ["full"] }
+unftp-sbe-fs = "0.1"
+unftp-sbe-gcs = { version = "0.1", optional = true }
+unftp-auth-rest = { version = "0.1", optional = true }
+unftp-auth-jsonfile = { version = "0.1", optional = true }
+
+[target.'cfg(unix)'.dependencies]
+unftp-auth-pam = { version = "0.1", optional = true }
 
 [features]
 all = ["pam_auth", "rest_auth", "jsonfile_auth", "cloud_storage"]
-cloud_storage = ["libunftp/cloud_storage"]
-jsonfile_auth = ["libunftp/jsonfile_auth"]
-pam_auth = ["libunftp/pam_auth"]
-rest_auth = ["libunftp/rest_auth"]
+cloud_storage = ["unftp-sbe-gcs"]
+jsonfile_auth = ["unftp-auth-jsonfile"]
+pam_auth = ["unftp-auth-pam"]
+rest_auth = ["unftp-auth-rest"]
+
 
 # build everything by default to make sure build works
 default = ["rest_auth", "cloud_storage", "jsonfile_auth"]

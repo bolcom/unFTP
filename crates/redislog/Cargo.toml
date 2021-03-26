@@ -12,9 +12,6 @@ homepage = "https://github.com/bolcom/unFTP/tree/master/crates/redislog"
 repository = "https://github.com/bolcom/unFTP/tree/master/crates/redislog"
 readme = "README.md"
 
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 chrono = "0.4.6"
 r2d2 = "0.8.3"

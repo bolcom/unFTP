@@ -10,74 +10,74 @@ use std::time::SystemTime;
 
 #[derive(Debug)]
 pub enum InnerStorage {
-    Cloud(libunftp::storage::cloud_storage::CloudStorage),
-    File(libunftp::storage::filesystem::Filesystem),
+    Cloud(unftp_sbe_gcs::CloudStorage),
+    File(unftp_sbe_fs::Filesystem),
 }
 
 #[derive(Debug)]
-pub struct StorageBE {
+pub struct StorageBe {
     pub inner: InnerStorage,
     pub log: Arc<slog::Logger>,
 }
 
 #[derive(Debug)]
-pub enum SBEMeta {
-    Cloud(libunftp::storage::cloud_storage::object_metadata::ObjectMetadata),
-    File(std::fs::Metadata),
+pub enum SbeMeta {
+    Cloud(unftp_sbe_gcs::object_metadata::ObjectMetadata),
+    File(unftp_sbe_fs::Meta),
 }
 
-impl libunftp::storage::Metadata for SBEMeta {
+impl libunftp::storage::Metadata for SbeMeta {
     fn len(&self) -> u64 {
         match self {
-            SBEMeta::Cloud(m) => m.len(),
-            SBEMeta::File(m) => m.len(),
+            SbeMeta::Cloud(m) => m.len(),
+            SbeMeta::File(m) => m.len(),
         }
     }
 
     fn is_dir(&self) -> bool {
         match self {
-            SBEMeta::Cloud(m) => m.is_dir(),
-            SBEMeta::File(m) => m.is_dir(),
+            SbeMeta::Cloud(m) => m.is_dir(),
+            SbeMeta::File(m) => m.is_dir(),
         }
     }
 
     fn is_file(&self) -> bool {
         match self {
-            SBEMeta::Cloud(m) => m.is_file(),
-            SBEMeta::File(m) => m.is_file(),
+            SbeMeta::Cloud(m) => m.is_file(),
+            SbeMeta::File(m) => m.is_file(),
         }
     }
 
     fn is_symlink(&self) -> bool {
         match self {
-            SBEMeta::Cloud(m) => m.is_symlink(),
-            SBEMeta::File(m) => m.is_symlink(),
+            SbeMeta::Cloud(m) => m.is_symlink(),
+            SbeMeta::File(m) => m.is_symlink(),
         }
     }
 
     fn modified(&self) -> Result<SystemTime> {
         match self {
-            SBEMeta::Cloud(m) => m.modified(),
-            SBEMeta::File(m) => m.modified().map_err(|e| e.into()),
+            SbeMeta::Cloud(m) => m.modified(),
+            SbeMeta::File(m) => m.modified().map_err(|e| e),
         }
     }
 
     fn gid(&self) -> u32 {
         match self {
-            SBEMeta::Cloud(m) => m.gid(),
-            SBEMeta::File(m) => m.gid(),
+            SbeMeta::Cloud(m) => m.gid(),
+            SbeMeta::File(m) => m.gid(),
         }
     }
 
     fn uid(&self) -> u32 {
         match self {
-            SBEMeta::Cloud(m) => m.uid(),
-            SBEMeta::File(m) => m.uid(),
+            SbeMeta::Cloud(m) => m.uid(),
+            SbeMeta::File(m) => m.uid(),
         }
     }
 }
 
-impl StorageBE {
+impl StorageBe {
     fn log<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: &P) -> slog::Logger {
         let username = user.as_ref().map_or("unknown".to_string(), |u| u.username.to_string());
         let path_str = path.as_ref().to_string_lossy().to_string();
@@ -89,8 +89,8 @@ impl StorageBE {
 }
 
 #[async_trait]
-impl StorageBackend<User> for StorageBE {
-    type Metadata = SBEMeta;
+impl StorageBackend<User> for StorageBe {
+    type Metadata = SbeMeta;
 
     fn supported_features(&self) -> u32 {
         match &self.inner {
@@ -101,8 +101,8 @@ impl StorageBackend<User> for StorageBE {
 
     async fn metadata<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> Result<Self::Metadata> {
         match &self.inner {
-            InnerStorage::Cloud(i) => i.metadata(user, path).await.map(SBEMeta::Cloud),
-            InnerStorage::File(i) => i.metadata(user, path).await.map(SBEMeta::File),
+            InnerStorage::Cloud(i) => i.metadata(user, path).await.map(SbeMeta::Cloud),
+            InnerStorage::File(i) => i.metadata(user, path).await.map(SbeMeta::File),
         }
     }
 
@@ -120,7 +120,7 @@ impl StorageBackend<User> for StorageBE {
                 v.into_iter()
                     .map(|fi| Fileinfo {
                         path: fi.path,
-                        metadata: SBEMeta::Cloud(fi.metadata),
+                        metadata: SbeMeta::Cloud(fi.metadata),
                     })
                     .collect()
             }),
@@ -128,7 +128,7 @@ impl StorageBackend<User> for StorageBE {
                 v.into_iter()
                     .map(|fi| Fileinfo {
                         path: fi.path,
-                        metadata: SBEMeta::File(fi.metadata),
+                        metadata: SbeMeta::File(fi.metadata),
                     })
                     .collect()
             }),
