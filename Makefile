@@ -61,10 +61,10 @@ docker-list: # List the available docker images
 .PHONY: pr-prep
 pr-prep: # Runs checks to ensure you're ready for a pull request
 	cargo fmt --all -- --check
-	cargo clippy --all-features -- -D warnings
-	cargo build --verbose --all --all-features
-	cargo test --verbose --all --all-features
-	cargo doc --all-features --no-deps
+	cargo clippy --all-features --workspace -- -D warnings
+	cargo test --verbose  --workspace --all --all-features
+	cargo doc  --workspace --all-features --no-deps
+	cargo build --verbose  --workspace --all --all-features
 
 .PHONY: release-artifacts
 release-artifacts: # Generates artifacts for a release
