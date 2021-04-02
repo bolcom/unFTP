@@ -1,5 +1,44 @@
-//! This crate implements a [slog](https://crates.io/crates/slog) drain that outputs to a Redis list
-//! in a structured way.
+//! This crate implements a [slog](https://crates.io/crates/slog) drain that outputs JSON formatted
+//! logs to a Redis list
+//!
+//! Useful for structured, **centralized logging** using a RELK stack (Redis, Elasticsearch,
+//! Logstash and Kibana). All log messages are sent to a Redis server, in **Logstash message V0 format**,
+//! ready to be parsed/processed by Logstash.
+//!
+//! The format looks like this:
+//!
+//! ```json
+//!  {
+//!     "@timestamp": ${timeRFC3339},
+//!     "@source_host": ${hostname},
+//!     "@message": ${message},
+//!     "@fields": {
+//!        "level": ${levelLowercase},
+//!        "application": ${appName}
+//!        ... // logged field 1
+//!        ... // logged field 2
+//!        ...
+//!    }
+//! ```
+//!
+//! Example usage:
+//!
+//! ```no_run
+//!  use slog::*;
+//!  use slog_redis::Builder;
+//!
+//!  let redis_drain = Builder::new("my-app-name")
+//!    .redis_host("localhost")
+//!    .redis_key("my_redis_list_key")
+//!    .build()
+//!    .unwrap();
+//!
+//!  let drain = slog_async::Async::new(redis_drain.fuse()).build().fuse();
+//!
+//!  let log = Logger::root(drain, o!());
+//!  info!(log, "Send me to {}!", "Redis"; "msg" => "Hello World!");
+//! ```
+//!
 
 use std::cell::RefCell;
 use std::fmt;
@@ -128,14 +167,14 @@ impl Builder {
             String::from_utf8_lossy(&output.stdout).replace("\n", "")
         }
 
-        let con_str = format!("redis://{}:{}", self.redis_host, self.redis_port);
-        let manager = RedisConnectionManager::new(con_str.as_str())?;
+        let connection_str = format!("redis://{}:{}", self.redis_host, self.redis_port);
+        let manager = RedisConnectionManager::new(connection_str.as_str())?;
         let pool = r2d2::Pool::builder()
             .connection_timeout(Duration::new(1, 0))
             .build(manager)?;
 
-        let con = pool.get()?;
-        redis::cmd("PING").query(&*con)?;
+        let mut con = pool.get()?;
+        redis::cmd("PING").query(&mut *con)?;
 
         Ok(Logger {
             redis_host: self.redis_host,
@@ -182,12 +221,18 @@ impl Logger {
 
     /// Sends a message constructed by v0_msg to the redis server
     fn send_to_redis(&self, msg: &str) -> Result<(), Error> {
-        let con = self.pool.get()?;
+        let mut con = self.pool.get()?;
 
-        redis::cmd("RPUSH").arg(self.redis_key.as_str()).arg(msg).query(&*con)?;
+        redis::cmd("RPUSH")
+            .arg(self.redis_key.as_str())
+            .arg(msg)
+            .query(&mut *con)?;
 
         if let Some(t) = self.ttl_seconds {
-            redis::cmd("EXPIRE").arg(self.redis_key.as_str()).arg(t).query(&*con)?
+            redis::cmd("EXPIRE")
+                .arg(self.redis_key.as_str())
+                .arg(t)
+                .query(&mut *con)?
         }
         Ok(())
     }

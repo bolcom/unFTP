@@ -150,7 +150,7 @@ Run sending logs to a Redis list:
 
 ```sh
 unftp \
-    --log-redis-host=2121 \
+    --log-redis-host=localhost \
     --log-redis-key=logs-key \
     --log-redis-port=6379
 ```

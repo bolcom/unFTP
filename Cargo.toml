@@ -24,7 +24,7 @@ documentation = "https://github.com/bolcom/unFTP"
 
 [dependencies.slog-redis]
 path="crates/redislog"
-version="0.1.0"
+version="0.1.1"
 
 [dependencies]
 async-trait = "0.1.45"

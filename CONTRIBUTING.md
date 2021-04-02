@@ -1,5 +1,8 @@
 # Contributing to unFTP
 
+Great projects are never established alone. Therefore we thank you for your interest to help out and offer this guide to
+help you along.
+
 unFTP welcomes contribution from everyone in the form of suggestions, bug reports, pull requests, and feedback.
 
 Please reach out here in a GitHub issue if we can do anything to help you contribute.
