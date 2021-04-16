@@ -93,9 +93,10 @@ pub struct Builder {
     app_name: String,
     hostname: Option<String>,
     ttl_seconds: Option<u64>,
+    connection_pool_size: u32,
 }
 
-/// Errors returned by the logger
+/// Errors returned by the [`Builder`](crate::Builder) and the [`Logger`](crate::Logger)
 #[derive(Debug)]
 pub enum Error {
     ConnectionPoolErr(r2d2::Error),
@@ -113,38 +114,45 @@ struct Serializer {
 
 #[allow(dead_code)]
 impl Builder {
+    /// Creates the builder taking an application name that will end up in the `@fields.application`
+    /// JSON field of the structured log message.
     pub fn new(app_name: &str) -> Builder {
         Builder {
             app_name: app_name.to_string(),
             redis_host: "localhost".to_string(),
             redis_port: 6379,
+            connection_pool_size: 10,
             ..Default::default()
         }
     }
 
-    pub fn redis(self, host: String, port: u32, key: String) -> Builder {
+    /// Sets the redis details all at once.
+    pub fn redis(self, host: String, port: u32, key: impl Into<String>) -> Builder {
         Builder {
             redis_host: host,
             redis_port: port,
-            redis_key: key,
+            redis_key: key.into(),
             ..self
         }
     }
 
-    pub fn redis_key(self, key: &str) -> Builder {
+    /// Sets the name of the key for the list where log messages will be added.
+    pub fn redis_key(self, key: impl Into<String>) -> Builder {
         Builder {
-            redis_key: key.to_string(),
+            redis_key: key.into(),
             ..self
         }
     }
 
-    pub fn redis_host(self, host: &str) -> Builder {
+    /// Sets the name of the redis host. Defaults to 'localhost'.
+    pub fn redis_host(self, host: impl Into<String>) -> Builder {
         Builder {
-            redis_host: host.to_string(),
+            redis_host: host.into(),
             ..self
         }
     }
 
+    /// Sets the name of the redis port. Defaults to 6379.
     pub fn redis_port(self, val: u32) -> Builder {
         Builder {
             redis_port: val,
@@ -152,6 +160,7 @@ impl Builder {
         }
     }
 
+    /// Sets the time to live for messages in the redis list. Defaults to no timeout
     pub fn ttl(self, duration: Duration) -> Builder {
         Builder {
             ttl_seconds: Some(duration.as_secs()),
@@ -159,7 +168,16 @@ impl Builder {
         }
     }
 
-    /// Builds the redis logger
+    /// Sets the name noted down in logs indicating the source of the log entry i.e. the
+    /// `@source_host` field in the JSON payload
+    pub fn source_host(self, host: impl Into<String>) -> Builder {
+        Builder {
+            hostname: Some(host.into()),
+            ..self
+        }
+    }
+
+    /// Consumes the builder, returning the redis logger
     pub fn build(self) -> Result<Logger, Error> {
         // TODO: Get something that works on windows too
         fn get_host_name() -> String {
@@ -170,6 +188,7 @@ impl Builder {
         let connection_str = format!("redis://{}:{}", self.redis_host, self.redis_port);
         let manager = RedisConnectionManager::new(connection_str.as_str())?;
         let pool = r2d2::Pool::builder()
+            .max_size(self.connection_pool_size)
             .connection_timeout(Duration::new(1, 0))
             .build(manager)?;
 
@@ -192,14 +211,13 @@ impl Logger {
     fn v0_msg(&self, level: &str, msg: &str, key_vals: Option<KeyVals>) -> String {
         let now: DateTime<Utc> = Utc::now();
         let time = now.to_rfc3339_opts(SecondsFormat::AutoSi, true);
-        let application = self.app_name.clone();
         let mut json_val = json!({
             "@timestamp": time,
-            "@source_host": self.hostname.clone(),
+            "@source_host": &self.hostname,
             "@message": msg.to_lowercase(),
             "@fields": {
                 "level": level,
-                "application": application
+                "application": &self.app_name
             }
         });
 
