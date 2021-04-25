@@ -14,7 +14,7 @@ mod storage;
 mod user;
 
 use clap::ArgMatches;
-use libunftp::options::FtpsRequired;
+use libunftp::options::{FtpsRequired, TlsFlags};
 use libunftp::{auth, options, storage::StorageBackend, Server};
 use slog::*;
 use std::{
@@ -324,7 +324,9 @@ where
 
             info!(log, "FTPS requirement for clients on control channel: {}", ftps_required_control; "mode" => format!("{:?}", ftps_required_control));
             info!(log, "FTPS requirement for clients on data channel: {}", ftps_required_data; "mode" => format!("{:?}", ftps_required_data));
-            server.ftps_required(ftps_required_control, ftps_required_data)
+            server
+                .ftps_required(ftps_required_control, ftps_required_data)
+                .ftps_tls_flags(TlsFlags::V1_2 | TlsFlags::RESUMPTION_SESS_ID | TlsFlags::RESUMPTION_TICKETS)
         }
         (Some(_), None) | (None, Some(_)) => {
             warn!(
