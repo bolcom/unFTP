@@ -37,21 +37,21 @@ you can choose between a statically linked image (no PAM integration) or a dynam
 Linux (static, no PAM):
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.7/unftp_x86_64-unknown-linux-musl \
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.8/unftp_x86_64-unknown-linux-musl \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
 Linux (dynamic with PAM support):
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.7/unftp_x86_64-unknown-linux-gnu \
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.8/unftp_x86_64-unknown-linux-gnu \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
 macOS:
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.7/unftp_x86_64-apple-darwin \
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.12.8/unftp_x86_64-apple-darwin \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
@@ -203,7 +203,7 @@ make docker-image-alpine
 Alternatively you can download pre-made images from docker hub:
 
 ```sh
-docker pull bolcom/unftp:v0.12.6-alpine
+docker pull bolcom/unftp:v0.12.8-alpine
 ```
 
 Example running it:
@@ -230,7 +230,7 @@ docker run \
   -v /Users/xxx/unftp/unftp.crt:/unftp.crt \
   -v /Users/xxx/unftp/the-key.json:/key.json \
   -ti \
-  bolcom/unftp:v0.12.6-alpine
+  bolcom/unftp:v0.12.8-alpine
 ```
 
 ## Getting help and staying informed
