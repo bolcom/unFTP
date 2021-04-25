@@ -1260,7 +1260,7 @@ dependencies = [
 
 [[package]]
 name = "slog-redis"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "chrono",
  "r2d2",

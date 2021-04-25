@@ -1,7 +1,7 @@
 [package]
 name = "slog-redis"
 description = "Redis drain for slog-rs"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Hannes de Jager <hdejager@bol.com>"]
 edition = "2018"
 license = "Apache-2.0"
@@ -13,7 +13,7 @@ repository = "https://github.com/bolcom/unFTP/tree/master/crates/redislog"
 readme = "README.md"
 
 [dependencies]
-chrono = "0.4.6"
+chrono = "0.4.19"
 r2d2 = "0.8.9"
 r2d2_redis = "0.14.0"
 redis = "0.20.0"
