@@ -11,9 +11,11 @@ pub const AUTH_JSON_PATH: &str = "auth-json-path";
 pub const AUTH_TYPE: &str = "auth-type";
 pub const BIND_ADDRESS: &str = "bind-address";
 pub const FTPS_CERTS_FILE: &str = "ftps-certs-file";
+pub const FTPS_CLIENT_AUTH: &str = "ftps-client-auth";
 pub const FTPS_KEY_FILE: &str = "ftps-key-file";
 pub const FTPS_REQUIRED_ON_CONTROL_CHANNEL: &str = "ftps-required-on-control-channel";
 pub const FTPS_REQUIRED_ON_DATA_CHANNEL: &str = "ftps-required-on-data-channel";
+pub const FTPS_TRUST_STORE: &str = "ftps-trust-store";
 pub const GCS_BASE_URL: &str = "sbe-gcs-base-url";
 pub const GCS_BUCKET: &str = "sbe-gcs-bucket";
 pub const GCS_KEY_FILE: &str = "sbe-gcs-key-file";
@@ -66,6 +68,16 @@ arg_enum! {
 arg_enum! {
     #[derive(Debug)]
     #[allow(non_camel_case_types)]
+    pub enum FtpsClientAuthType {
+        off,
+        request,
+        require,
+    }
+}
+
+arg_enum! {
+    #[derive(Debug)]
+    #[allow(non_camel_case_types)]
     pub enum LogLevelType {
         error,
         warn,
@@ -91,7 +103,8 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
             Arg::with_name(LOG_LEVEL)
                 .long("log-level")
                 .value_name("LEVEL")
-                .help("Sets the logging level. This overrides the verbosity flag -v if it is also specified.")
+                .help("Sets the logging level. This overrides the verbosity flag -v if it is \
+                          also specified.")
                 .env("UNFTP_LOG_LEVEL")
                 .possible_values(&LogLevelType::variants())
                 .takes_value(true)
@@ -109,7 +122,8 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
             Arg::with_name(ROOT_DIR)
                 .long("root-dir")
                 .value_name("PATH")
-                .help("When the storage backend type is 'filesystem' this sets the path where files are stored.")
+                .help("When the storage backend type is 'filesystem' this sets the path where \
+                          files are stored.")
                 .env("UNFTP_ROOT_DIR")
                 .takes_value(true)
                 .default_value(tmp_dir),
@@ -118,10 +132,24 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
             Arg::with_name(FTPS_CERTS_FILE)
                 .long("ftps-certs-file")
                 .value_name("FILE")
-                .help("Sets the path the the certificates (PEM format) used for TLS security")
+                .help("Sets the path to the certificates (PEM format) used for TLS security")
                 .env("UNFTP_FTPS_CERTS_FILE")
                 .takes_value(true)
                 .requires(FTPS_KEY_FILE),
+        )
+        .arg(
+            Arg::with_name(FTPS_CLIENT_AUTH)
+                .long("ftps-client-auth")
+                .value_name("CLIENT_AUTH_SETTING")
+                .help("Allows switching on Mutual TLS. The difference \
+                          between 'request' and 'require' is that the former does not enforce the use \
+                          of client side certificates although it still does validation if sent. \
+                          The latter won't let TLS connections proceed unless the client sents a \
+                          valid certificate")
+                .env("UNFTP_FTPS_CLIENT_AUTH")
+                .possible_values(&FtpsClientAuthType::variants())
+                .takes_value(true)
+                .default_value("off")
         )
         .arg(
             Arg::with_name(FTPS_KEY_FILE)
@@ -155,6 +183,16 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .possible_values(&FtpsRequiredType::variants())
                 .takes_value(true)
                 .default_value("none")
+        )
+        .arg(
+            Arg::with_name(FTPS_TRUST_STORE)
+                .long("ftps-trust-store")
+                .value_name("FILE")
+                .help("Sets the path to a PEM file containing certificates to use when validating \
+                          client certificates in MTLS mode")
+                .env("UNFTP_FTPS_TRUST_STORE")
+                .takes_value(true)
+                .requires(FTPS_CLIENT_AUTH),
         )
         .arg(
             Arg::with_name(REDIS_KEY)
@@ -261,7 +299,8 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
             Arg::with_name(AUTH_REST_BODY)
                 .long("auth-rest-body")
                 .value_name("URL")
-                .help("If HTTP method contains body, it can be specified here. {USER} and {PASS} are replaced by provided credentials.")
+                .help("If HTTP method contains body, it can be specified here. {USER} and {PASS} \
+                are replaced by provided credentials.")
                 .env("UNFTP_AUTH_REST_BODY")
                 .takes_value(true),
         )
