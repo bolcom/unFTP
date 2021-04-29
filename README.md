@@ -200,10 +200,12 @@ To build the alpine docker image:
 make docker-image-alpine
 ```
 
-Alternatively you can download pre-made images from docker hub:
+Alternatively you can download pre-made images from docker hub e.g.:
 
 ```sh
 docker pull bolcom/unftp:v0.12.8-alpine
+docker pull bolcom/unftp:v0.12.8-alpine-istio
+docker pull bolcom/unftp:v0.12.8-scratch
 ```
 
 Example running it:

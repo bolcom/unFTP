@@ -14,7 +14,7 @@ mod storage;
 mod user;
 
 use clap::ArgMatches;
-use libunftp::options::{FtpsRequired, TlsFlags};
+use libunftp::options::{FtpsClientAuth, FtpsRequired, TlsFlags};
 use libunftp::{auth, options, storage::StorageBackend, Server};
 use slog::*;
 use std::{
@@ -33,6 +33,7 @@ use tokio::{
 use unftp_sbe_gcs::options::AuthMethod;
 use user::LookupAuthenticator;
 
+use crate::args::FtpsClientAuthType;
 #[cfg(feature = "pam_auth")]
 use unftp_auth_pam as pam;
 
@@ -124,7 +125,7 @@ fn make_json_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<us
             .value_of(args::AUTH_JSON_PATH)
             .ok_or_else(|| "please provide the json credentials file by specifying auth-json-path".to_string())?;
 
-        let authenticator = unftp_auth_jsonfile::JsonFileAuthenticator::new(path).map_err(|e| e.to_string())?;
+        let authenticator = unftp_auth_jsonfile::JsonFileAuthenticator::from_file(path).map_err(|e| e.to_string())?;
         Ok(Arc::new(LookupAuthenticator::new(authenticator)))
     }
 }
@@ -163,7 +164,7 @@ fn gcs_storage_backend(
                 "Please specify either --{} or --{}, not both",
                 args::GCS_SERVICE_ACCOUNT,
                 args::GCS_KEY_FILE
-            ))
+            ));
         }
         (Some(sevice_account), None) => AuthMethod::WorkloadIdentity(Some(sevice_account.into())),
         (None, Some(key_file_path)) => {
@@ -331,7 +332,7 @@ where
         (Some(_), None) | (None, Some(_)) => {
             warn!(
                 log,
-                "Need to set both {} and {}. FTPS still disabled.",
+                "Need to set both --{} and --{}. FTPS still disabled.",
                 args::FTPS_CERTS_FILE,
                 args::FTPS_KEY_FILE
             );
@@ -340,6 +341,38 @@ where
         _ => {
             warn!(log, "FTPS not enabled");
             server
+        }
+    };
+
+    // MTLS
+    server = match (
+        arg_matches
+            .value_of(args::FTPS_CLIENT_AUTH)
+            .unwrap()
+            .parse::<args::FtpsClientAuthType>()?,
+        arg_matches.value_of(args::FTPS_TRUST_STORE),
+    ) {
+        (FtpsClientAuthType::off, _) => server.ftps_client_auth(FtpsClientAuth::Off),
+        (FtpsClientAuthType::request, None) | (FtpsClientAuthType::require, None) => {
+            warn!(
+                log,
+                "Need to set both --{} and --{}. MTLS still disabled.",
+                args::FTPS_CLIENT_AUTH,
+                args::FTPS_TRUST_STORE
+            );
+            server.ftps_client_auth(FtpsClientAuth::Off)
+        }
+        (FtpsClientAuthType::request, Some(file)) => {
+            if !PathBuf::from(file).exists() {
+                return Err(format!("file specified for --{} not found", args::FTPS_TRUST_STORE))?;
+            }
+            server.ftps_client_auth(FtpsClientAuth::Request).ftps_trust_store(file)
+        }
+        (FtpsClientAuthType::require, Some(file)) => {
+            if !PathBuf::from(file).exists() {
+                return Err(format!("file specified for --{} not found", args::FTPS_TRUST_STORE))?;
+            }
+            server.ftps_client_auth(FtpsClientAuth::Require).ftps_trust_store(file)
         }
     };
 
