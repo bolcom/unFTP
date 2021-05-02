@@ -364,13 +364,13 @@ where
         }
         (FtpsClientAuthType::request, Some(file)) => {
             if !PathBuf::from(file).exists() {
-                return Err(format!("file specified for --{} not found", args::FTPS_TRUST_STORE))?;
+                return Err(format!("file specified for --{} not found", args::FTPS_TRUST_STORE));
             }
             server.ftps_client_auth(FtpsClientAuth::Request).ftps_trust_store(file)
         }
         (FtpsClientAuthType::require, Some(file)) => {
             if !PathBuf::from(file).exists() {
-                return Err(format!("file specified for --{} not found", args::FTPS_TRUST_STORE))?;
+                return Err(format!("file specified for --{} not found", args::FTPS_TRUST_STORE));
             }
             server.ftps_client_auth(FtpsClientAuth::Require).ftps_trust_store(file)
         }

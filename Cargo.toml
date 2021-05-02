@@ -1,6 +1,6 @@
 [package]
 name = "unftp"
-version = "0.12.8"
+version = "0.12.9"
 authors = [
     "Agoston Horvath <ahorvath@bol.com>",
     "Dávid Kosztka <dkosztka@bol.com>",
@@ -45,7 +45,7 @@ unftp-auth-rest = { version = "0.1", optional = true }
 unftp-auth-jsonfile = { version = "0.1.1", optional = true }
 
 ## Build conflict fixes
-tracing = "0.1.25"
+tracing = "0.1.26"
 
 [target.'cfg(unix)'.dependencies]
 unftp-auth-pam = { version = "0.1", optional = true }
