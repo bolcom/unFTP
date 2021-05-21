@@ -1,5 +1,9 @@
 # Changelog
 
+## Upcoming
+
+- SITE MD5 support added, use `--enable-sitemd5` for the filesystem backend (it is automatically enabled for the GCS storage backend)
+
 ## 2021-05-02 unftp v0.12.9
 
 _tag: v0.12.9_

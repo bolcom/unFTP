@@ -32,6 +32,7 @@ pub const REDIS_KEY: &str = "log-redis-key";
 pub const REDIS_PORT: &str = "log-redis-port";
 pub const ROOT_DIR: &str = "root-dir";
 pub const STORAGE_BACKEND_TYPE: &str = "sbe-type";
+pub const ENABLE_SITEMD5: &str = "enable-sitemd5";
 pub const VERBOSITY: &str = "verbosity";
 pub const LOG_LEVEL: &str = "log-level";
 
@@ -396,5 +397,13 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .help("This switches on proxy protocol mode and sets the external control port number exposed on the proxy.")
                 .env("UNFTP_PROXY_EXTERNAL_CONTROL_PORT")
                 .takes_value(true),
+        )
+        .arg(
+            Arg::with_name(ENABLE_SITEMD5)
+                .long("enable-sitemd5")
+                .value_name("TIMEOUT_SECONDS")
+                .help("Enable the SITE MD5 command for authenticated users (not anonymous) (always enabled for GCS backend)")
+                .env("UNFTP_ENABLE_SITEMD5")
+                .takes_value(false)
         )
 }
