@@ -258,17 +258,27 @@ impl Logger {
 
 impl slog::Drain for Logger {
     type Ok = ();
-    type Err = self::Error;
+    type Err = ();
 
     fn log(&self, record: &Record, values: &OwnedKVList) -> Result<Self::Ok, Self::Err> {
         let ser = &mut Serializer::new();
-        record.kv().serialize(record, ser)?;
-        values.serialize(record, ser)?;
+        if let Err(err) = record.kv().serialize(record, ser) {
+            eprintln!("{}:{} Could not serialize the record: {}", file!(), line!(), err);
+            return Ok(());
+        }
+
+        if let Err(err) = values.serialize(record, ser) {
+            eprintln!("{}:{} Could not serialize the values: {}", file!(), line!(), err);
+            return Ok(());
+        }
 
         let level_str = record.level().as_str();
         let msg = format!("{}", record.msg());
         let log_entry = self.v0_msg(level_str, msg.as_str(), Some(ser.done()));
-        self.send_to_redis(&log_entry)?;
+        if let Err(err) = self.send_to_redis(&log_entry) {
+            eprintln!("{}:{} Could not send log to Redis: {}", file!(), line!(), err);
+            return Ok(());
+        }
         Ok(())
     }
 }
