@@ -14,7 +14,7 @@ mod storage;
 mod user;
 
 use clap::ArgMatches;
-use libunftp::options::{FtpsClientAuth, FtpsRequired, TlsFlags};
+use libunftp::options::{FtpsClientAuth, FtpsRequired, SiteMd5, TlsFlags};
 use libunftp::{auth, options, storage::StorageBackend, Server};
 use slog::*;
 use std::{
@@ -279,12 +279,22 @@ where
 
     info!(log, "Idle session timeout is set to {} seconds", idle_timeout);
 
+    let md5_setting = match (
+        arg_matches.value_of(args::STORAGE_BACKEND_TYPE),
+        arg_matches.is_present(args::ENABLE_SITEMD5),
+    ) {
+        (Some("gcs"), _) => SiteMd5::All,
+        (_, true) => SiteMd5::Accounts,
+        (_, false) => SiteMd5::None,
+    };
+
     let mut server = Server::with_authenticator(storage_backend, make_auth(&arg_matches)?)
         .greeting("Welcome to unFTP")
         .passive_ports(start_port..end_port)
         .idle_session_timeout(idle_timeout)
         .logger(root_log.new(o!("lib" => "libunftp")))
         .passive_host(passive_host)
+        .sitemd5(md5_setting)
         .metrics();
 
     // Setup proxy protocol mode.
