@@ -34,15 +34,15 @@ pub fn create_logger(arg_matches: &ArgMatches) -> Result<slog::Logger, String> {
     let mut err: Option<String> = None;
     let drain = match redis_logger(&arg_matches) {
         Ok(Some(redis_logger)) => {
-            let both = slog::Duplicate::new(redis_logger, term_drain).fuse();
-            slog_async::Async::new(both.filter_level(min_log_level).fuse())
+            let both = slog::Duplicate::new(redis_logger, term_drain);
+            slog_async::Async::new(both.filter_level(min_log_level).ignore_res())
                 .build()
-                .fuse()
+                .ignore_res()
         }
-        Ok(None) => slog_async::Async::new(term_drain).build().fuse(),
+        Ok(None) => slog_async::Async::new(term_drain).build().ignore_res(),
         Err(e) => {
             err = e.into();
-            slog_async::Async::new(term_drain).build().fuse()
+            slog_async::Async::new(term_drain).build().ignore_res()
         }
     };
     let root = Logger::root(drain, o!());
