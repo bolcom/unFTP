@@ -69,7 +69,7 @@ use slog::{OwnedKVList, Record, KV};
 /// ```
 ///
 /// It supports structured logging via [`slog`][slog-url]. You can use the [`Builder`] to
-/// construct it and then use it as an slog drain.
+/// construct it and then use it as an slog root drain, meaning it handles all errors.
 ///
 /// [`Builder`]: struct.Builder.html
 /// [slog-url]: https://github.com/slog-rs/slog

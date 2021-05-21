@@ -1,6 +1,6 @@
 [package]
 name = "unftp"
-version = "0.12.9"
+version = "0.12.10"
 authors = [
     "Agoston Horvath <ahorvath@bol.com>",
     "Dávid Kosztka <dkosztka@bol.com>",
@@ -24,7 +24,7 @@ documentation = "https://github.com/bolcom/unFTP"
 
 [dependencies.slog-redis]
 path="crates/redislog"
-version="0.1.2"
+version="0.1.3"
 
 [dependencies]
 async-trait = "0.1.50"
