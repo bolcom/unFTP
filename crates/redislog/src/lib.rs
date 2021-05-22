@@ -69,7 +69,7 @@ use slog::{OwnedKVList, Record, KV};
 /// ```
 ///
 /// It supports structured logging via [`slog`][slog-url]. You can use the [`Builder`] to
-/// construct it and then use it as an slog root drain, meaning it handles all errors.
+/// construct it and then use it as an slog drain.
 ///
 /// [`Builder`]: struct.Builder.html
 /// [slog-url]: https://github.com/slog-rs/slog
@@ -258,27 +258,17 @@ impl Logger {
 
 impl slog::Drain for Logger {
     type Ok = ();
-    type Err = ();
+    type Err = self::Error;
 
     fn log(&self, record: &Record, values: &OwnedKVList) -> Result<Self::Ok, Self::Err> {
         let ser = &mut Serializer::new();
-        if let Err(err) = record.kv().serialize(record, ser) {
-            eprintln!("{}:{} Could not serialize the record: {}", file!(), line!(), err);
-            return Ok(());
-        }
-
-        if let Err(err) = values.serialize(record, ser) {
-            eprintln!("{}:{} Could not serialize the values: {}", file!(), line!(), err);
-            return Ok(());
-        }
+        record.kv().serialize(record, ser)?;
+        values.serialize(record, ser)?;
 
         let level_str = record.level().as_str();
         let msg = format!("{}", record.msg());
         let log_entry = self.v0_msg(level_str, msg.as_str(), Some(ser.done()));
-        if let Err(err) = self.send_to_redis(&log_entry) {
-            eprintln!("{}:{} Could not send log to Redis: {}", file!(), line!(), err);
-            return Ok(());
-        }
+        self.send_to_redis(&log_entry)?;
         Ok(())
     }
 }
