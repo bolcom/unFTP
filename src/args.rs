@@ -401,7 +401,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
         .arg(
             Arg::with_name(ENABLE_SITEMD5)
                 .long("enable-sitemd5")
-                .value_name("TIMEOUT_SECONDS")
                 .help("Enable the SITE MD5 command for authenticated users (not anonymous) (always enabled for GCS backend)")
                 .env("UNFTP_ENABLE_SITEMD5")
                 .takes_value(false)
