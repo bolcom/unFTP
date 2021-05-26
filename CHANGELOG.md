@@ -1,11 +1,11 @@
 # Changelog
 
-## 2021-05-25 unftp v0.12.10
+## 2021-05-26 unftp v0.12.10
 
 _tag: v0.12.10_
 
-- Fixes a bug where logging to Redis stops after some time
-- SITE MD5 support added, use `--enable-sitemd5` for the filesystem backend (it is automatically enabled for the GCS storage backend)
+- Fixed a bug where logging to Redis stops after some time.
+- Added support for the `SITE MD5` command. Use `--enable-sitemd5` for the filesystem backend (it is automatically enabled for the GCS storage backend)
 
 ## 2021-05-02 unftp v0.12.9
 
