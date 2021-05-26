@@ -24,7 +24,7 @@ where
     type Err = ();
     fn log(&self, record: &Record, logger_values: &OwnedKVList) -> Result<(), ()> {
         if let Err(err) = self.drain.log(record, logger_values) {
-            eprint!("A drain cloud not log to its destenation: {}", err);
+            eprint!("A drain could not log to its destination: {}", err);
         }
         Ok(())
     }
