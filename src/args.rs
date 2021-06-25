@@ -1,15 +1,16 @@
 use crate::app;
 use clap::{App, Arg};
 
+pub const AUTH_JSON_PATH: &str = "auth-json-path";
 pub const AUTH_PAM_SERVICE: &str = "auth-pam-service";
 pub const AUTH_REST_BODY: &str = "auth-rest-body";
 pub const AUTH_REST_METHOD: &str = "auth-rest-method";
 pub const AUTH_REST_REGEX: &str = "auth-rest-regex";
 pub const AUTH_REST_SELECTOR: &str = "auth-rest-selector";
 pub const AUTH_REST_URL: &str = "auth-rest-url";
-pub const AUTH_JSON_PATH: &str = "auth-json-path";
 pub const AUTH_TYPE: &str = "auth-type";
 pub const BIND_ADDRESS: &str = "bind-address";
+pub const ENABLE_SITEMD5: &str = "enable-sitemd5";
 pub const FTPS_CERTS_FILE: &str = "ftps-certs-file";
 pub const FTPS_CLIENT_AUTH: &str = "ftps-client-auth";
 pub const FTPS_KEY_FILE: &str = "ftps-key-file";
@@ -24,17 +25,17 @@ pub const GCS_SERVICE_ACCOUNT: &str = "sbe-gcs-service-account";
 pub const HTTP_BIND_ADDRESS: &str = "bind-address-http";
 pub const IDLE_SESSION_TIMEOUT: &str = "idle-session-timeout";
 pub const INSTANCE_NAME: &str = "instance-name";
-pub const PASSIVE_PORTS: &str = "passive-ports";
+pub const LOG_LEVEL: &str = "log-level";
 pub const PASSIVE_HOST: &str = "passive-host";
+pub const PASSIVE_PORTS: &str = "passive-ports";
 pub const PROXY_EXTERNAL_CONTROL_PORT: &str = "proxy-external-control-port";
 pub const REDIS_HOST: &str = "log-redis-host";
 pub const REDIS_KEY: &str = "log-redis-key";
 pub const REDIS_PORT: &str = "log-redis-port";
 pub const ROOT_DIR: &str = "root-dir";
 pub const STORAGE_BACKEND_TYPE: &str = "sbe-type";
-pub const ENABLE_SITEMD5: &str = "enable-sitemd5";
+pub const USR_JSON_PATH: &str = "usr-json-path";
 pub const VERBOSITY: &str = "verbosity";
-pub const LOG_LEVEL: &str = "log-level";
 
 arg_enum! {
     #[derive(Debug)]
@@ -404,5 +405,13 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .help("Enable the SITE MD5 command for authenticated users (not anonymous) (always enabled for GCS backend)")
                 .env("UNFTP_ENABLE_SITEMD5")
                 .takes_value(false)
+        )
+        .arg(
+            Arg::with_name(USR_JSON_PATH)
+                .long("usr-json-path")
+                .value_name("PATH")
+                .help("The path to a JSON user detail file")
+                .env("UNFTP_USR_JSON_PATH")
+                .takes_value(true),
         )
 }
