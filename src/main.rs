@@ -7,18 +7,26 @@ extern crate clap;
 #[allow(dead_code)]
 mod app;
 mod args;
+mod auth;
 mod http;
 mod logging;
 mod metrics;
 mod storage;
-mod user;
 
+use crate::args::FtpsClientAuthType;
+use crate::auth::{DefaultUserProvider, JsonUserProvider};
+
+use auth::LookupAuthenticator;
 use clap::ArgMatches;
-use libunftp::options::{FtpsClientAuth, FtpsRequired, SiteMd5, TlsFlags};
-use libunftp::{auth, options, storage::StorageBackend, Server};
+use libunftp::{
+    auth as auth_spi, options,
+    options::{FtpsClientAuth, FtpsRequired, SiteMd5, TlsFlags},
+    storage::StorageBackend,
+    Server,
+};
 use slog::*;
 use std::{
-    env,
+    env, fs,
     net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs},
     path::PathBuf,
     process,
@@ -30,28 +38,34 @@ use tokio::{
     runtime::Runtime,
     signal::unix::{signal, SignalKind},
 };
-use unftp_sbe_gcs::options::AuthMethod;
-use user::LookupAuthenticator;
-
-use crate::args::FtpsClientAuthType;
 #[cfg(feature = "pam_auth")]
 use unftp_auth_pam as pam;
+use unftp_sbe_gcs::options::AuthMethod;
 
-fn make_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<user::User> + Send + Sync>, String> {
-    match m.value_of(args::AUTH_TYPE) {
+fn make_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth_spi::Authenticator<auth::User> + Send + Sync>, String> {
+    let mut auth: LookupAuthenticator = match m.value_of(args::AUTH_TYPE) {
         None | Some("anonymous") => Ok(make_anon_auth()),
         Some("pam") => make_pam_auth(m),
         Some("rest") => make_rest_auth(m),
         Some("json") => make_json_auth(m),
         unknown_type => Err(format!("unknown auth type: {}", unknown_type.unwrap())),
-    }
+    }?;
+    auth.set_usr_detail(match m.value_of(args::USR_JSON_PATH) {
+        Some(path) => {
+            let json: String =
+                fs::read_to_string(path).map_err(|e| format!("could not load user file '{}': {}", path, e))?;
+            Box::new(JsonUserProvider::from_json(json.as_str())?)
+        }
+        None => Box::new(DefaultUserProvider {}),
+    });
+    Ok(Arc::new(auth))
 }
 
-fn make_anon_auth() -> Arc<dyn auth::Authenticator<user::User> + Send + Sync> {
-    Arc::new(LookupAuthenticator::new(auth::AnonymousAuthenticator))
+fn make_anon_auth() -> LookupAuthenticator {
+    LookupAuthenticator::new(auth_spi::AnonymousAuthenticator)
 }
 
-fn make_pam_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<user::User> + Send + Sync>, String> {
+fn make_pam_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
     #[cfg(not(feature = "pam_auth"))]
     {
         let _ = m;
@@ -62,14 +76,14 @@ fn make_pam_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<use
     {
         if let Some(service) = m.value_of(args::AUTH_PAM_SERVICE) {
             let pam_auth = pam::PamAuthenticator::new(service);
-            return Ok(Arc::new(LookupAuthenticator::new(pam_auth)));
+            return Ok(LookupAuthenticator::new(pam_auth));
         }
         Err(format!("--{} is required when using pam auth", args::AUTH_PAM_SERVICE))
     }
 }
 
 // FIXME: add user support
-fn make_rest_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<user::User> + Send + Sync>, String> {
+fn make_rest_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
     #[cfg(not(feature = "rest_auth"))]
     {
         let _ = m;
@@ -105,14 +119,14 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<us
                     Err(e) => return Err(format!("Unable to create RestAuthenticator: {}", e)),
                 };
 
-                Ok(Arc::new(LookupAuthenticator::new(authenticator)))
+                Ok(LookupAuthenticator::new(authenticator))
             }
             _ => Err("for auth type rest please specify all auth-rest-* options".to_string()),
         }
     }
 }
 
-fn make_json_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<user::User> + Send + Sync>, String> {
+fn make_json_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
     #[cfg(not(feature = "jsonfile_auth"))]
     {
         let _ = m;
@@ -126,17 +140,19 @@ fn make_json_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth::Authenticator<us
             .ok_or_else(|| "please provide the json credentials file by specifying auth-json-path".to_string())?;
 
         let authenticator = unftp_auth_jsonfile::JsonFileAuthenticator::from_file(path).map_err(|e| e.to_string())?;
-        Ok(Arc::new(LookupAuthenticator::new(authenticator)))
+        Ok(LookupAuthenticator::new(authenticator))
     }
 }
 
 // Creates the filesystem storage back-end
-fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Box<dyn (Fn() -> storage::StorageBe) + Send + Sync> {
+fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Box<dyn (Fn() -> storage::RestrictingVfs) + Send + Sync> {
     let p: PathBuf = m.value_of(args::ROOT_DIR).unwrap().into();
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
-    Box::new(move || storage::StorageBe {
-        inner: storage::InnerStorage::File(unftp_sbe_fs::Filesystem::new(p.clone())),
-        log: sub_log.clone(),
+    Box::new(move || storage::RestrictingVfs {
+        delegate: storage::StorageBe {
+            inner: storage::InnerStorage::File(unftp_sbe_fs::Filesystem::new(p.clone())),
+            log: sub_log.clone(),
+        },
     })
 }
 
@@ -239,7 +255,7 @@ fn start_ftp_with_storage<S>(
     storage_backend: Box<dyn (Fn() -> S) + Send + Sync>,
 ) -> Result<(), String>
 where
-    S: StorageBackend<user::User> + Send + Sync + 'static,
+    S: StorageBackend<auth::User> + Send + Sync + 'static,
     S::Metadata: Sync + Send,
 {
     let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());
