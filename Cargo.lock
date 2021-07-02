@@ -827,6 +827,7 @@ dependencies = [
 [[package]]
 name = "libunftp"
 version = "0.17.4"
+source = "git+https://github.com/bolcom/libunftp.git?rev=44b8c8eebc43baadce3275cb890570bdca4b525e#44b8c8eebc43baadce3275cb890570bdca4b525e"
 dependencies = [
  "async-trait",
  "bitflags",
@@ -1999,6 +2000,8 @@ dependencies = [
  "lazy_static",
  "libunftp",
  "prometheus",
+ "serde",
+ "serde_json",
  "slog",
  "slog-async",
  "slog-redis",
@@ -2015,6 +2018,7 @@ dependencies = [
 [[package]]
 name = "unftp-auth-jsonfile"
 version = "0.1.1"
+source = "git+https://github.com/bolcom/libunftp.git?rev=44b8c8eebc43baadce3275cb890570bdca4b525e#44b8c8eebc43baadce3275cb890570bdca4b525e"
 dependencies = [
  "async-trait",
  "base64",
@@ -2028,13 +2032,14 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-attributes",
- "unftp-sbe-fs 0.1.1",
+ "unftp-sbe-fs 0.1.1 (git+https://github.com/bolcom/libunftp.git?rev=44b8c8eebc43baadce3275cb890570bdca4b525e)",
  "valid",
 ]
 
 [[package]]
 name = "unftp-auth-pam"
 version = "0.1.0"
+source = "git+https://github.com/bolcom/libunftp.git?rev=44b8c8eebc43baadce3275cb890570bdca4b525e#44b8c8eebc43baadce3275cb890570bdca4b525e"
 dependencies = [
  "async-trait",
  "libunftp",
@@ -2046,6 +2051,7 @@ dependencies = [
 [[package]]
 name = "unftp-auth-rest"
 version = "0.1.0"
+source = "git+https://github.com/bolcom/libunftp.git?rev=44b8c8eebc43baadce3275cb890570bdca4b525e#44b8c8eebc43baadce3275cb890570bdca4b525e"
 dependencies = [
  "async-trait",
  "hyper",
@@ -2058,12 +2064,14 @@ dependencies = [
  "tokio",
  "tracing",
  "tracing-attributes",
- "unftp-sbe-fs 0.1.1",
+ "unftp-sbe-fs 0.1.1 (git+https://github.com/bolcom/libunftp.git?rev=44b8c8eebc43baadce3275cb890570bdca4b525e)",
 ]
 
 [[package]]
 name = "unftp-sbe-fs"
 version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "443f7058a7795c902581ca13162f6a2fd5431c99e937c8f2b55c2fad7d1966b5"
 dependencies = [
  "async-trait",
  "futures",
@@ -2078,8 +2086,7 @@ dependencies = [
 [[package]]
 name = "unftp-sbe-fs"
 version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "443f7058a7795c902581ca13162f6a2fd5431c99e937c8f2b55c2fad7d1966b5"
+source = "git+https://github.com/bolcom/libunftp.git?rev=44b8c8eebc43baadce3275cb890570bdca4b525e#44b8c8eebc43baadce3275cb890570bdca4b525e"
 dependencies = [
  "async-trait",
  "futures",
