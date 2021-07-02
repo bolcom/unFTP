@@ -145,14 +145,19 @@ fn make_json_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
 }
 
 // Creates the filesystem storage back-end
-fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Box<dyn (Fn() -> storage::RestrictingVfs) + Send + Sync> {
+fn fs_storage_backend(
+    log: &Logger,
+    m: &clap::ArgMatches,
+) -> Box<dyn (Fn() -> storage::RooterVfs<storage::RestrictingVfs, auth::User, storage::SbeMeta>) + Send + Sync> {
     let p: PathBuf = m.value_of(args::ROOT_DIR).unwrap().into();
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
-    Box::new(move || storage::RestrictingVfs {
-        delegate: storage::ChoosingVfs {
-            inner: storage::InnerVfs::File(unftp_sbe_fs::Filesystem::new(p.clone())),
-            log: sub_log.clone(),
-        },
+    Box::new(move || {
+        storage::RooterVfs::new(storage::RestrictingVfs {
+            delegate: storage::ChoosingVfs {
+                inner: storage::InnerVfs::File(unftp_sbe_fs::Filesystem::new(p.clone())),
+                log: sub_log.clone(),
+            },
+        })
     })
 }
 
