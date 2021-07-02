@@ -4,15 +4,17 @@ use libunftp::auth::{AuthenticationError, Credentials, DefaultUser, UserDetail};
 use serde::Deserialize;
 use std::fmt::Formatter;
 
+/// The unFTP user details
 #[derive(Debug, PartialEq)]
 pub struct User {
     pub username: String,
     pub name: Option<String>,
     pub surname: Option<String>,
+    /// Tells whether this user can log in or not.
     pub account_enabled: bool,
-    // What FTP commands can the user perform
+    /// What FTP commands can the user perform
     pub vfs_permissions: VfsOperations,
-    // For some users we know they will only upload a certain type of file
+    /// For some users we know they will only upload a certain type of file
     pub allowed_mime_types: Option<Vec<String>>,
     // Example of things we can extend with:
     // Switch the on for users that we know can/will connect with FTPS
@@ -62,14 +64,16 @@ bitflags! {
     }
 }
 
-pub trait UserDetailProvider: std::fmt::Debug {
-    fn provide_user_detail(&self, username: &str) -> Option<User>;
-}
-
 #[derive(Debug)]
 pub struct LookupAuthenticator {
     inner: Box<dyn libunftp::auth::Authenticator<DefaultUser>>,
     usr_detail: Option<Box<dyn UserDetailProvider + Send + Sync>>,
+}
+
+/// Implementation of UserDetailProvider can look up and provide FTP user account details from
+/// a source.
+pub trait UserDetailProvider: std::fmt::Debug {
+    fn provide_user_detail(&self, username: &str) -> Option<User>;
 }
 
 impl LookupAuthenticator {

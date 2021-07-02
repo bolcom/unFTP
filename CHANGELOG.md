@@ -1,5 +1,15 @@
 # Changelog
 
+## Upcoming
+
+- Added the `--usr-json-path` argument to allow per-user settings to be specified in a JSON file. This can be the same 
+  JSON file specified for `--auth-json-path`. Example of supported properties can be seen in PR #97
+- Ability to restrict the file system operations that an FTP user can do. Accomplished with above-mentioned per user 
+  settings (`vfs_perms` property).
+- Ability to enable/disable an FTP account. Accomplished with above-mentioned per user settings (`account_enabled` property).
+- Upgraded to the latest libunftp and its extentions. See [the libunftp changelog](https://github.com/bolcom/libunftp/blob/master/CHANGELOG.md) 
+  for more info. 
+
 ## 2021-05-26 unftp v0.12.10
 
 _tag: v0.12.10_
