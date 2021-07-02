@@ -3,6 +3,7 @@ use bitflags::bitflags;
 use libunftp::auth::{AuthenticationError, Credentials, DefaultUser, UserDetail};
 use serde::Deserialize;
 use std::fmt::Formatter;
+use std::path::PathBuf;
 
 /// The unFTP user details
 #[derive(Debug, PartialEq)]
@@ -16,9 +17,8 @@ pub struct User {
     pub vfs_permissions: VfsOperations,
     /// For some users we know they will only upload a certain type of file
     pub allowed_mime_types: Option<Vec<String>>, // TODO: Look at https://crates.io/crates/infer to do this
-                                                 // Example of things we can extend with:
-                                                 // Switch the on for users that we know can/will connect with FTPS
-                                                 //pub enforce_tls: bool,
+    /// The user's home directory relative to the storage back-end root
+    pub root: Option<PathBuf>,
 }
 
 impl User {
@@ -30,6 +30,7 @@ impl User {
             account_enabled: true,
             vfs_permissions: VfsOperations::all(),
             allowed_mime_types: None,
+            root: None,
         }
     }
 }
@@ -47,6 +48,12 @@ impl std::fmt::Display for User {
             "User(username: {:?}, name: {:?}, surname: {:?})",
             self.username, self.name, self.surname
         )
+    }
+}
+
+impl crate::storage::UserWithRoot for User {
+    fn user_root(&self) -> Option<PathBuf> {
+        self.root.clone()
     }
 }
 
@@ -169,6 +176,7 @@ impl UserDetailProvider for JsonUserProvider {
                     })
                 }),
                 allowed_mime_types: None,
+                root: u.root.map(PathBuf::from),
             }
         })
     }
