@@ -10,16 +10,19 @@ use libunftp::storage::{Fileinfo, StorageBackend};
 
 use crate::auth::User;
 
+/**
+ * A virtual file system that represents either a Cloud or file system back-end.
+ */
 #[derive(Debug)]
-pub enum InnerStorage {
-    Cloud(unftp_sbe_gcs::CloudStorage),
-    File(unftp_sbe_fs::Filesystem),
+pub struct ChoosingVfs {
+    pub inner: InnerVfs,
+    pub log: Arc<slog::Logger>,
 }
 
 #[derive(Debug)]
-pub struct StorageBe {
-    pub inner: InnerStorage,
-    pub log: Arc<slog::Logger>,
+pub enum InnerVfs {
+    Cloud(unftp_sbe_gcs::CloudStorage),
+    File(unftp_sbe_fs::Filesystem),
 }
 
 #[derive(Debug)]
@@ -80,20 +83,20 @@ impl libunftp::storage::Metadata for SbeMeta {
 }
 
 #[async_trait]
-impl StorageBackend<User> for StorageBe {
+impl StorageBackend<User> for ChoosingVfs {
     type Metadata = SbeMeta;
 
     fn name(&self) -> &str {
         match &self.inner {
-            InnerStorage::Cloud(i) => StorageBackend::<User>::name(i),
-            InnerStorage::File(i) => StorageBackend::<User>::name(i),
+            InnerVfs::Cloud(i) => StorageBackend::<User>::name(i),
+            InnerVfs::File(i) => StorageBackend::<User>::name(i),
         }
     }
 
     fn supported_features(&self) -> u32 {
         match &self.inner {
-            InnerStorage::Cloud(i) => StorageBackend::<User>::supported_features(i),
-            InnerStorage::File(i) => StorageBackend::<User>::supported_features(i),
+            InnerVfs::Cloud(i) => StorageBackend::<User>::supported_features(i),
+            InnerVfs::File(i) => StorageBackend::<User>::supported_features(i),
         }
     }
 
@@ -103,8 +106,8 @@ impl StorageBackend<User> for StorageBe {
         path: P,
     ) -> storage::Result<Self::Metadata> {
         match &self.inner {
-            InnerStorage::Cloud(i) => i.metadata(user, path).await.map(SbeMeta::Cloud),
-            InnerStorage::File(i) => i.metadata(user, path).await.map(SbeMeta::File),
+            InnerVfs::Cloud(i) => i.metadata(user, path).await.map(SbeMeta::Cloud),
+            InnerVfs::File(i) => i.metadata(user, path).await.map(SbeMeta::File),
         }
     }
 
@@ -117,7 +120,7 @@ impl StorageBackend<User> for StorageBe {
         <Self as StorageBackend<User>>::Metadata: libunftp::storage::Metadata,
     {
         match &self.inner {
-            InnerStorage::Cloud(i) => i.list(user, path).await.map(|v| {
+            InnerVfs::Cloud(i) => i.list(user, path).await.map(|v| {
                 v.into_iter()
                     .map(|fi| Fileinfo {
                         path: fi.path,
@@ -125,7 +128,7 @@ impl StorageBackend<User> for StorageBe {
                     })
                     .collect()
             }),
-            InnerStorage::File(i) => i.list(user, path).await.map(|v| {
+            InnerVfs::File(i) => i.list(user, path).await.map(|v| {
                 v.into_iter()
                     .map(|fi| Fileinfo {
                         path: fi.path,
@@ -142,8 +145,8 @@ impl StorageBackend<User> for StorageBe {
         Self::Metadata: libunftp::storage::Metadata + 'static,
     {
         match &self.inner {
-            InnerStorage::Cloud(i) => i.list_fmt(user, path).await,
-            InnerStorage::File(i) => i.list_fmt(user, path).await,
+            InnerVfs::Cloud(i) => i.list_fmt(user, path).await,
+            InnerVfs::File(i) => i.list_fmt(user, path).await,
         }
     }
 
@@ -153,8 +156,8 @@ impl StorageBackend<User> for StorageBe {
         Self::Metadata: libunftp::storage::Metadata + 'static,
     {
         match &self.inner {
-            InnerStorage::Cloud(i) => i.nlst(user, path).await,
-            InnerStorage::File(i) => i.nlst(user, path).await,
+            InnerVfs::Cloud(i) => i.nlst(user, path).await,
+            InnerVfs::File(i) => i.nlst(user, path).await,
         }
     }
 
@@ -170,8 +173,8 @@ impl StorageBackend<User> for StorageBe {
         P: AsRef<Path> + Send + Debug,
     {
         match &self.inner {
-            InnerStorage::Cloud(i) => i.get_into(user, path, start_pos, output).await,
-            InnerStorage::File(i) => i.get_into(user, path, start_pos, output).await,
+            InnerVfs::Cloud(i) => i.get_into(user, path, start_pos, output).await,
+            InnerVfs::File(i) => i.get_into(user, path, start_pos, output).await,
         }
     }
 
@@ -182,8 +185,8 @@ impl StorageBackend<User> for StorageBe {
         start_pos: u64,
     ) -> storage::Result<Box<dyn tokio::io::AsyncRead + Send + Sync + Unpin>> {
         match &self.inner {
-            InnerStorage::Cloud(i) => i.get(user, path, start_pos).await,
-            InnerStorage::File(i) => i.get(user, path, start_pos).await,
+            InnerVfs::Cloud(i) => i.get(user, path, start_pos).await,
+            InnerVfs::File(i) => i.get(user, path, start_pos).await,
         }
     }
 
@@ -207,43 +210,43 @@ impl StorageBackend<User> for StorageBe {
         start_pos: u64,
     ) -> storage::Result<u64> {
         match &self.inner {
-            InnerStorage::Cloud(i) => i.put(user, input, path, start_pos).await,
-            InnerStorage::File(i) => i.put(user, input, path, start_pos).await,
+            InnerVfs::Cloud(i) => i.put(user, input, path, start_pos).await,
+            InnerVfs::File(i) => i.put(user, input, path, start_pos).await,
         }
     }
 
     async fn del<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> storage::Result<()> {
         match &self.inner {
-            InnerStorage::Cloud(i) => i.del(user, path).await,
-            InnerStorage::File(i) => i.del(user, path).await,
+            InnerVfs::Cloud(i) => i.del(user, path).await,
+            InnerVfs::File(i) => i.del(user, path).await,
         }
     }
 
     async fn mkd<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> storage::Result<()> {
         match &self.inner {
-            InnerStorage::Cloud(i) => i.mkd(user, path).await,
-            InnerStorage::File(i) => i.mkd(user, path).await,
+            InnerVfs::Cloud(i) => i.mkd(user, path).await,
+            InnerVfs::File(i) => i.mkd(user, path).await,
         }
     }
 
     async fn rename<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, from: P, to: P) -> storage::Result<()> {
         match &self.inner {
-            InnerStorage::Cloud(i) => i.rename(user, from, to).await,
-            InnerStorage::File(i) => i.rename(user, from, to).await,
+            InnerVfs::Cloud(i) => i.rename(user, from, to).await,
+            InnerVfs::File(i) => i.rename(user, from, to).await,
         }
     }
 
     async fn rmd<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> storage::Result<()> {
         match &self.inner {
-            InnerStorage::Cloud(i) => i.rmd(user, path).await,
-            InnerStorage::File(i) => i.rmd(user, path).await,
+            InnerVfs::Cloud(i) => i.rmd(user, path).await,
+            InnerVfs::File(i) => i.rmd(user, path).await,
         }
     }
 
     async fn cwd<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> storage::Result<()> {
         match &self.inner {
-            InnerStorage::Cloud(i) => i.cwd(user, path).await,
-            InnerStorage::File(i) => i.cwd(user, path).await,
+            InnerVfs::Cloud(i) => i.cwd(user, path).await,
+            InnerVfs::File(i) => i.cwd(user, path).await,
         }
     }
 }
