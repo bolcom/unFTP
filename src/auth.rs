@@ -15,10 +15,10 @@ pub struct User {
     /// What FTP commands can the user perform
     pub vfs_permissions: VfsOperations,
     /// For some users we know they will only upload a certain type of file
-    pub allowed_mime_types: Option<Vec<String>>,
-    // Example of things we can extend with:
-    // Switch the on for users that we know can/will connect with FTPS
-    //pub enforce_tls: bool,
+    pub allowed_mime_types: Option<Vec<String>>, // TODO: Look at https://crates.io/crates/infer to do this
+                                                 // Example of things we can extend with:
+                                                 // Switch the on for users that we know can/will connect with FTPS
+                                                 //pub enforce_tls: bool,
 }
 
 impl User {

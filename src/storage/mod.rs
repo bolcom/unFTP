@@ -1,5 +1,5 @@
-mod chooser;
+mod choose;
 mod restrict;
 
-pub use chooser::{InnerStorage, StorageBe};
+pub use choose::{ChoosingVfs, InnerVfs};
 pub use restrict::RestrictingVfs;

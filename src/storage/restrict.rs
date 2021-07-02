@@ -8,13 +8,13 @@ use libunftp::storage::{Fileinfo, Metadata, StorageBackend};
 use tokio::io::AsyncRead;
 
 use crate::auth::{User, VfsOperations};
-use crate::storage::chooser::{SbeMeta, StorageBe};
+use crate::storage::choose::{ChoosingVfs, SbeMeta};
 
 /// A virtual filesystem that checks if the user has permissions to do its operations before it
 /// delegates to another storage back-end.
 #[derive(Debug)]
 pub struct RestrictingVfs {
-    pub delegate: StorageBe,
+    pub delegate: ChoosingVfs,
 }
 
 #[async_trait]
