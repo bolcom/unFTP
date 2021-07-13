@@ -29,19 +29,15 @@ impl StorageBackend<User> for RestrictingVfs {
         self.delegate.supported_features()
     }
 
-    async fn metadata<P: AsRef<Path> + Send + Debug>(
-        &self,
-        user: &Option<User>,
-        path: P,
-    ) -> storage::Result<Self::Metadata> {
+    async fn metadata<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<Self::Metadata> {
         self.delegate.metadata(user, path).await
     }
 
-    async fn md5<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> storage::Result<String>
+    async fn md5<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<String>
     where
         P: AsRef<Path> + Send + Debug,
     {
-        if user.as_ref().unwrap().vfs_permissions.contains(VfsOperations::MD5) {
+        if user.vfs_permissions.contains(VfsOperations::MD5) {
             self.delegate.md5(user, path).await
         } else {
             Err(libunftp::storage::ErrorKind::PermissionDenied.into())
@@ -50,37 +46,37 @@ impl StorageBackend<User> for RestrictingVfs {
 
     async fn list<P: AsRef<Path> + Send + Debug>(
         &self,
-        user: &Option<User>,
+        user: &User,
         path: P,
     ) -> storage::Result<Vec<Fileinfo<PathBuf, Self::Metadata>>>
     where
         <Self as StorageBackend<User>>::Metadata: Metadata,
     {
-        if user.as_ref().unwrap().vfs_permissions.contains(VfsOperations::LIST) {
+        if user.vfs_permissions.contains(VfsOperations::LIST) {
             self.delegate.list(user, path).await
         } else {
             Err(libunftp::storage::ErrorKind::PermissionDenied.into())
         }
     }
 
-    async fn list_fmt<P>(&self, user: &Option<User>, path: P) -> storage::Result<Cursor<Vec<u8>>>
+    async fn list_fmt<P>(&self, user: &User, path: P) -> storage::Result<Cursor<Vec<u8>>>
     where
         P: AsRef<Path> + Send + Debug,
         Self::Metadata: Metadata + 'static,
     {
-        if user.as_ref().unwrap().vfs_permissions.contains(VfsOperations::LIST) {
+        if user.vfs_permissions.contains(VfsOperations::LIST) {
             self.delegate.list_fmt(user, path).await
         } else {
             Err(libunftp::storage::ErrorKind::PermissionDenied.into())
         }
     }
 
-    async fn nlst<P>(&self, user: &Option<User>, path: P) -> std::result::Result<Cursor<Vec<u8>>, Error>
+    async fn nlst<P>(&self, user: &User, path: P) -> std::result::Result<Cursor<Vec<u8>>, Error>
     where
         P: AsRef<Path> + Send + Debug,
         Self::Metadata: Metadata + 'static,
     {
-        if user.as_ref().unwrap().vfs_permissions.contains(VfsOperations::LIST) {
+        if user.vfs_permissions.contains(VfsOperations::LIST) {
             self.delegate.nlst(user, path).await
         } else {
             Err(ErrorKind::PermissionDenied.into())
@@ -89,7 +85,7 @@ impl StorageBackend<User> for RestrictingVfs {
 
     async fn get_into<'a, P, W: ?Sized>(
         &self,
-        user: &Option<User>,
+        user: &User,
         path: P,
         start_pos: u64,
         output: &'a mut W,
@@ -98,7 +94,7 @@ impl StorageBackend<User> for RestrictingVfs {
         W: tokio::io::AsyncWrite + Unpin + Sync + Send,
         P: AsRef<Path> + Send + Debug,
     {
-        if user.as_ref().unwrap().vfs_permissions.contains(VfsOperations::GET) {
+        if user.vfs_permissions.contains(VfsOperations::GET) {
             self.delegate.get_into(user, path, start_pos, output).await
         } else {
             Err(libunftp::storage::ErrorKind::PermissionDenied.into())
@@ -107,11 +103,11 @@ impl StorageBackend<User> for RestrictingVfs {
 
     async fn get<P: AsRef<Path> + Send + Debug>(
         &self,
-        user: &Option<User>,
+        user: &User,
         path: P,
         start_pos: u64,
     ) -> storage::Result<Box<dyn AsyncRead + Send + Sync + Unpin>> {
-        if user.as_ref().unwrap().vfs_permissions.contains(VfsOperations::GET) {
+        if user.vfs_permissions.contains(VfsOperations::GET) {
             self.delegate.get(user, path, start_pos).await
         } else {
             Err(libunftp::storage::ErrorKind::PermissionDenied.into())
@@ -120,51 +116,51 @@ impl StorageBackend<User> for RestrictingVfs {
 
     async fn put<P: AsRef<Path> + Send + Debug, R: tokio::io::AsyncRead + Send + Sync + Unpin + 'static>(
         &self,
-        user: &Option<User>,
+        user: &User,
         input: R,
         path: P,
         start_pos: u64,
     ) -> storage::Result<u64> {
-        if user.as_ref().unwrap().vfs_permissions.contains(VfsOperations::PUT) {
+        if user.vfs_permissions.contains(VfsOperations::PUT) {
             self.delegate.put(user, input, path, start_pos).await
         } else {
             Err(libunftp::storage::ErrorKind::PermissionDenied.into())
         }
     }
 
-    async fn del<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> storage::Result<()> {
-        if user.as_ref().unwrap().vfs_permissions.contains(VfsOperations::DEL) {
+    async fn del<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<()> {
+        if user.vfs_permissions.contains(VfsOperations::DEL) {
             self.delegate.del(user, path).await
         } else {
             Err(libunftp::storage::ErrorKind::PermissionDenied.into())
         }
     }
 
-    async fn mkd<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> storage::Result<()> {
-        if user.as_ref().unwrap().vfs_permissions.contains(VfsOperations::MK_DIR) {
+    async fn mkd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<()> {
+        if user.vfs_permissions.contains(VfsOperations::MK_DIR) {
             self.delegate.mkd(user, path).await
         } else {
             Err(libunftp::storage::ErrorKind::PermissionDenied.into())
         }
     }
 
-    async fn rename<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, from: P, to: P) -> storage::Result<()> {
-        if user.as_ref().unwrap().vfs_permissions.contains(VfsOperations::RENAME) {
+    async fn rename<P: AsRef<Path> + Send + Debug>(&self, user: &User, from: P, to: P) -> storage::Result<()> {
+        if user.vfs_permissions.contains(VfsOperations::RENAME) {
             self.delegate.rename(user, from, to).await
         } else {
             Err(libunftp::storage::ErrorKind::PermissionDenied.into())
         }
     }
 
-    async fn rmd<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> storage::Result<()> {
-        if user.as_ref().unwrap().vfs_permissions.contains(VfsOperations::RM_DIR) {
+    async fn rmd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<()> {
+        if user.vfs_permissions.contains(VfsOperations::RM_DIR) {
             self.delegate.rmd(user, path).await
         } else {
             Err(libunftp::storage::ErrorKind::PermissionDenied.into())
         }
     }
 
-    async fn cwd<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> storage::Result<()> {
+    async fn cwd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<()> {
         self.delegate.cwd(user, path).await
     }
 }

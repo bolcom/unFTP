@@ -100,11 +100,7 @@ impl StorageBackend<User> for ChoosingVfs {
         }
     }
 
-    async fn metadata<P: AsRef<Path> + Send + Debug>(
-        &self,
-        user: &Option<User>,
-        path: P,
-    ) -> storage::Result<Self::Metadata> {
+    async fn metadata<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<Self::Metadata> {
         match &self.inner {
             InnerVfs::Cloud(i) => i.metadata(user, path).await.map(SbeMeta::Cloud),
             InnerVfs::File(i) => i.metadata(user, path).await.map(SbeMeta::File),
@@ -113,7 +109,7 @@ impl StorageBackend<User> for ChoosingVfs {
 
     async fn list<P: AsRef<Path> + Send + Debug>(
         &self,
-        user: &Option<User>,
+        user: &User,
         path: P,
     ) -> storage::Result<Vec<Fileinfo<PathBuf, Self::Metadata>>>
     where
@@ -139,7 +135,7 @@ impl StorageBackend<User> for ChoosingVfs {
         }
     }
 
-    async fn list_fmt<P>(&self, user: &Option<User>, path: P) -> storage::Result<Cursor<Vec<u8>>>
+    async fn list_fmt<P>(&self, user: &User, path: P) -> storage::Result<Cursor<Vec<u8>>>
     where
         P: AsRef<Path> + Send + Debug,
         Self::Metadata: libunftp::storage::Metadata + 'static,
@@ -150,7 +146,7 @@ impl StorageBackend<User> for ChoosingVfs {
         }
     }
 
-    async fn nlst<P>(&self, user: &Option<User>, path: P) -> std::io::Result<Cursor<Vec<u8>>>
+    async fn nlst<P>(&self, user: &User, path: P) -> std::io::Result<Cursor<Vec<u8>>>
     where
         P: AsRef<Path> + Send + Debug,
         Self::Metadata: libunftp::storage::Metadata + 'static,
@@ -163,7 +159,7 @@ impl StorageBackend<User> for ChoosingVfs {
 
     async fn get_into<'a, P, W: ?Sized>(
         &self,
-        user: &Option<User>,
+        user: &User,
         path: P,
         start_pos: u64,
         output: &'a mut W,
@@ -180,7 +176,7 @@ impl StorageBackend<User> for ChoosingVfs {
 
     async fn get<P: AsRef<Path> + Send + Debug>(
         &self,
-        user: &Option<User>,
+        user: &User,
         path: P,
         start_pos: u64,
     ) -> storage::Result<Box<dyn tokio::io::AsyncRead + Send + Sync + Unpin>> {
@@ -190,7 +186,7 @@ impl StorageBackend<User> for ChoosingVfs {
         }
     }
 
-    // async fn put<'a, P, R: ?Sized>(&self, user: &Option<User>, input: &'a mut R, path: P, start_pos: u64) -> Result<u64>
+    // async fn put<'a, P, R: ?Sized>(&self, user: &User, input: &'a mut R, path: P, start_pos: u64) -> Result<u64>
     //     where
     //         R: tokio::io::AsyncRead + Unpin + Sync + Send,
     //         P: AsRef<Path> + Send + Debug,
@@ -204,7 +200,7 @@ impl StorageBackend<User> for ChoosingVfs {
 
     async fn put<P: AsRef<Path> + Send + Debug, R: tokio::io::AsyncRead + Send + Sync + Unpin + 'static>(
         &self,
-        user: &Option<User>,
+        user: &User,
         input: R,
         path: P,
         start_pos: u64,
@@ -215,35 +211,35 @@ impl StorageBackend<User> for ChoosingVfs {
         }
     }
 
-    async fn del<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> storage::Result<()> {
+    async fn del<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<()> {
         match &self.inner {
             InnerVfs::Cloud(i) => i.del(user, path).await,
             InnerVfs::File(i) => i.del(user, path).await,
         }
     }
 
-    async fn mkd<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> storage::Result<()> {
+    async fn mkd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<()> {
         match &self.inner {
             InnerVfs::Cloud(i) => i.mkd(user, path).await,
             InnerVfs::File(i) => i.mkd(user, path).await,
         }
     }
 
-    async fn rename<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, from: P, to: P) -> storage::Result<()> {
+    async fn rename<P: AsRef<Path> + Send + Debug>(&self, user: &User, from: P, to: P) -> storage::Result<()> {
         match &self.inner {
             InnerVfs::Cloud(i) => i.rename(user, from, to).await,
             InnerVfs::File(i) => i.rename(user, from, to).await,
         }
     }
 
-    async fn rmd<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> storage::Result<()> {
+    async fn rmd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<()> {
         match &self.inner {
             InnerVfs::Cloud(i) => i.rmd(user, path).await,
             InnerVfs::File(i) => i.rmd(user, path).await,
         }
     }
 
-    async fn cwd<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> storage::Result<()> {
+    async fn cwd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<()> {
         match &self.inner {
             InnerVfs::Cloud(i) => i.cwd(user, path).await,
             InnerVfs::File(i) => i.cwd(user, path).await,

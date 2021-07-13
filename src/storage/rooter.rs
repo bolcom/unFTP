@@ -11,18 +11,12 @@ use std::marker::PhantomData;
 use std::path::{Component, Path, PathBuf};
 use tokio::io::AsyncRead;
 
-/// Used by [RooterVfs] to obtain the user's root path from a [UserDetail](libunftp::auth::UserDetail) implementation
-pub trait UserWithRoot {
-    /// Returns the relative path to the user's root if it exists otherwise null.
-    fn user_root(&self) -> Option<PathBuf>;
-}
-
 /// A virtual file system for libunftp that wraps other file systems
 #[derive(Debug)]
 pub struct RooterVfs<Delegate, User, Meta>
 where
     Delegate: StorageBackend<User>,
-    User: UserDetail + UserWithRoot,
+    User: UserWithRoot,
     Meta: Metadata + Debug + Sync + Send,
 {
     inner: Delegate,
@@ -30,10 +24,16 @@ where
     y: PhantomData<User>,
 }
 
+/// Used by [RooterVfs] to obtain the user's root path from a [UserDetail](libunftp::auth::UserDetail) implementation
+pub trait UserWithRoot: UserDetail {
+    /// Returns the relative path to the user's root if it exists otherwise null.
+    fn user_root(&self) -> Option<PathBuf>;
+}
+
 impl<Delegate, User, Meta> RooterVfs<Delegate, User, Meta>
 where
     Delegate: StorageBackend<User>,
-    User: UserDetail + UserWithRoot,
+    User: UserWithRoot,
     Meta: Metadata + Debug + Sync + Send,
 {
     pub fn new(inner: Delegate) -> Self {
@@ -44,13 +44,9 @@ where
         }
     }
 
-    pub(super) fn new_path<'a>(user: &Option<User>, requested_path: &'a Path) -> Cow<'a, Path> {
-        if let Some(u) = user {
-            if let Some(user_root) = u.user_root() {
-                Cow::Owned(Self::root_to(user_root.as_os_str(), requested_path).unwrap())
-            } else {
-                Cow::Borrowed(requested_path)
-            }
+    pub(super) fn new_path<'a>(user: &User, requested_path: &'a Path) -> Cow<'a, Path> {
+        if let Some(user_root) = user.user_root() {
+            Cow::Owned(Self::root_to(user_root.as_os_str(), requested_path).unwrap())
         } else {
             Cow::Borrowed(requested_path)
         }
@@ -116,17 +112,17 @@ where
 impl<Delegate, User, Meta> StorageBackend<User> for RooterVfs<Delegate, User, Meta>
 where
     Delegate: StorageBackend<User>,
-    User: UserDetail + UserWithRoot,
+    User: UserWithRoot,
     Meta: Metadata + Debug + Sync + Send,
 {
     type Metadata = Delegate::Metadata;
 
-    async fn metadata<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> Result<Self::Metadata> {
+    async fn metadata<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> Result<Self::Metadata> {
         let path = Self::new_path(user, path.as_ref());
         self.inner.metadata(user, path).await
     }
 
-    async fn md5<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> Result<String>
+    async fn md5<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> Result<String>
     where
         P: AsRef<Path> + Send + Debug,
     {
@@ -136,7 +132,7 @@ where
 
     async fn list<P: AsRef<Path> + Send + Debug>(
         &self,
-        user: &Option<User>,
+        user: &User,
         path: P,
     ) -> Result<Vec<Fileinfo<PathBuf, Self::Metadata>>>
     where
@@ -146,7 +142,7 @@ where
         self.inner.list(user, path).await
     }
 
-    async fn list_fmt<P>(&self, user: &Option<User>, path: P) -> Result<Cursor<Vec<u8>>>
+    async fn list_fmt<P>(&self, user: &User, path: P) -> Result<Cursor<Vec<u8>>>
     where
         P: AsRef<Path> + Send + Debug,
         Self::Metadata: Metadata + 'static,
@@ -155,7 +151,7 @@ where
         self.inner.list_fmt(user, path).await
     }
 
-    async fn nlst<P>(&self, user: &Option<User>, path: P) -> std::result::Result<Cursor<Vec<u8>>, Error>
+    async fn nlst<P>(&self, user: &User, path: P) -> std::result::Result<Cursor<Vec<u8>>, Error>
     where
         P: AsRef<Path> + Send + Debug,
         Self::Metadata: Metadata + 'static,
@@ -164,13 +160,7 @@ where
         self.inner.nlst(user, path).await
     }
 
-    async fn get_into<'a, P, W: ?Sized>(
-        &self,
-        user: &Option<User>,
-        path: P,
-        start_pos: u64,
-        output: &'a mut W,
-    ) -> Result<u64>
+    async fn get_into<'a, P, W: ?Sized>(&self, user: &User, path: P, start_pos: u64, output: &'a mut W) -> Result<u64>
     where
         W: tokio::io::AsyncWrite + Unpin + Sync + Send,
         P: AsRef<Path> + Send + Debug,
@@ -181,7 +171,7 @@ where
 
     async fn get<P: AsRef<Path> + Send + Debug>(
         &self,
-        user: &Option<User>,
+        user: &User,
         path: P,
         start_pos: u64,
     ) -> Result<Box<dyn AsyncRead + Send + Sync + Unpin>> {
@@ -191,7 +181,7 @@ where
 
     async fn put<P: AsRef<Path> + Send + Debug, R: tokio::io::AsyncRead + Send + Sync + Unpin + 'static>(
         &self,
-        user: &Option<User>,
+        user: &User,
         input: R,
         path: P,
         start_pos: u64,
@@ -200,28 +190,28 @@ where
         self.inner.put(user, input, path, start_pos).await
     }
 
-    async fn del<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> Result<()> {
+    async fn del<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> Result<()> {
         let path = Self::new_path(user, path.as_ref());
         self.inner.del(user, path).await
     }
 
-    async fn mkd<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> Result<()> {
+    async fn mkd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> Result<()> {
         let path = Self::new_path(user, path.as_ref());
         self.inner.mkd(user, path).await
     }
 
-    async fn rename<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, from: P, to: P) -> Result<()> {
+    async fn rename<P: AsRef<Path> + Send + Debug>(&self, user: &User, from: P, to: P) -> Result<()> {
         let from = Self::new_path(user, from.as_ref());
         let to = Self::new_path(user, to.as_ref());
         self.inner.rename(user, from, to).await
     }
 
-    async fn rmd<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> Result<()> {
+    async fn rmd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> Result<()> {
         let path = Self::new_path(user, path.as_ref());
         self.inner.rmd(user, path).await
     }
 
-    async fn cwd<P: AsRef<Path> + Send + Debug>(&self, user: &Option<User>, path: P) -> Result<()> {
+    async fn cwd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> Result<()> {
         let path = Self::new_path(user, path.as_ref());
         self.inner.cwd(user, path).await
     }
@@ -235,7 +225,7 @@ mod tests {
 
     fn new_path(root: &str, requested: &str) -> PathBuf {
         super::RooterVfs::<unftp_sbe_fs::Filesystem, crate::auth::User, unftp_sbe_fs::Meta>::new_path(
-            &Some(crate::auth::User {
+            &crate::auth::User {
                 username: "test".to_string(),
                 name: None,
                 surname: None,
@@ -243,7 +233,7 @@ mod tests {
                 vfs_permissions: VfsOperations::all(),
                 allowed_mime_types: None,
                 root: Some(PathBuf::from(root)),
-            }),
+            },
             Path::new(requested),
         )
         .into()
@@ -251,7 +241,7 @@ mod tests {
 
     fn new_path_no_root(requested: &str) -> PathBuf {
         super::RooterVfs::<unftp_sbe_fs::Filesystem, crate::auth::User, unftp_sbe_fs::Meta>::new_path(
-            &Some(crate::auth::User {
+            &crate::auth::User {
                 username: "test".to_string(),
                 name: None,
                 surname: None,
@@ -259,7 +249,7 @@ mod tests {
                 vfs_permissions: VfsOperations::all(),
                 allowed_mime_types: None,
                 root: None,
-            }),
+            },
             Path::new(requested),
         )
         .into()

@@ -14,7 +14,7 @@
 * Run `make publish`
 * Push to Github
 * Create the release in Github using tag format \[{component}-\]{version} e.g.
-  > v0.12.10
+  > v0.12.11
   or
   > slog-redis-v0.1.2
 * Create the artifacts: `make release-artifacts` and add to Github
