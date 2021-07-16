@@ -144,11 +144,11 @@ fn make_json_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
     }
 }
 
+type VfsProducer =
+    Box<dyn (Fn() -> storage::RooterVfs<storage::RestrictingVfs, auth::User, storage::SbeMeta>) + Send + Sync>;
+
 // Creates the filesystem storage back-end
-fn fs_storage_backend(
-    log: &Logger,
-    m: &clap::ArgMatches,
-) -> Box<dyn (Fn() -> storage::RooterVfs<storage::RestrictingVfs, auth::User, storage::SbeMeta>) + Send + Sync> {
+fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> VfsProducer {
     let p: PathBuf = m.value_of(args::ROOT_DIR).unwrap().into();
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
     Box::new(move || {
@@ -162,10 +162,7 @@ fn fs_storage_backend(
 }
 
 // Creates the GCS storage back-end
-fn gcs_storage_backend(
-    log: &Logger,
-    m: &clap::ArgMatches,
-) -> Result<Box<dyn (Fn() -> storage::ChoosingVfs) + Send + Sync>, String> {
+fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer, String> {
     let bucket: String = m
         .value_of(args::GCS_BUCKET)
         .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_BUCKET))?
@@ -199,14 +196,18 @@ fn gcs_storage_backend(
     slog::info!(log, "GCS back-end auth method: {}", auth_method);
 
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
-    Ok(Box::new(move || storage::ChoosingVfs {
-        inner: storage::InnerVfs::Cloud(unftp_sbe_gcs::CloudStorage::with_api_base(
-            base_url.clone(),
-            bucket.clone(),
-            root_dir.clone(),
-            auth_method.clone(),
-        )),
-        log: sub_log.clone(),
+    Ok(Box::new(move || {
+        storage::RooterVfs::new(storage::RestrictingVfs {
+            delegate: storage::ChoosingVfs {
+                inner: storage::InnerVfs::Cloud(unftp_sbe_gcs::CloudStorage::with_api_base(
+                    base_url.clone(),
+                    bucket.clone(),
+                    root_dir.clone(),
+                    auth_method.clone(),
+                )),
+                log: sub_log.clone(),
+            },
+        })
     }))
 }
 
