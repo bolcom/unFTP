@@ -66,6 +66,7 @@ bitflags! {
         const DEL    = 0b00010000;
         const RENAME = 0b00100000;
         const MD5    = 0b01000000;
+        const LIST   = 0b10000000;
 
         const WRITE_OPS = Self::MK_DIR.bits | Self::RM_DIR.bits | Self::PUT.bits | Self::DEL.bits | Self::RENAME.bits;
     }
@@ -165,6 +166,7 @@ impl UserDetailProvider for JsonUserProvider {
                         "-md5" => ops - VfsOperations::MD5,
                         "-get" => ops - VfsOperations::GET,
                         "-put" => ops - VfsOperations::PUT,
+                        "-list" => ops - VfsOperations::LIST,
                         "+mkdir" => ops | VfsOperations::MK_DIR,
                         "+rmdir" => ops | VfsOperations::RM_DIR,
                         "+del" => ops | VfsOperations::DEL,
@@ -172,6 +174,7 @@ impl UserDetailProvider for JsonUserProvider {
                         "+md5" => ops | VfsOperations::MD5,
                         "+get" => ops | VfsOperations::GET,
                         "+put" => ops | VfsOperations::PUT,
+                        "+list" => ops | VfsOperations::LIST,
                         _ => ops,
                     })
                 }),

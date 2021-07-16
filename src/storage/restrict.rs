@@ -1,5 +1,5 @@
 use std::fmt::Debug;
-use std::io::{Cursor, Error};
+use std::io::{Cursor, Error, ErrorKind};
 use std::path::{Path, PathBuf};
 
 use async_trait::async_trait;
@@ -56,7 +56,11 @@ impl StorageBackend<User> for RestrictingVfs {
     where
         <Self as StorageBackend<User>>::Metadata: Metadata,
     {
-        self.delegate.list(user, path).await
+        if user.as_ref().unwrap().vfs_permissions.contains(VfsOperations::LIST) {
+            self.delegate.list(user, path).await
+        } else {
+            Err(libunftp::storage::ErrorKind::PermissionDenied.into())
+        }
     }
 
     async fn list_fmt<P>(&self, user: &Option<User>, path: P) -> storage::Result<Cursor<Vec<u8>>>
@@ -64,7 +68,11 @@ impl StorageBackend<User> for RestrictingVfs {
         P: AsRef<Path> + Send + Debug,
         Self::Metadata: Metadata + 'static,
     {
-        self.delegate.list_fmt(user, path).await
+        if user.as_ref().unwrap().vfs_permissions.contains(VfsOperations::LIST) {
+            self.delegate.list_fmt(user, path).await
+        } else {
+            Err(libunftp::storage::ErrorKind::PermissionDenied.into())
+        }
     }
 
     async fn nlst<P>(&self, user: &Option<User>, path: P) -> std::result::Result<Cursor<Vec<u8>>, Error>
@@ -72,7 +80,11 @@ impl StorageBackend<User> for RestrictingVfs {
         P: AsRef<Path> + Send + Debug,
         Self::Metadata: Metadata + 'static,
     {
-        self.delegate.nlst(user, path).await
+        if user.as_ref().unwrap().vfs_permissions.contains(VfsOperations::LIST) {
+            self.delegate.nlst(user, path).await
+        } else {
+            Err(ErrorKind::PermissionDenied.into())
+        }
     }
 
     async fn get_into<'a, P, W: ?Sized>(
