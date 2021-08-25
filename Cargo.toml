@@ -28,30 +28,32 @@ version="0.1.2"
 
 [dependencies]
 async-trait = "0.1.50"
-bitflags = "1.0"
+bitflags = "1.3.2"
 clap = "2.33.3"
-futures = "0.3.15"
+futures = "0.3.16"
 http = "0.2.4"
-hyper = { version = "0.14.9", features = ["server", "http1"] }
+hyper = { version = "0.14.12", features = ["server", "http1"] }
 lazy_static = "1.4.0"
-libunftp = "0.18.0"
+#libunftp = "0.18.0"
+libunftp = { git = "https://github.com/bolcom/libunftp.git", rev="c86f1d2061f696c33127dfee8b5f48307ce62b72" }
 prometheus = { version = "0.12.0", features = ["process"] }
-serde = { version = "1.0.125", features = ["derive"] }
-serde_json = { version = "1.0.64" }
+serde = { version = "1.0.129", features = ["derive"] }
+serde_json = { version = "1.0.66" }
 slog = { version = "2.7.0", features = ["max_level_trace", "release_max_level_info"] }
-slog-async = "2.6.0"
+slog-async = "2.7.0"
 slog-term = "2.8.0"
-tokio = { version = "1.7.1", features = ["full"] }
-unftp-sbe-fs = "0.2.0"
-unftp-sbe-gcs = { version = "0.2.0", optional = true }
-unftp-auth-rest = { version = "0.2.0", optional = true }
-unftp-auth-jsonfile = { version = "0.2.0", optional = true }
-
-## Build conflict fixes
-tracing = "0.1.26"
+tokio = { version = "1.10.1", features = ["full"] }
+unftp-sbe-fs = { git = "https://github.com/bolcom/libunftp.git", rev="c86f1d2061f696c33127dfee8b5f48307ce62b72", version = "0.2.0" }
+unftp-sbe-gcs = { git = "https://github.com/bolcom/libunftp.git", rev="c86f1d2061f696c33127dfee8b5f48307ce62b72", version = "0.2.0", optional = true }
+unftp-auth-rest = { git = "https://github.com/bolcom/libunftp.git", rev="c86f1d2061f696c33127dfee8b5f48307ce62b72", version = "0.2.0", optional = true }
+unftp-auth-jsonfile = { git = "https://github.com/bolcom/libunftp.git", rev="c86f1d2061f696c33127dfee8b5f48307ce62b72", version = "0.2.0", optional = true }
 
 [target.'cfg(unix)'.dependencies]
-unftp-auth-pam = { version = "0.2.0", optional = true }
+unftp-auth-pam = { git = "https://github.com/bolcom/libunftp.git", rev="c86f1d2061f696c33127dfee8b5f48307ce62b72", version = "0.2.0", optional = true }
+
+[patch.crates-io]
+libunftp = { git = "https://github.com/bolcom/libunftp.git", rev="c86f1d2061f696c33127dfee8b5f48307ce62b72" }
+
 
 [features]
 all = ["pam_auth", "rest_auth", "jsonfile_auth", "cloud_storage"]
