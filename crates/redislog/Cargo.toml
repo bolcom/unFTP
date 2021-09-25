@@ -17,9 +17,9 @@ chrono = "0.4.19"
 r2d2 = "0.8.9"
 r2d2_redis = "0.14.0"
 redis = "0.20.0"
-serde_json = "1.0.64"
+serde_json = "1.0.68"
 slog = { version = "2.7.0", features = ["max_level_trace", "release_max_level_info"] }
 
 
 [dev-dependencies]
-slog-async = "2.6.0"
+slog-async = "2.7.0"

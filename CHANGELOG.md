@@ -1,5 +1,11 @@
 # Changelog
 
+## 2021-09-25 unftp v0.12.12
+
+_tag: v0.12.12_
+
+- Upgraded dependencies, including the latest libunftp
+
 ## 2021-07-16 unftp v0.12.11
 
 _tag: v0.12.11_

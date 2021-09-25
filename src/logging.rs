@@ -62,7 +62,7 @@ pub fn create_logger(arg_matches: &ArgMatches) -> Result<slog::Logger, String> {
         .fuse();
 
     let mut err: Option<String> = None;
-    let drain = match redis_logger(&arg_matches) {
+    let drain = match redis_logger(arg_matches) {
         Ok(Some(redis_logger)) => {
             let both = Duplicate::new(redis_logger, term_drain).fuse();
             Async::new(both.filter_level(min_log_level).fuse()).build().fuse()

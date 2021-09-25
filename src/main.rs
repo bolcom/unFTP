@@ -310,7 +310,7 @@ where
         (_, false) => SiteMd5::None,
     };
 
-    let mut server = Server::with_authenticator(storage_backend, make_auth(&arg_matches)?)
+    let mut server = Server::with_authenticator(storage_backend, make_auth(arg_matches)?)
         .greeting("Welcome to unFTP")
         .passive_ports(start_port..end_port)
         .idle_session_timeout(idle_timeout)
@@ -446,7 +446,7 @@ async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger, root_log: &Logger)
         });
     }
 
-    start_ftp(&log, &root_log, &arg_matches)?;
+    start_ftp(log, root_log, &arg_matches)?;
 
     listen_for_signals().await
 }
