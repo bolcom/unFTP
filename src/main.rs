@@ -8,14 +8,18 @@ extern crate clap;
 mod app;
 mod args;
 mod auth;
+mod domain;
 mod http;
+mod infra;
 mod logging;
 mod metrics;
+mod notify;
 mod storage;
 
 use crate::args::FtpsClientAuthType;
 use crate::auth::{DefaultUserProvider, JsonUserProvider};
 
+use crate::notify::NotifyingAuthenticator;
 use auth::LookupAuthenticator;
 use clap::ArgMatches;
 use libunftp::{
@@ -25,6 +29,7 @@ use libunftp::{
     Server,
 };
 use slog::*;
+use std::process::Command;
 use std::{
     env, fs,
     net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs},
@@ -42,9 +47,11 @@ use tokio::{
 use unftp_auth_pam as pam;
 use unftp_sbe_gcs::options::AuthMethod;
 
-fn make_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth_spi::Authenticator<auth::User> + Send + Sync>, String> {
+fn make_auth(
+    m: &clap::ArgMatches,
+) -> Result<Box<dyn auth_spi::Authenticator<auth::User> + Send + Sync + 'static>, String> {
     let mut auth: LookupAuthenticator = match m.value_of(args::AUTH_TYPE) {
-        None | Some("anonymous") => Ok(make_anon_auth()),
+        None | Some("anonymous") => make_anon_auth(),
         Some("pam") => make_pam_auth(m),
         Some("rest") => make_rest_auth(m),
         Some("json") => make_json_auth(m),
@@ -58,11 +65,11 @@ fn make_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth_spi::Authenticator<aut
         }
         None => Box::new(DefaultUserProvider {}),
     });
-    Ok(Arc::new(auth))
+    Ok(Box::new(auth))
 }
 
-fn make_anon_auth() -> LookupAuthenticator {
-    LookupAuthenticator::new(auth_spi::AnonymousAuthenticator)
+fn make_anon_auth() -> Result<LookupAuthenticator, String> {
+    Ok(LookupAuthenticator::new(auth_spi::AnonymousAuthenticator))
 }
 
 fn make_pam_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
@@ -310,7 +317,15 @@ where
         (_, false) => SiteMd5::None,
     };
 
-    let mut server = Server::with_authenticator(storage_backend, make_auth(arg_matches)?)
+    let event_dispatcher = notify::create_event_dispatcher(Arc::new(log.new(o!("module" => "storage"))), arg_matches)?;
+    let authenticator = NotifyingAuthenticator::new(
+        make_auth(arg_matches)?,
+        event_dispatcher,
+        arg_matches.value_of(args::INSTANCE_NAME).unwrap(),
+        &get_host_name(),
+    );
+
+    let mut server = Server::with_authenticator(storage_backend, Arc::new(authenticator))
         .greeting("Welcome to unFTP")
         .passive_ports(start_port..end_port)
         .idle_session_timeout(idle_timeout)
@@ -479,6 +494,19 @@ fn run(arg_matches: ArgMatches) -> Result<(), String> {
     let ExitSignal(signal) = runtime.block_on(main_task(arg_matches, &log, &root_logger))?;
     info!(log, "Received signal {}, shutting down...", signal);
     Ok(())
+}
+
+fn get_host_name() -> String {
+    if let Ok(host) = env::var("HOST") {
+        return host;
+    }
+    if let Ok(host) = env::var("HOSTNAME") {
+        return host;
+    }
+    match Command::new("hostname").output() {
+        Ok(output) => String::from_utf8_lossy(&output.stdout).replace("\n", ""),
+        Err(_) => "unknown".to_string(),
+    }
 }
 
 fn main() {
