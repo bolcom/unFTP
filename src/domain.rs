@@ -19,14 +19,16 @@ impl EventDispatcher<FTPEvent> for NullEventDispatcher {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+// The event that will be sent
+#[derive(Serialize, Deserialize, Debug)]
 pub struct FTPEvent {
     pub source_instance: String,
     pub hostname: String,
     pub payload: FTPEventPayload,
 }
 
-#[derive(Serialize, Deserialize)]
+// The event variant
+#[derive(Serialize, Deserialize, Debug)]
 pub enum FTPEventPayload {
     Startup {
         libunftp_version: String,
@@ -35,15 +37,11 @@ pub enum FTPEventPayload {
     Login {
         username: String,
     },
-    List {
-        path: String,
-    },
     Get {
         path: String,
     },
     Put {
         path: String,
-        md5: String,
     },
     Delete {
         path: String,
@@ -55,7 +53,7 @@ pub enum FTPEventPayload {
         from: String,
         to: String,
     },
-    RmdDir {
+    RemoveDir {
         path: String,
     },
 }

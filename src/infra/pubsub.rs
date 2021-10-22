@@ -51,9 +51,7 @@ impl PubsubEventDispatcher {
             client,
         }
     }
-}
 
-impl PubsubEventDispatcher {
     // Gets the authentication token through workload identity mechanisms
     async fn get_token(&self) -> Result<String, workload_identity::Error> {
         Ok(workload_identity::request_token(None, self.client.clone())
