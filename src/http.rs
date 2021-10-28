@@ -17,7 +17,13 @@ const PATH_HEALTH: &str = "/health";
 const PATH_READINESS: &str = "/ready";
 
 // starts an HTTP server and exports Prometheus metrics.
-pub async fn start(log: &Logger, bind_addr: &str, ftp_addr: SocketAddr) -> Result<(), String> {
+pub async fn start(
+    log: &Logger,
+    bind_addr: &str,
+    ftp_addr: SocketAddr,
+    mut shutdown: tokio::sync::broadcast::Receiver<()>,
+    done: tokio::sync::mpsc::Sender<()>,
+) -> Result<(), String> {
     let http_addr: SocketAddr = bind_addr
         .parse()
         .map_err(|e| format!("unable to parse HTTP address {}: {}", bind_addr, e))?;
@@ -32,7 +38,12 @@ pub async fn start(log: &Logger, bind_addr: &str, ftp_addr: SocketAddr) -> Resul
         }
     });
 
-    let http_server = hyper::Server::bind(&http_addr).serve(make_svc);
+    let http_server = hyper::Server::bind(&http_addr)
+        .serve(make_svc)
+        .with_graceful_shutdown(async {
+            shutdown.recv().await.ok();
+            info!(log, "Shutting down HTTP server");
+        });
 
     info!(log, "Starting HTTP service."; "address" => &http_addr);
     info!(log, "Exposing {} service home.", app::NAME; "path" => PATH_HOME);
@@ -43,6 +54,9 @@ pub async fn start(log: &Logger, bind_addr: &str, ftp_addr: SocketAddr) -> Resul
     if let Err(e) = http_server.await {
         error!(log, "HTTP server error: {}", e)
     }
+
+    info!(log, "HTTP shutdown OK");
+    drop(done);
     Ok(())
 }
 

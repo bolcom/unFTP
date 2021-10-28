@@ -32,6 +32,7 @@ use libunftp::{
 };
 use slog::*;
 use std::process::Command;
+use std::time::Duration;
 use std::{
     env, fs,
     net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs},
@@ -244,7 +245,13 @@ fn gcs_storage_backend(
 }
 
 // starts the FTP server as a Tokio task.
-fn start_ftp(log: &Logger, root_log: &Logger, m: &clap::ArgMatches) -> Result<(), String> {
+fn start_ftp(
+    log: &Logger,
+    root_log: &Logger,
+    m: &clap::ArgMatches,
+    shutdown: tokio::sync::broadcast::Receiver<()>,
+    done: tokio::sync::mpsc::Sender<()>,
+) -> Result<(), String> {
     let event_dispatcher = notify::create_event_dispatcher(Arc::new(log.new(o!("module" => "storage"))), m)?;
 
     match m.value_of(args::STORAGE_BACKEND_TYPE) {
@@ -254,6 +261,8 @@ fn start_ftp(log: &Logger, root_log: &Logger, m: &clap::ArgMatches) -> Result<()
             m,
             fs_storage_backend(root_log, m, event_dispatcher.clone()),
             event_dispatcher.clone(),
+            shutdown,
+            done,
         ),
         Some("gcs") => start_ftp_with_storage(
             log,
@@ -261,6 +270,8 @@ fn start_ftp(log: &Logger, root_log: &Logger, m: &clap::ArgMatches) -> Result<()
             m,
             gcs_storage_backend(root_log, m, event_dispatcher.clone())?,
             event_dispatcher.clone(),
+            shutdown,
+            done,
         ),
         Some(x) => Err(format!("unknown storage back-end type {}", x)),
     }
@@ -306,6 +317,8 @@ fn start_ftp_with_storage<S>(
     arg_matches: &ArgMatches,
     storage_backend: Box<dyn (Fn() -> S) + Send + Sync>,
     event_dispatcher: Arc<dyn EventDispatcher<FTPEvent>>,
+    mut shutdown: tokio::sync::broadcast::Receiver<()>,
+    done: tokio::sync::mpsc::Sender<()>,
 ) -> Result<(), String>
 where
     S: StorageBackend<auth::User> + Send + Sync + 'static,
@@ -367,6 +380,7 @@ where
         &host_name,
     );
 
+    let l = log.clone();
     let mut server = Server::with_authenticator(storage_backend, Arc::new(authenticator))
         .greeting("Welcome to unFTP")
         .passive_ports(start_port..end_port)
@@ -374,6 +388,11 @@ where
         .logger(root_log.new(o!("lib" => "libunftp")))
         .passive_host(passive_host)
         .sitemd5(md5_setting)
+        .shutdown_indicator(async move {
+            shutdown.recv().await.ok();
+            info!(l, "Shutting down FTP server");
+            libunftp::options::Shutdown::new().grace_period(Duration::from_secs(11))
+        })
         .metrics();
 
     // Setup proxy protocol mode.
@@ -465,7 +484,14 @@ where
         }
     };
 
-    tokio::spawn(server.listen(addr));
+    let log = log.clone();
+    tokio::spawn(async move {
+        if let Err(e) = server.listen(addr).await {
+            error!(log, "FTP server error: {:?}", e)
+        }
+        info!(log, "FTP exiting");
+        drop(done)
+    });
 
     tokio::spawn(async move {
         event_dispatcher
@@ -502,24 +528,44 @@ async fn listen_for_signals() -> Result<ExitSignal, String> {
 }
 
 async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger, root_log: &Logger) -> Result<ExitSignal, String> {
+    let (shutdown_sender, http_receiver) = tokio::sync::broadcast::channel(1);
+    let (http_done_sender, mut shutdown_done_received) = tokio::sync::mpsc::channel(1);
+    let ftp_done_sender = http_done_sender.clone();
+
     let ftp_addr: SocketAddr = arg_matches
         .value_of(args::BIND_ADDRESS)
         .unwrap()
         .parse()
         .map_err(|_| "could not parse FTP address")?;
+
     if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDRESS) {
         let addr = String::from(addr);
         let log = log.clone();
         tokio::spawn(async move {
-            if let Err(e) = http::start(&log, &*addr, ftp_addr).await {
+            if let Err(e) = http::start(&log, &*addr, ftp_addr, http_receiver, http_done_sender).await {
                 error!(log, "HTTP Server error: {}", e)
             }
         });
     }
 
-    start_ftp(log, root_log, &arg_matches)?;
+    start_ftp(
+        log,
+        root_log,
+        &arg_matches,
+        shutdown_sender.subscribe(),
+        ftp_done_sender,
+    )?;
 
-    listen_for_signals().await
+    let signal = listen_for_signals().await?;
+    info!(log, "Received signal {}, shutting down...", signal.0);
+
+    drop(shutdown_sender);
+
+    // When every sender has gone out of scope, the recv call
+    // will return with an error. We ignore the error.
+    let _ = shutdown_done_received.recv().await;
+
+    Ok(signal)
 }
 
 fn run(arg_matches: ArgMatches) -> Result<(), String> {
@@ -547,8 +593,8 @@ fn run(arg_matches: ArgMatches) -> Result<(), String> {
     );
 
     let runtime = Runtime::new().map_err(|e| format!("could not construct runtime: {}", e))?;
-    let ExitSignal(signal) = runtime.block_on(main_task(arg_matches, &log, &root_logger))?;
-    info!(log, "Received signal {}, shutting down...", signal);
+    let _ = runtime.block_on(main_task(arg_matches, &log, &root_logger))?;
+    info!(log, "Exiting...");
     Ok(())
 }
 

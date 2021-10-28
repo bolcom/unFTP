@@ -10,7 +10,7 @@ authors = [
     "Steven Meunier <smeunier@bol.com>",
     "Rob klein Gunnewiek <rkleingunnewiek@bol.com>"
 ]
-edition = "2018"
+edition = "2021"
 description = "When you need to FTP, but don't want to. An async, cloud orientated FTP(S) server built on libunftp"
 repository = "https://github.com/bolcom/unFTP"
 homepage = "https://github.com/bolcom/unFTP"
@@ -36,7 +36,7 @@ http = "0.2.5"
 hyper = { version = "0.14.13", features = ["server", "http1"] }
 hyper-rustls = "^0.22"
 lazy_static = "1.4.0"
-libunftp = "0.18.1"
+libunftp = "0.18.2"
 prometheus = { version = "0.12.0", features = ["process"] }
 serde = { version = "1.0.130", features = ["derive"] }
 serde_json = { version = "1.0.68" }
