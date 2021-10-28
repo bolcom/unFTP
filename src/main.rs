@@ -8,14 +8,20 @@ extern crate clap;
 mod app;
 mod args;
 mod auth;
+mod domain;
 mod http;
+mod infra;
 mod logging;
 mod metrics;
+mod notify;
 mod storage;
 
 use crate::args::FtpsClientAuthType;
 use crate::auth::{DefaultUserProvider, JsonUserProvider};
 
+use crate::app::libunftp_version;
+use crate::domain::{EventDispatcher, FTPEvent, FTPEventPayload};
+use crate::notify::{NotifyingAuthenticator, NotifyingStorageBackend};
 use auth::LookupAuthenticator;
 use clap::ArgMatches;
 use libunftp::{
@@ -25,6 +31,7 @@ use libunftp::{
     Server,
 };
 use slog::*;
+use std::process::Command;
 use std::{
     env, fs,
     net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs},
@@ -42,9 +49,11 @@ use tokio::{
 use unftp_auth_pam as pam;
 use unftp_sbe_gcs::options::AuthMethod;
 
-fn make_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth_spi::Authenticator<auth::User> + Send + Sync>, String> {
+fn make_auth(
+    m: &clap::ArgMatches,
+) -> Result<Box<dyn auth_spi::Authenticator<auth::User> + Send + Sync + 'static>, String> {
     let mut auth: LookupAuthenticator = match m.value_of(args::AUTH_TYPE) {
-        None | Some("anonymous") => Ok(make_anon_auth()),
+        None | Some("anonymous") => make_anon_auth(),
         Some("pam") => make_pam_auth(m),
         Some("rest") => make_rest_auth(m),
         Some("json") => make_json_auth(m),
@@ -58,11 +67,11 @@ fn make_auth(m: &clap::ArgMatches) -> Result<Arc<dyn auth_spi::Authenticator<aut
         }
         None => Box::new(DefaultUserProvider {}),
     });
-    Ok(Arc::new(auth))
+    Ok(Box::new(auth))
 }
 
-fn make_anon_auth() -> LookupAuthenticator {
-    LookupAuthenticator::new(auth_spi::AnonymousAuthenticator)
+fn make_anon_auth() -> Result<LookupAuthenticator, String> {
+    Ok(LookupAuthenticator::new(auth_spi::AnonymousAuthenticator))
 }
 
 fn make_pam_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
@@ -144,25 +153,43 @@ fn make_json_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
     }
 }
 
-type VfsProducer =
-    Box<dyn (Fn() -> storage::RooterVfs<storage::RestrictingVfs, auth::User, storage::SbeMeta>) + Send + Sync>;
+type VfsProducer = Box<
+    dyn (Fn() -> NotifyingStorageBackend<
+            storage::RooterVfs<storage::RestrictingVfs, auth::User, storage::SbeMeta>,
+            auth::User,
+        >) + Send
+        + Sync,
+>;
 
 // Creates the filesystem storage back-end
-fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> VfsProducer {
+fn fs_storage_backend(
+    log: &Logger,
+    m: &clap::ArgMatches,
+    event_dispatcher: Arc<dyn EventDispatcher<FTPEvent>>,
+) -> VfsProducer {
     let p: PathBuf = m.value_of(args::ROOT_DIR).unwrap().into();
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
     Box::new(move || {
-        storage::RooterVfs::new(storage::RestrictingVfs {
-            delegate: storage::ChoosingVfs {
-                inner: storage::InnerVfs::File(unftp_sbe_fs::Filesystem::new(p.clone())),
-                log: sub_log.clone(),
-            },
-        })
+        notify::NotifyingStorageBackend::new(
+            storage::RooterVfs::new(storage::RestrictingVfs {
+                delegate: storage::ChoosingVfs {
+                    inner: storage::InnerVfs::File(unftp_sbe_fs::Filesystem::new(p.clone())),
+                    log: sub_log.clone(),
+                },
+            }),
+            event_dispatcher.clone(),
+            "",
+            "",
+        )
     })
 }
 
 // Creates the GCS storage back-end
-fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer, String> {
+fn gcs_storage_backend(
+    log: &Logger,
+    m: &clap::ArgMatches,
+    event_dispatcher: Arc<dyn EventDispatcher<FTPEvent>>,
+) -> Result<VfsProducer, String> {
     let bucket: String = m
         .value_of(args::GCS_BUCKET)
         .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_BUCKET))?
@@ -197,25 +224,44 @@ fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer
 
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
     Ok(Box::new(move || {
-        storage::RooterVfs::new(storage::RestrictingVfs {
-            delegate: storage::ChoosingVfs {
-                inner: storage::InnerVfs::Cloud(unftp_sbe_gcs::CloudStorage::with_api_base(
-                    base_url.clone(),
-                    bucket.clone(),
-                    root_dir.clone(),
-                    auth_method.clone(),
-                )),
-                log: sub_log.clone(),
-            },
-        })
+        notify::NotifyingStorageBackend::new(
+            storage::RooterVfs::new(storage::RestrictingVfs {
+                delegate: storage::ChoosingVfs {
+                    inner: storage::InnerVfs::Cloud(unftp_sbe_gcs::CloudStorage::with_api_base(
+                        base_url.clone(),
+                        bucket.clone(),
+                        root_dir.clone(),
+                        auth_method.clone(),
+                    )),
+                    log: sub_log.clone(),
+                },
+            }),
+            event_dispatcher.clone(),
+            "xxx",
+            "yyy",
+        )
     }))
 }
 
 // starts the FTP server as a Tokio task.
 fn start_ftp(log: &Logger, root_log: &Logger, m: &clap::ArgMatches) -> Result<(), String> {
+    let event_dispatcher = notify::create_event_dispatcher(Arc::new(log.new(o!("module" => "storage"))), m)?;
+
     match m.value_of(args::STORAGE_BACKEND_TYPE) {
-        None | Some("filesystem") => start_ftp_with_storage(log, root_log, m, fs_storage_backend(root_log, m)),
-        Some("gcs") => start_ftp_with_storage(log, root_log, m, gcs_storage_backend(root_log, m)?),
+        None | Some("filesystem") => start_ftp_with_storage(
+            log,
+            root_log,
+            m,
+            fs_storage_backend(root_log, m, event_dispatcher.clone()),
+            event_dispatcher.clone(),
+        ),
+        Some("gcs") => start_ftp_with_storage(
+            log,
+            root_log,
+            m,
+            gcs_storage_backend(root_log, m, event_dispatcher.clone())?,
+            event_dispatcher.clone(),
+        ),
         Some(x) => Err(format!("unknown storage back-end type {}", x)),
     }
 }
@@ -259,6 +305,7 @@ fn start_ftp_with_storage<S>(
     root_log: &Logger,
     arg_matches: &ArgMatches,
     storage_backend: Box<dyn (Fn() -> S) + Send + Sync>,
+    event_dispatcher: Arc<dyn EventDispatcher<FTPEvent>>,
 ) -> Result<(), String>
 where
     S: StorageBackend<auth::User> + Send + Sync + 'static,
@@ -310,7 +357,17 @@ where
         (_, false) => SiteMd5::None,
     };
 
-    let mut server = Server::with_authenticator(storage_backend, make_auth(arg_matches)?)
+    let host_name = get_host_name();
+    let instance_name = arg_matches.value_of(args::INSTANCE_NAME).unwrap().to_owned();
+
+    let authenticator = NotifyingAuthenticator::new(
+        make_auth(arg_matches)?,
+        event_dispatcher.clone(),
+        &instance_name,
+        &host_name,
+    );
+
+    let mut server = Server::with_authenticator(storage_backend, Arc::new(authenticator))
         .greeting("Welcome to unFTP")
         .passive_ports(start_port..end_port)
         .idle_session_timeout(idle_timeout)
@@ -409,6 +466,20 @@ where
     };
 
     tokio::spawn(server.listen(addr));
+
+    tokio::spawn(async move {
+        event_dispatcher
+            .dispatch(FTPEvent {
+                source_instance: instance_name,
+                hostname: host_name,
+                payload: FTPEventPayload::Startup {
+                    unftp_version: app::VERSION.to_string(),
+                    libunftp_version: libunftp_version().to_string(),
+                },
+            })
+            .await
+    });
+
     Ok(())
 }
 
@@ -479,6 +550,19 @@ fn run(arg_matches: ArgMatches) -> Result<(), String> {
     let ExitSignal(signal) = runtime.block_on(main_task(arg_matches, &log, &root_logger))?;
     info!(log, "Received signal {}, shutting down...", signal);
     Ok(())
+}
+
+fn get_host_name() -> String {
+    if let Ok(host) = env::var("HOST") {
+        return host;
+    }
+    if let Ok(host) = env::var("HOSTNAME") {
+        return host;
+    }
+    match Command::new("hostname").output() {
+        Ok(output) => String::from_utf8_lossy(&output.stdout).replace("\n", ""),
+        Err(_) => "unknown".to_string(),
+    }
 }
 
 fn main() {

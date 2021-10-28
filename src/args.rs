@@ -29,6 +29,9 @@ pub const LOG_LEVEL: &str = "log-level";
 pub const PASSIVE_HOST: &str = "passive-host";
 pub const PASSIVE_PORTS: &str = "passive-ports";
 pub const PROXY_EXTERNAL_CONTROL_PORT: &str = "proxy-external-control-port";
+pub const PUBSUB_BASE_URL: &str = "ntf-pubsub-base-url";
+pub const PUBSUB_TOPIC: &str = "ntf-pubsub-topic";
+pub const PUBSUB_PROJECT: &str = "ntf-pubsub-project";
 pub const REDIS_HOST: &str = "log-redis-host";
 pub const REDIS_KEY: &str = "log-redis-key";
 pub const REDIS_PORT: &str = "log-redis-port";
@@ -412,6 +415,31 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .value_name("PATH")
                 .help("The path to a JSON user detail file")
                 .env("UNFTP_USR_JSON_PATH")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name(PUBSUB_BASE_URL)
+                .long("ntf-pubsub-base-url")
+                .value_name("URL")
+                .help("The base url of the Google Pub/Sub API")
+                .env("UNFTP_NTF_PUBSUB_BASE_URL")
+                .default_value("https://pubsub.googleapis.com")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name(PUBSUB_TOPIC)
+                .long("ntf-pubsub-topic")
+                .value_name("TOPIC_NAME")
+                .help("The name of the Google Pub/Sub topic to publish to")
+                .env("UNFTP_NTF_PUBSUB_TOPIC")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name(PUBSUB_PROJECT)
+                .long("ntf-pubsub-project")
+                .value_name("PROJECT_ID")
+                .help("The ID of the GCP project where the Google Pub/Sub topic exists")
+                .env("UNFTP_NTF_PUBSUB_PROJECT")
                 .takes_value(true),
         )
 }
