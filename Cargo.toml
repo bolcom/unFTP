@@ -1,6 +1,6 @@
 [package]
 name = "unftp"
-version = "0.12.12"
+version = "0.12.13"
 authors = [
     "Agoston Horvath <ahorvath@bol.com>",
     "Dávid Kosztka <dkosztka@bol.com>",

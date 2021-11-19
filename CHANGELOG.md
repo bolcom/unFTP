@@ -1,5 +1,12 @@
 # Changelog
 
+## 2021-11-19 unftp v0.12.13
+
+- Implemented integration with Google Pub/Sub through the `--ntf-pubsub-project` and `ntf-pubsub-topic` arguments. Configuring
+  this will send notifications to the pub/sub topic for FTP file system changes and logins for instance.
+- \#33 Implemented graceful shutdown
+- Upgraded dependencies
+
 ## 2021-09-25 unftp v0.12.12
 
 _tag: v0.12.12_
