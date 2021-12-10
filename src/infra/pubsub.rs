@@ -1,4 +1,4 @@
-use crate::domain::{EventDispatcher, FTPEvent};
+use crate::domain::{EventDispatcher, FTPEvent, FTPEventPayload};
 use crate::infra::workload_identity;
 use async_trait::async_trait;
 use http::{header, Method, Request, StatusCode, Uri};
@@ -59,13 +59,26 @@ impl PubsubEventDispatcher {
             .access_token)
     }
 
+    fn event_type(event: FTPEventPayload) -> String {
+        String::from(match event {
+            FTPEventPayload::Startup { .. } => "startup",
+            FTPEventPayload::Login { .. } => "login",
+            FTPEventPayload::Get { .. } => "get",
+            FTPEventPayload::Put { .. } => "put",
+            FTPEventPayload::Delete { .. } => "delete",
+            FTPEventPayload::MakeDir { .. } => "makeDir",
+            FTPEventPayload::Rename { .. } => "rename",
+            FTPEventPayload::RemoveDir { .. } => "removeDir",
+        })
+    }
+
     // publishes to Google pub/sub
     async fn publish(&self, event: FTPEvent) -> Result<(), String> {
         let msg = base64::encode(serde_json::to_string(&event).unwrap());
         let b = PubSubRequest {
             messages: vec![PubSubMsg {
                 data: msg.to_owned(),
-                attributes: HashMap::new(), // TODO Set attribute based on the event type so subscribers can filter.
+                attributes: HashMap::from([(String::from("eventType"), Self::event_type(event.payload))]),
             }],
         };
         let body_string = serde_json::to_string(&b).map_err(|e| format!("error marshalling message: {}", e))?;

@@ -75,8 +75,6 @@ use slog::{OwnedKVList, Record, KV};
 /// [slog-url]: https://github.com/slog-rs/slog
 #[derive(Debug)]
 pub struct Logger {
-    redis_host: String,
-    redis_port: u32,
     redis_key: String,
     app_name: String,
     hostname: String,
@@ -196,8 +194,6 @@ impl Builder {
         redis::cmd("PING").query(&mut *con)?;
 
         Ok(Logger {
-            redis_host: self.redis_host,
-            redis_port: self.redis_port,
             redis_key: self.redis_key,
             app_name: self.app_name,
             hostname: self.hostname.unwrap_or_else(get_host_name),
