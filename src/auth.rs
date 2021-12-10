@@ -134,6 +134,7 @@ struct UserJsonObj {
     name: Option<String>,
     surname: Option<String>,
     vfs_perms: Option<Vec<String>>,
+    #[allow(dead_code)]
     allowed_mime_types: Option<Vec<String>>,
     root: Option<String>,
     account_enabled: Option<bool>,
