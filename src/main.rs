@@ -220,6 +220,7 @@ fn gcs_storage_backend(
             AuthMethod::ServiceAccountKey(service_account_key)
         }
     };
+    let instance_name = m.value_of(args::INSTANCE_NAME).unwrap().to_owned();
 
     slog::info!(log, "GCS back-end auth method: {}", auth_method);
 
@@ -238,8 +239,8 @@ fn gcs_storage_backend(
                 },
             }),
             event_dispatcher.clone(),
-            "xxx",
-            "yyy",
+            instance_name.clone(),
+            get_host_name(),
         )
     }))
 }
