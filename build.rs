@@ -9,8 +9,8 @@ fn main() {
     println!("cargo:rustc-env=BUILD_VERSION={}", version);
 
     println!(
-        "cargo:rustc-env=PROJ_WEB_DIR={}",
-        format!("{}/{}", std::env::var("CARGO_MANIFEST_DIR").unwrap(), "web")
+        "cargo:rustc-env=PROJ_WEB_DIR={}/web",
+        std::env::var("CARGO_MANIFEST_DIR").unwrap(),
     );
 
     // Didn't quite get that to work yet.

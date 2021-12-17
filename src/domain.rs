@@ -15,6 +15,9 @@ pub struct NullEventDispatcher {}
 #[async_trait]
 impl EventDispatcher<FTPEvent> for NullEventDispatcher {
     async fn dispatch(&self, _event: FTPEvent) {
+        // let json = serde_json::to_string(&_event).unwrap();
+        // println!("\nDOOOOOOO : {}\n", json);
+        //
         // Do Nothing
     }
 }
@@ -25,6 +28,15 @@ pub struct FTPEvent {
     pub source_instance: String,
     pub hostname: String,
     pub payload: FTPEventPayload,
+    /// The user this event pertains to. A user may have more than one connection or session.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub username: Option<String>,
+    /// Identifies a single session pertaining to a connected client.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub trace_id: Option<String>,
+    /// The event sequence number as incremented per session.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sequence_number: Option<u64>,
 }
 
 // The event variant
@@ -34,9 +46,8 @@ pub enum FTPEventPayload {
         libunftp_version: String,
         unftp_version: String,
     },
-    Login {
-        username: String,
-    },
+    Login,
+    Logout,
     Get {
         path: String,
     },
