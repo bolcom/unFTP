@@ -5,7 +5,7 @@ use http::{header, Method, Request, StatusCode, Uri};
 use hyper::client::connect::dns::GaiResolver;
 use hyper::client::HttpConnector;
 use hyper::{Body, Client, Response};
-use hyper_rustls::HttpsConnector;
+use hyper_rustls::{HttpsConnector, HttpsConnectorBuilder};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -41,8 +41,13 @@ impl PubsubEventDispatcher {
     where
         Str: Into<String>,
     {
-        let client: Client<HttpsConnector<HttpConnector<GaiResolver>>, Body> =
-            Client::builder().build(HttpsConnector::with_native_roots());
+        let client: Client<HttpsConnector<HttpConnector<GaiResolver>>, Body> = Client::builder().build(
+            HttpsConnectorBuilder::new()
+                .with_native_roots()
+                .https_or_http()
+                .enable_http1()
+                .build(),
+        );
         PubsubEventDispatcher {
             log,
             api_base_url: api_base.into(),
@@ -63,6 +68,7 @@ impl PubsubEventDispatcher {
         String::from(match event {
             FTPEventPayload::Startup { .. } => "startup",
             FTPEventPayload::Login { .. } => "login",
+            FTPEventPayload::Logout => "logout",
             FTPEventPayload::Get { .. } => "get",
             FTPEventPayload::Put { .. } => "put",
             FTPEventPayload::Delete { .. } => "delete",
