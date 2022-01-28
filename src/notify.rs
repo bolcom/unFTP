@@ -80,7 +80,7 @@ impl libunftp::notification::PresenceListener for FTPListener {
     async fn receive_presence_event(&self, e: PresenceEvent, m: EventMeta) {
         if m.username.eq("unknown") {
             // This is to prevent lots of LoggedOut events due to the unFTP health check
-            // that does a NgsOP and then a Quit but never logs in. In this case libunftp sets the
+            // that does a NOP and then a Quit but never logs in. In this case libunftp sets the
             // username to unknown.
             return;
         }
