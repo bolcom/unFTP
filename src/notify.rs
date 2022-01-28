@@ -85,8 +85,8 @@ impl libunftp::notification::PresenceListener for FTPListener {
             return;
         }
         let payload = match e {
-            PresenceEvent::LoggedIn => FTPEventPayload::Login,
-            PresenceEvent::LoggedOut => FTPEventPayload::Logout,
+            PresenceEvent::LoggedIn => FTPEventPayload::Login {},
+            PresenceEvent::LoggedOut => FTPEventPayload::Logout {},
         };
         self.dispatch(payload, m).await;
     }

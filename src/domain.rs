@@ -46,8 +46,8 @@ pub enum FTPEventPayload {
         libunftp_version: String,
         unftp_version: String,
     },
-    Login,
-    Logout,
+    Login {},
+    Logout {},
     Get {
         path: String,
     },
