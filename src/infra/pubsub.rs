@@ -68,7 +68,7 @@ impl PubsubEventDispatcher {
         String::from(match event {
             FTPEventPayload::Startup { .. } => "startup",
             FTPEventPayload::Login { .. } => "login",
-            FTPEventPayload::Logout => "logout",
+            FTPEventPayload::Logout { .. } => "logout",
             FTPEventPayload::Get { .. } => "get",
             FTPEventPayload::Put { .. } => "put",
             FTPEventPayload::Delete { .. } => "delete",
