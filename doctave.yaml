@@ -1,0 +1,23 @@
+---
+title: "unFTP"
+colors:
+  main: "#E58450"
+logo: assets/logo.png
+base_path: /
+navigation:
+  - path: docs/libunftp
+    children: "*"
+  - path: docs/server
+    children:
+      - path: docs/server/installation.md
+      - path: docs/server/starting.md
+      - path: docs/server/logging.md
+      - path: docs/server/monitoring.md
+      - path: docs/server/ftps.md
+      - path: docs/server/gcs.md
+      - path: docs/server/jsonconfig.md
+      - path: docs/server/pubsub.md
+      - path: docs/server/proxy-protocol.md
+      - path: docs/server/docker.md
+  - path: docs/support.md
+  - path: docs/licensing.md

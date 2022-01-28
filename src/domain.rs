@@ -15,8 +15,8 @@ pub struct NullEventDispatcher {}
 #[async_trait]
 impl EventDispatcher<FTPEvent> for NullEventDispatcher {
     async fn dispatch(&self, _event: FTPEvent) {
-        // let json = serde_json::to_string(&_event).unwrap();
-        // println!("\nDOOOOOOO : {}\n", json);
+        let json = serde_json::to_string(&_event).unwrap();
+        println!("\nDOOOOOOO : {}\n", json);
         //
         // Do Nothing
     }
