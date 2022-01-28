@@ -79,11 +79,24 @@ release-artifacts: # Generates artifacts for a release
 	docker run --rm bolcom/unftp:$(DOCKER_TAG)-gnubuilder > release/unftp_x86_64-unknown-linux-gnu
 	md5 -r release/unftp_x86_64-unknown-linux-gnu > release/unftp_x86_64-unknown-linux-gnu.md5
 
+.PHONY: publish
+publish: # Publishes to crates.io
+	cargo publish --verbose --features rest_auth,jsonfile_auth,cloud_storage
+
+.PHONY: site
+site: # Publishes to the documentation to Github Pages and Netlify
+	sed -i '' 's|base_path: /|base_path: /unFTP|g' doctave.yaml
+	doctave build --release	
+	gh-pages -d site -b gh-pages
+	rm -rf site
+	sed -i '' 's|base_path: /unFTP|base_path: /|g' doctave.yaml
+	doctave build --release
+	gh-pages -d site -b netlify
+	rm -rf site
+
 .PHONY: clean
 clean: # Removes generated files
 	cargo clean
 	rm -rf release
 	rm -f *.Dockerfile
-
-publish:
-	cargo publish --verbose --features rest_auth,jsonfile_auth,cloud_storage
+	rm -rf site
