@@ -2,7 +2,7 @@
 title: unFTP
 ---
 
-## When you need to FTP 📁, but don't want to... Deploy 🚀 an FTPS server to Kubernetes or build 🧰 your own.
+## When you need to FTP 💾, but don't want to... Deploy 🚀 an FTPS server to Kubernetes or build 🧰 your own.
 ---
 
 **unFTP is an open-source FTP(S)** (not SFTP) server aimed at the **Cloud** that allows bespoke **extension** through 
