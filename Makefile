@@ -34,7 +34,6 @@ help: # Show available `make` commands
 ##
 .PHONY: docker-%
 docker-image-%: %.Dockerfile # Build the % docker image
-	cargo clean
 	docker build -t bolcom/unftp:$(DOCKER_TAG)-$* -f $< .
 
 ##
