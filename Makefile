@@ -58,6 +58,10 @@ docker-list: # List the available docker images
 	@echo $(DOCKER_IMAGES)
 
 ##
+.PHONY: image-tag
+image-tag: # Prints the tag that will be used for docker images
+	@echo $(DOCKER_TAG)
+
 .PHONY: pr-prep
 pr-prep: # Runs checks to ensure you're ready for a pull request
 	cargo fmt --all -- --check
