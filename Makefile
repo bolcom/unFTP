@@ -46,7 +46,6 @@ docker-run-%: docker-image-% # Run the % docker image in the foreground
 ##
 .PHONY: docker-image
 docker-image: $(DOCKER_DEFAULT).Dockerfile # Build the default docker image
-	cargo clean
 	docker build -t bolcom/unftp:$(DOCKER_DEFAULT)-$(DOCKER_TAG) -f $(DOCKER_DEFAULT).Dockerfile .
 
 .PHONY: docker-run
