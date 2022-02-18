@@ -74,8 +74,11 @@ impl HttpHandler {
             (&Method::GET, PATH_METRICS) => {
                 *response.body_mut() = Body::from(metrics::gather());
             }
-            (&Method::GET, PATH_HEALTH) | (&Method::GET, PATH_READINESS) => {
+            (&Method::GET, PATH_HEALTH) => {
                 self.health(&mut response).await;
+            }
+            (&Method::GET, PATH_READINESS) => {
+                *response.status_mut() = StatusCode::OK;
             }
             _ => {
                 *response.status_mut() = StatusCode::NOT_FOUND;
