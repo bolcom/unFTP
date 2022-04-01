@@ -1,5 +1,6 @@
 use crate::app;
-use clap::{App, Arg};
+use clap::{Arg, ArgEnum, Command};
+use std::str::FromStr;
 
 pub const AUTH_JSON_PATH: &str = "auth-json-path";
 pub const AUTH_PAM_SERVICE: &str = "auth-pam-service";
@@ -41,92 +42,133 @@ pub const STORAGE_BACKEND_TYPE: &str = "sbe-type";
 pub const USR_JSON_PATH: &str = "usr-json-path";
 pub const VERBOSITY: &str = "verbosity";
 
-arg_enum! {
-    #[derive(Debug)]
-    #[allow(non_camel_case_types)]
-    pub enum AuthType {
-        anonymous,
-        pam,
-        rest,
-        json,
+#[derive(ArgEnum, Clone, Debug)]
+#[allow(non_camel_case_types)]
+pub enum AuthType {
+    anonymous,
+    pam,
+    rest,
+    json,
+}
+
+#[derive(ArgEnum, Clone, Debug)]
+#[allow(non_camel_case_types)]
+pub enum StorageBackendType {
+    filesystem,
+    gcs,
+}
+
+#[derive(ArgEnum, Clone, Debug)]
+#[allow(non_camel_case_types)]
+pub enum FailedLoginsPolicyType {
+    ip,
+    user,
+    combination,
+}
+
+impl FromStr for FailedLoginsPolicyType {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "ip" => Ok(FailedLoginsPolicyType::ip),
+            "user" => Ok(FailedLoginsPolicyType::user),
+            "combination" => Ok(FailedLoginsPolicyType::combination),
+            _ => Err("no match"),
+        }
     }
 }
 
-arg_enum! {
-    #[derive(Debug)]
-    #[allow(non_camel_case_types)]
-    pub enum StorageBackendType {
-        filesystem,
-        gcs,
+#[derive(ArgEnum, Clone, Debug)]
+#[allow(non_camel_case_types)]
+pub enum FtpsRequiredType {
+    all,
+    accounts,
+    none,
+}
+
+impl FromStr for FtpsRequiredType {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "all" => Ok(FtpsRequiredType::all),
+            "accounts" => Ok(FtpsRequiredType::accounts),
+            "none" => Ok(FtpsRequiredType::none),
+            _ => Err("no match"),
+        }
     }
 }
 
-arg_enum! {
-    #[derive(Debug)]
-    #[allow(non_camel_case_types)]
-    pub enum FailedLoginsPolicyType {
-        ip,
-        user,
-        combination,
+#[derive(ArgEnum, Clone, Debug)]
+#[allow(non_camel_case_types)]
+pub enum FtpsClientAuthType {
+    off,
+    request,
+    require,
+}
+
+impl FromStr for FtpsClientAuthType {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "off" => Ok(FtpsClientAuthType::off),
+            "request" => Ok(FtpsClientAuthType::request),
+            "require" => Ok(FtpsClientAuthType::require),
+            _ => Err("no match"),
+        }
     }
 }
 
-arg_enum! {
-    #[derive(Debug)]
-    #[allow(non_camel_case_types)]
-    pub enum FtpsRequiredType {
-        all,
-        accounts,
-        none,
+#[derive(clap::ArgEnum, Clone, Debug)]
+#[allow(non_camel_case_types)]
+pub enum LogLevelType {
+    error,
+    warn,
+    info,
+    debug,
+    trace,
+}
+
+impl FromStr for LogLevelType {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "error" => Ok(LogLevelType::error),
+            "warn" => Ok(LogLevelType::warn),
+            "info" => Ok(LogLevelType::info),
+            "debug" => Ok(LogLevelType::debug),
+            "trace" => Ok(LogLevelType::trace),
+            _ => Err("no match"),
+        }
     }
 }
 
-arg_enum! {
-    #[derive(Debug)]
-    #[allow(non_camel_case_types)]
-    pub enum FtpsClientAuthType {
-        off,
-        request,
-        require,
-    }
-}
-
-arg_enum! {
-    #[derive(Debug)]
-    #[allow(non_camel_case_types)]
-    pub enum LogLevelType {
-        error,
-        warn,
-        info,
-        debug,
-        trace,
-    }
-}
-
-pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
-    App::new(app::NAME)
+pub(crate) fn clap_app(tmp_dir: &str) -> clap::Command {
+    Command::new(app::NAME)
         .version(app::VERSION)
         .long_version(app::long_version())
         .about("An FTP server for when you need to FTP but don't want to")
         .author("The bol.com unFTP team")
         .arg(
-            Arg::with_name(VERBOSITY)
-                .short("v")
-                .multiple(true)
+            Arg::new(VERBOSITY)
+                .short('v')
+                .multiple_occurrences(true)
                 .help("verbosity level")
         )
         .arg(
-            Arg::with_name(LOG_LEVEL)
+            Arg::new(LOG_LEVEL)
                 .long("log-level")
                 .value_name("LEVEL")
                 .help("Sets the logging level. This overrides the verbosity flag -v if it is \
                           also specified.")
                 .env("UNFTP_LOG_LEVEL")
-                .possible_values(&LogLevelType::variants())
                 .takes_value(true)
         )
         .arg(
-            Arg::with_name(BIND_ADDRESS)
+            Arg::new(BIND_ADDRESS)
                 .long("bind-address")
                 .value_name("HOST_PORT")
                 .help("Sets the host and port to listen on for FTP(S) connections.")
@@ -135,7 +177,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .default_value("0.0.0.0:2121"),
         )
         .arg(
-            Arg::with_name(ROOT_DIR)
+            Arg::new(ROOT_DIR)
                 .long("root-dir")
                 .value_name("PATH")
                 .help("When the storage backend type is 'filesystem' this sets the path where \
@@ -145,7 +187,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .default_value(tmp_dir),
         )
         .arg(
-            Arg::with_name(FAILED_LOGINS_POLICY)
+            Arg::new(FAILED_LOGINS_POLICY)
                 .long("failed-logins-policy")
                 .value_name("POLICY")
                 .help("Enable a policy for failed logins to deter \
@@ -156,13 +198,12 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                        the specific combination of client IP and username will be blocked after \
                        too many failed login attempts.")
                 .env("FAILED_LOGIN_POLICY")
-                .possible_values(&FailedLoginsPolicyType::variants())
                 .takes_value(true)
-                .default_value("combination"),
+                .default_missing_value("combination"),
         )
 
         .arg(
-            Arg::with_name(FTPS_CERTS_FILE)
+            Arg::new(FTPS_CERTS_FILE)
                 .long("ftps-certs-file")
                 .value_name("FILE")
                 .help("Sets the path to the certificates (PEM format) used for TLS security")
@@ -171,7 +212,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .requires(FTPS_KEY_FILE),
         )
         .arg(
-            Arg::with_name(FTPS_CLIENT_AUTH)
+            Arg::new(FTPS_CLIENT_AUTH)
                 .long("ftps-client-auth")
                 .value_name("CLIENT_AUTH_SETTING")
                 .help("Allows switching on Mutual TLS. The difference \
@@ -180,12 +221,11 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                           The latter won't let TLS connections proceed unless the client sents a \
                           valid certificate")
                 .env("UNFTP_FTPS_CLIENT_AUTH")
-                .possible_values(&FtpsClientAuthType::variants())
                 .takes_value(true)
                 .default_value("off")
         )
         .arg(
-            Arg::with_name(FTPS_KEY_FILE)
+            Arg::new(FTPS_KEY_FILE)
                 .long("ftps-key-file")
                 .value_name("FILE")
                 .help("Sets the path to the private key file (PEM format) used for TLS security")
@@ -194,31 +234,29 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .requires(FTPS_CERTS_FILE),
         )
         .arg(
-            Arg::with_name(FTPS_REQUIRED_ON_CONTROL_CHANNEL)
+            Arg::new(FTPS_REQUIRED_ON_CONTROL_CHANNEL)
                 .long("ftps-required-on-control-channel")
                 .value_name("REQUIRE_SETTING")
                 .help("Sets whether FTP clients are required to upgrade to FTPS on the control channel. The difference \
                           between 'all' and 'accounts' is that the latter does not enforce FTPS on \
                           anonymous logins i.e. it applies to accounts only")
                 .env("UNFTP_FTPS_REQUIRED_ON_CONTROL_CHANNEL")
-                .possible_values(&FtpsRequiredType::variants())
                 .takes_value(true)
                 .default_value("none")
         )
         .arg(
-            Arg::with_name(FTPS_REQUIRED_ON_DATA_CHANNEL)
+            Arg::new(FTPS_REQUIRED_ON_DATA_CHANNEL)
                 .long("ftps-required-on-data-channel")
                 .value_name("REQUIRE_SETTING")
                 .help("Sets whether FTP clients are required to upgrade to FTPS on the data channel. The difference \
                           between 'all' and 'accounts' is that the latter does not enforce FTPS on \
                           anonymous logins i.e. it applies to accounts only")
                 .env("UNFTP_FTPS_REQUIRED_ON_DATA_CHANNEL")
-                .possible_values(&FtpsRequiredType::variants())
                 .takes_value(true)
                 .default_value("none")
         )
         .arg(
-            Arg::with_name(FTPS_TRUST_STORE)
+            Arg::new(FTPS_TRUST_STORE)
                 .long("ftps-trust-store")
                 .value_name("FILE")
                 .help("Sets the path to a PEM file containing certificates to use when validating \
@@ -228,7 +266,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .requires(FTPS_CLIENT_AUTH),
         )
         .arg(
-            Arg::with_name(REDIS_KEY)
+            Arg::new(REDIS_KEY)
                 .long("log-redis-key")
                 .value_name("KEY")
                 .help("Sets the key name for storage in Redis")
@@ -236,7 +274,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(REDIS_HOST)
+            Arg::new(REDIS_HOST)
                 .long("log-redis-host")
                 .value_name("HOST")
                 .help("Sets the hostname for the Redis server where logging should go")
@@ -244,7 +282,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(REDIS_PORT)
+            Arg::new(REDIS_PORT)
                 .long("log-redis-port")
                 .value_name("PORT")
                 .help("Sets the port for the Redis server where logging should go")
@@ -252,7 +290,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(HTTP_BIND_ADDRESS)
+            Arg::new(HTTP_BIND_ADDRESS)
                 .long("bind-address-http")
                 .value_name("HOST_PORT")
                 .help("Sets the host and port for the HTTP server used by prometheus metrics collection")
@@ -261,7 +299,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .default_value("0.0.0.0:8080"),
         )
         .arg(
-            Arg::with_name(INSTANCE_NAME)
+            Arg::new(INSTANCE_NAME)
                 .long("instance-name")
                 .value_name("NAME")
                 .help("Gives a user friendly name to this instance. This is for used for example \
@@ -271,7 +309,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .default_value("unFTP"),
         )
         .arg(
-            Arg::with_name(PASSIVE_PORTS)
+            Arg::new(PASSIVE_PORTS)
                 .long("passive-ports")
                 .value_name("PORT_RANGE")
                 .help("Sets the port range for data connections. In proxy protocol mode this \
@@ -281,7 +319,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .default_value("49152-65535"),
         )
         .arg(
-            Arg::with_name(PASSIVE_HOST)
+            Arg::new(PASSIVE_HOST)
                 .long("passive-host")
                 .value_name("HOST")
                 .help("Tells how unFTP determines the IP that is sent in response to PASV. \
@@ -293,18 +331,17 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .default_value("from-connection"),
         )
         .arg(
-            Arg::with_name(AUTH_TYPE)
+            Arg::new(AUTH_TYPE)
                 .long("auth-type")
                 .value_name("NAME")
                 .help("The type of authorization to use")
-                .possible_values(&AuthType::variants())
                 //.case_insensitive(true)
                 .env("UNFTP_AUTH_TYPE")
                 .takes_value(true)
                 .default_value("anonymous"),
         )
         .arg(
-            Arg::with_name(AUTH_PAM_SERVICE)
+            Arg::new(AUTH_PAM_SERVICE)
                 .long("auth-pam-service")
                 .value_name("NAME")
                 .help("The name of the PAM service")
@@ -312,7 +349,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(AUTH_REST_URL)
+            Arg::new(AUTH_REST_URL)
                 .long("auth-rest-url")
                 .value_name("URL")
                 .help("Define REST endpoint. {USER} and {PASS} are replaced by provided credentials.")
@@ -320,7 +357,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(AUTH_REST_METHOD)
+            Arg::new(AUTH_REST_METHOD)
                 .long("auth-rest-method")
                 .value_name("URL")
                 .help("HTTP method to access REST endpoint")
@@ -329,7 +366,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(AUTH_REST_BODY)
+            Arg::new(AUTH_REST_BODY)
                 .long("auth-rest-body")
                 .value_name("URL")
                 .help("If HTTP method contains body, it can be specified here. {USER} and {PASS} \
@@ -338,7 +375,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(AUTH_REST_SELECTOR)
+            Arg::new(AUTH_REST_SELECTOR)
                 .long("auth-rest-selector")
                 .value_name("SELECTOR")
                 .help("Define JSON pointer to fetch from REST response body (RFC6901)")
@@ -346,7 +383,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(AUTH_REST_REGEX)
+            Arg::new(AUTH_REST_REGEX)
                 .long("auth-rest-regex")
                 .value_name("REGEX")
                 .help("Regular expression to try match against value extracted via selector")
@@ -354,7 +391,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(AUTH_JSON_PATH)
+            Arg::new(AUTH_JSON_PATH)
                 .long("auth-json-path")
                 .value_name("PATH")
                 .help("The path to the json authentication file")
@@ -362,17 +399,16 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(STORAGE_BACKEND_TYPE)
+            Arg::new(STORAGE_BACKEND_TYPE)
                 .long("sbe-type")
                 .value_name("NAME")
                 .help("The type of storage backend to use.")
-                .possible_values(&StorageBackendType::variants())
                 .env("UNFTP_SBE_TYPE")
                 .takes_value(true)
                 .default_value("filesystem"),
         )
         .arg(
-            Arg::with_name(GCS_BASE_URL)
+            Arg::new(GCS_BASE_URL)
                 .long("sbe-gcs-base-url")
                 .value_name("URL")
                 .help("The base url of Google Cloud Storage API")
@@ -381,7 +417,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(GCS_BUCKET)
+            Arg::new(GCS_BUCKET)
                 .long("sbe-gcs-bucket")
                 .value_name("BUCKET")
                 .help("The bucket to use for the Google Cloud Storage backend")
@@ -389,7 +425,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(GCS_KEY_FILE)
+            Arg::new(GCS_KEY_FILE)
                 .long("sbe-gcs-key-file")
                 .value_name("KEY_FILE")
                 .help("The JSON file that contains the service account key for access to Google Cloud Storage.")
@@ -397,7 +433,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(GCS_ROOT)
+            Arg::new(GCS_ROOT)
                 .long("sbe-gcs-root")
                 .value_name("PATH")
                 .help("The root path in the bucket where unFTP will look for and store files.")
@@ -406,7 +442,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(GCS_SERVICE_ACCOUNT)
+            Arg::new(GCS_SERVICE_ACCOUNT)
                 .long("sbe-gcs-service-account")
                 .value_name("SERVICE_ACCOUNT_NAME")
                 .help("The name of the service account to use when authenticating using GKE workload identity.")
@@ -414,7 +450,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(IDLE_SESSION_TIMEOUT)
+            Arg::new(IDLE_SESSION_TIMEOUT)
                 .long("idle-session-timeout")
                 .value_name("TIMEOUT_SECONDS")
                 .help("The timeout in seconds after which idle connections will be closed")
@@ -423,7 +459,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .default_value("600"),
         )
         .arg(
-            Arg::with_name(PROXY_EXTERNAL_CONTROL_PORT)
+            Arg::new(PROXY_EXTERNAL_CONTROL_PORT)
                 .long("proxy-external-control-port")
                 .value_name("PORT")
                 .help("This switches on proxy protocol mode and sets the external control port number exposed on the proxy.")
@@ -431,14 +467,14 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(ENABLE_SITEMD5)
+            Arg::new(ENABLE_SITEMD5)
                 .long("enable-sitemd5")
                 .help("Enable the SITE MD5 command for authenticated users (not anonymous) (always enabled for GCS backend)")
                 .env("UNFTP_ENABLE_SITEMD5")
                 .takes_value(false)
         )
         .arg(
-            Arg::with_name(USR_JSON_PATH)
+            Arg::new(USR_JSON_PATH)
                 .long("usr-json-path")
                 .value_name("PATH")
                 .help("The path to a JSON user detail file")
@@ -446,7 +482,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(PUBSUB_BASE_URL)
+            Arg::new(PUBSUB_BASE_URL)
                 .long("ntf-pubsub-base-url")
                 .value_name("URL")
                 .help("The base url of the Google Pub/Sub API")
@@ -455,7 +491,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(PUBSUB_TOPIC)
+            Arg::new(PUBSUB_TOPIC)
                 .long("ntf-pubsub-topic")
                 .value_name("TOPIC_NAME")
                 .help("The name of the Google Pub/Sub topic to publish to")
@@ -463,7 +499,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true),
         )
         .arg(
-            Arg::with_name(PUBSUB_PROJECT)
+            Arg::new(PUBSUB_PROJECT)
                 .long("ntf-pubsub-project")
                 .value_name("PROJECT_ID")
                 .help("The ID of the GCP project where the Google Pub/Sub topic exists")
