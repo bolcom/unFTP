@@ -1,5 +1,11 @@
 # Changelog
 
+## Upcoming
+
+- [#343](https://github.com/bolcom/libunftp/pull/343), anti - brute force password guessing feature, choose from
+  different failed login attempts policies with `--failed-logins-policy [policy]`: deters successive failed login
+  attempts based on `ip`, `username` or the `combination`. Default is `combination`.
+
 ## 2022-01-28 unftp v0.13.0
 
 - BREAKING: Changed the format of the message sent in the Google Pub/Sub notifications.
@@ -9,67 +15,8 @@
   3. Added a sequence number field to allow message ordering.
   4. Added the event type as a message attribute to allow for pub/sub message filtering
 
-The message data format looks like this (To be documented in a better way soon): 
+  The message data format is documented in our user documentation at [unftp.rs](https://unftp.rs/server/pubsub).
 
-```rust
-#[derive(Serialize, Deserialize, Debug)]
-pub struct FTPEvent {
-    pub source_instance: String,
-    pub hostname: String,
-    pub payload: FTPEventPayload,
-    /// The user this event pertains to. A user may have more than one connection or session.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub username: Option<String>,
-    /// Identifies a single session pertaining to a connected client.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub trace_id: Option<String>,
-    /// The event sequence number as incremented per session.
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub sequence_number: Option<u64>,
-}
-
-#[derive(Serialize, Deserialize, Debug)]
-pub enum FTPEventPayload {
-    Startup {
-        libunftp_version: String,
-        unftp_version: String,
-    },
-    Login {},
-    Logout {},
-    Get {
-        path: String,
-    },
-    Put {
-        path: String,
-    },
-    Delete {
-        path: String,
-    },
-    MakeDir {
-        path: String,
-    },
-    Rename {
-        from: String,
-        to: String,
-    },
-    RemoveDir {
-        path: String,
-    },
-}
-```
-
-The message contains an attribute named `eventType` that could have one of these values:
-  
-  - startup
-  - login
-  - logout
-  - get
-  - put
-  - delete
-  - makeDir
-  - rename
-  - removeDir
-  
 ## 2021-11-19 unftp v0.12.13
 
 - Implemented integration with Google Pub/Sub through the `--ntf-pubsub-project` and `ntf-pubsub-topic` arguments. Configuring

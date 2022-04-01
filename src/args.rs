@@ -11,6 +11,7 @@ pub const AUTH_REST_URL: &str = "auth-rest-url";
 pub const AUTH_TYPE: &str = "auth-type";
 pub const BIND_ADDRESS: &str = "bind-address";
 pub const ENABLE_SITEMD5: &str = "enable-sitemd5";
+pub const FAILED_LOGINS_POLICY: &str = "failed-logins-policy";
 pub const FTPS_CERTS_FILE: &str = "ftps-certs-file";
 pub const FTPS_CLIENT_AUTH: &str = "ftps-client-auth";
 pub const FTPS_KEY_FILE: &str = "ftps-key-file";
@@ -57,6 +58,16 @@ arg_enum! {
     pub enum StorageBackendType {
         filesystem,
         gcs,
+    }
+}
+
+arg_enum! {
+    #[derive(Debug)]
+    #[allow(non_camel_case_types)]
+    pub enum FailedLoginsPolicyType {
+        ip,
+        user,
+        combination,
     }
 }
 
@@ -133,6 +144,23 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::App {
                 .takes_value(true)
                 .default_value(tmp_dir),
         )
+        .arg(
+            Arg::with_name(FAILED_LOGINS_POLICY)
+                .long("failed-logins-policy")
+                .value_name("POLICY")
+                .help("Enable a policy for failed logins to deter \
+                       password guessing (brute-force) attacks. When set to 'user', any login \
+                       attempt for that user is temporary blocked if there were too many failed \
+                       login attempts. When set to 'ip', any login attempt for any account is \
+                       temporarily blocked from that client IP. When set to 'combination', only \
+                       the specific combination of client IP and username will be blocked after \
+                       too many failed login attempts.")
+                .env("FAILED_LOGIN_POLICY")
+                .possible_values(&FailedLoginsPolicyType::variants())
+                .takes_value(true)
+                .default_value("combination"),
+        )
+
         .arg(
             Arg::with_name(FTPS_CERTS_FILE)
                 .long("ftps-certs-file")
