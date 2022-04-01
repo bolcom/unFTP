@@ -29,7 +29,7 @@ use libunftp::{
     auth as auth_spi,
     notification::{DataListener, PresenceListener},
     options,
-    options::{FtpsClientAuth, FtpsRequired, SiteMd5, TlsFlags},
+    options::{FailedLoginsBlock, FailedLoginsPolicy, FtpsClientAuth, FtpsRequired, SiteMd5, TlsFlags},
     storage::StorageBackend,
     Server,
 };
@@ -385,6 +385,22 @@ where
             .parse::<u16>()
             .map_err(|e| format!("unable to parse proxy protocol external control port {}: {}", port, e))?;
         server = server.proxy_protocol_mode(port_num);
+    }
+
+    // Set up failed logins policy (anti-bruteforce)
+    if let Some(arg) = arg_matches.value_of(args::FAILED_LOGINS_POLICY) {
+        let policy = match arg.parse::<args::FailedLoginsPolicyType>()? {
+            args::FailedLoginsPolicyType::ip => {
+                FailedLoginsPolicy::new(3, Duration::from_secs(300), FailedLoginsBlock::IP)
+            }
+            args::FailedLoginsPolicyType::user => {
+                FailedLoginsPolicy::new(3, Duration::from_secs(300), FailedLoginsBlock::User)
+            }
+            args::FailedLoginsPolicyType::combination => {
+                FailedLoginsPolicy::new(3, Duration::from_secs(300), FailedLoginsBlock::UserAndIP)
+            }
+        };
+        server = server.failed_logins_policy(policy);
     }
 
     // Setup FTPS

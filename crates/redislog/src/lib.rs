@@ -180,7 +180,7 @@ impl Builder {
         // TODO: Get something that works on windows too
         fn get_host_name() -> String {
             let output = Command::new("hostname").output().expect("failed to execute process");
-            String::from_utf8_lossy(&output.stdout).replace("\n", "")
+            String::from_utf8_lossy(&output.stdout).replace('\n', "")
         }
 
         let connection_str = format!("redis://{}:{}", self.redis_host, self.redis_port);
