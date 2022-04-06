@@ -1,7 +1,6 @@
 #[macro_use]
 extern crate lazy_static;
 
-#[macro_use]
 extern crate clap;
 
 #[allow(dead_code)]
@@ -530,7 +529,7 @@ async fn listen_for_signals() -> Result<ExitSignal, String> {
     Ok(ExitSignal(sig_name))
 }
 
-async fn main_task(arg_matches: ArgMatches<'_>, log: &Logger, root_log: &Logger) -> Result<ExitSignal, String> {
+async fn main_task(arg_matches: ArgMatches, log: &Logger, root_log: &Logger) -> Result<ExitSignal, String> {
     let (shutdown_sender, http_receiver) = tokio::sync::broadcast::channel(1);
     let (http_done_sender, mut shutdown_done_received) = tokio::sync::mpsc::channel(1);
     let ftp_done_sender = http_done_sender.clone();
