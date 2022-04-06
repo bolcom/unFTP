@@ -13,6 +13,8 @@ pub const AUTH_TYPE: &str = "auth-type";
 pub const BIND_ADDRESS: &str = "bind-address";
 pub const ENABLE_SITEMD5: &str = "enable-sitemd5";
 pub const FAILED_LOGINS_POLICY: &str = "failed-logins-policy";
+pub const FAILED_MAX_ATTEMPTS: &str = "failed-max-attempts";
+pub const FAILED_EXPIRE_AFTER: &str = "failed-expire-after";
 pub const FTPS_CERTS_FILE: &str = "ftps-certs-file";
 pub const FTPS_CLIENT_AUTH: &str = "ftps-client-auth";
 pub const FTPS_KEY_FILE: &str = "ftps-key-file";
@@ -201,7 +203,26 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::Command {
                 .takes_value(true)
                 .default_missing_value("combination"),
         )
-
+        .arg(
+            Arg::new(FAILED_MAX_ATTEMPTS)
+                .long("failed-max-attempts")
+                .value_name("ATTEMPTS")
+                .help("Number of consecutive failed login attempts that activates the failed logins policy.")
+                .env("FAILED_MAX_ATTEMPTS")
+                .takes_value(true)
+                .requires(FAILED_LOGINS_POLICY)
+                .default_value("3")
+        )
+        .arg(
+            Arg::new(FAILED_EXPIRE_AFTER)
+                .long("failed-expire-after")
+                .value_name("EXPIRE")
+                .help("Number of seconds before a failed logins block entry expires.")
+                .env("FAILED_EXPIRE_AFTER")
+                .takes_value(true)
+                .requires(FAILED_LOGINS_POLICY)
+                .default_value("300")
+        )
         .arg(
             Arg::new(FTPS_CERTS_FILE)
                 .long("ftps-certs-file")
