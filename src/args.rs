@@ -199,7 +199,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::Command {
                        temporarily blocked from that client IP. When set to 'combination', only \
                        the specific combination of client IP and username will be blocked after \
                        too many failed login attempts.")
-                .env("FAILED_LOGINS_POLICY")
+                .env("UNFTP_FAILED_LOGINS_POLICY")
                 .takes_value(true)
                 .default_missing_value("combination"),
         )
@@ -208,7 +208,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::Command {
                 .long("failed-max-attempts")
                 .value_name("ATTEMPTS")
                 .help("Number of consecutive failed login attempts that activates the failed logins policy.")
-                .env("FAILED_MAX_ATTEMPTS")
+                .env("UNFTP_FAILED_MAX_ATTEMPTS")
                 .takes_value(true)
                 .requires(FAILED_LOGINS_POLICY)
                 .default_value("3")
@@ -218,7 +218,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::Command {
                 .long("failed-expire-after")
                 .value_name("EXPIRE")
                 .help("Number of seconds before a failed logins block entry expires.")
-                .env("FAILED_EXPIRE_AFTER")
+                .env("UNFTP_FAILED_EXPIRE_AFTER")
                 .takes_value(true)
                 .requires(FAILED_LOGINS_POLICY)
                 .default_value("300")
