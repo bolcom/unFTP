@@ -4,7 +4,9 @@
 
 - [#343](https://github.com/bolcom/libunftp/pull/343), anti - brute force password guessing feature, choose from
   different failed login attempts policies with `--failed-logins-policy [policy]`: deters successive failed login
-  attempts based on `ip`, `username` or the `combination`. Default is `combination`.
+  attempts based on `ip`, `username` or the `combination`. Default is `combination`. The maximum number of failed
+  logins (`--failed-max-attempts`) and the time in seconds to unblock (`--failed-expire-after`) are also
+  configurable.
 
 ## 2022-01-28 unftp v0.13.0
 

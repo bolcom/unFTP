@@ -388,17 +388,63 @@ where
 
     // Set up failed logins policy (anti-bruteforce)
     if let Some(arg) = arg_matches.value_of(args::FAILED_LOGINS_POLICY) {
+        let max_attempts_str = arg_matches.value_of(args::FAILED_MAX_ATTEMPTS).unwrap();
+        let max_attempts = String::from(max_attempts_str).parse::<u32>().map_err(move |e| {
+            format!(
+                "unable to parse given value '{}' for --{}: {}. Please use a numeric value",
+                max_attempts_str,
+                args::FAILED_MAX_ATTEMPTS,
+                e
+            )
+        })?;
+
+        let expires_after_str = arg_matches.value_of(args::FAILED_EXPIRE_AFTER).unwrap();
+        let expires_after = String::from(expires_after_str).parse::<u32>().map_err(move |e| {
+            format!(
+                "unable to parse given value '{}' for --{}: {}. Please use a numeric value",
+                expires_after_str,
+                args::FAILED_EXPIRE_AFTER,
+                e
+            )
+        })?;
+
         let policy = match arg.parse::<args::FailedLoginsPolicyType>()? {
             args::FailedLoginsPolicyType::ip => {
-                FailedLoginsPolicy::new(3, Duration::from_secs(300), FailedLoginsBlock::IP)
+                info!(
+                    log,
+                    "Using failed logins policy to block by IP after {} attempts and expires after {} seconds",
+                    max_attempts,
+                    expires_after
+                );
+                FailedLoginsPolicy::new(
+                    max_attempts,
+                    Duration::from_secs(expires_after.into()),
+                    FailedLoginsBlock::IP,
+                )
             }
             args::FailedLoginsPolicyType::user => {
-                FailedLoginsPolicy::new(3, Duration::from_secs(300), FailedLoginsBlock::User)
+                info!(
+                    log,
+                    "Using failed logins policy to block by username after {} attempts and expires after {} seconds",
+                    max_attempts,
+                    expires_after
+                );
+                FailedLoginsPolicy::new(
+                    max_attempts,
+                    Duration::from_secs(expires_after.into()),
+                    FailedLoginsBlock::User,
+                )
             }
             args::FailedLoginsPolicyType::combination => {
-                FailedLoginsPolicy::new(3, Duration::from_secs(300), FailedLoginsBlock::UserAndIP)
+                info!(log, "Using failed logins policy to block by username and IP after {} attempts and expires after {} seconds", max_attempts, expires_after);
+                FailedLoginsPolicy::new(
+                    max_attempts,
+                    Duration::from_secs(expires_after.into()),
+                    FailedLoginsBlock::UserAndIP,
+                )
             }
         };
+
         server = server.failed_logins_policy(policy);
     }
 
