@@ -199,7 +199,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::Command {
                        temporarily blocked from that client IP. When set to 'combination', only \
                        the specific combination of client IP and username will be blocked after \
                        too many failed login attempts.")
-                .env("FAILED_LOGIN_POLICY")
+                .env("FAILED_LOGINS_POLICY")
                 .takes_value(true)
                 .default_missing_value("combination"),
         )
