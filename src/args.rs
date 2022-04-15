@@ -76,7 +76,7 @@ impl FromStr for FailedLoginsPolicyType {
             "ip" => Ok(FailedLoginsPolicyType::ip),
             "user" => Ok(FailedLoginsPolicyType::user),
             "combination" => Ok(FailedLoginsPolicyType::combination),
-            _ => Err("no match"),
+            _ => Err("For --failed-logins-policy, please specify: 'ip', 'user' or 'combination'."),
         }
     }
 }
@@ -216,7 +216,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::Command {
         .arg(
             Arg::new(FAILED_EXPIRE_AFTER)
                 .long("failed-expire-after")
-                .value_name("EXPIRE")
+                .value_name("SECONDS")
                 .help("Number of seconds before a failed logins block entry expires.")
                 .env("UNFTP_FAILED_EXPIRE_AFTER")
                 .takes_value(true)

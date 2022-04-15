@@ -19,5 +19,6 @@ navigation:
       - path: docs/server/pubsub.md
       - path: docs/server/proxy-protocol.md
       - path: docs/server/docker.md
+      - path: docs/server/anti-brute.md
   - path: docs/support.md
   - path: docs/licensing.md
