@@ -48,3 +48,14 @@ unftp --failed-logins-policy user
 ```
 
 Be aware that user level -only blocking may also affect legitimate login attempts.
+
+## Example
+
+Block an attacker based on source IP for 30 minutes after 5 unsuccessful login attempts:
+
+```sh
+unftp \
+  --failed-logins-policy ip \
+  --failed-max-attempts 5 \
+  --failed-expire-after 1800
+```
