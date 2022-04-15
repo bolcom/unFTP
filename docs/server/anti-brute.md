@@ -11,7 +11,7 @@ You can start up unFTP with the default failed logins policy:
 unftp --failed-logins-policy
 ```
 
-By default, 3 subsequent unsuccessful login attempts block further login attempts for that user orginating from that source IP during 5 minutes.
+By default, 3 subsequent unsuccessful login attempts block further login attempts for that user orginating from that source IP for 5 minutes.
 
 How to adjust these parameters and the default policy is explained in the sections below.
 
@@ -32,7 +32,7 @@ unftp --failed-logins-policy --failed-expire-after 1800
 ## Choose another policy
 
 By default, the temporary block applies to the _combination of username and source IP_.
-When an attacker is blocked by this policy, attempts to other accounts, or attempts from different source IPs can still continue.
+When an attacker is blocked by this policy, attempts to use other accounts, or attempts from different source IPs can still succeed.
 You can adjust this behavior by blocking based on source IP or username instead.
 
 Block by source IP instead of both IP and username:
