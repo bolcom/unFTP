@@ -76,7 +76,7 @@ impl FromStr for FailedLoginsPolicyType {
             "ip" => Ok(FailedLoginsPolicyType::ip),
             "user" => Ok(FailedLoginsPolicyType::user),
             "combination" => Ok(FailedLoginsPolicyType::combination),
-            _ => Err("no match"),
+            _ => Err("For --failed-logins-policy, please specify: 'ip', 'user' or 'combination'."),
         }
     }
 }
