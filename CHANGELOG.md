@@ -1,8 +1,8 @@
 # Changelog
 
-## Upcoming
+## 2022-04-15 unftp v0.13.1
 
-- [#343](https://github.com/bolcom/libunftp/pull/343), anti - brute force password guessing feature, choose from
+- [#343](https://github.com/bolcom/libunftp/pull/343), Added anti - brute force password guessing feature. Choose from
   different failed login attempts policies with `--failed-logins-policy [policy]`: deters successive failed login
   attempts based on `ip`, `username` or the `combination`. Default is `combination`. The maximum number of failed
   logins (`--failed-max-attempts`) and the time in seconds to unblock (`--failed-expire-after`) are also

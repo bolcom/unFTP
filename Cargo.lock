@@ -867,8 +867,9 @@ dependencies = [
 
 [[package]]
 name = "libunftp"
-version = "0.18.3"
-source = "git+https://github.com/bolcom/libunftp.git?rev=2a4522d27ba65ba6b1b968429a5bf0cb0b56d8ba#2a4522d27ba65ba6b1b968429a5bf0cb0b56d8ba"
+version = "0.18.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "55fe7485a7da2a339aa0680f2b149a64e9361b7e7827230b326d618b0c08368b"
 dependencies = [
  "async-trait",
  "bitflags",
@@ -883,7 +884,7 @@ dependencies = [
  "prometheus",
  "proxy-protocol",
  "rustls 0.20.4",
- "rustls-pemfile 0.3.0",
+ "rustls-pemfile 1.0.0",
  "slog",
  "slog-stdlog",
  "thiserror",
@@ -1027,9 +1028,9 @@ dependencies = [
 
 [[package]]
 name = "moka"
-version = "0.7.2"
+version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26e1a0803406a47496169480f26cab92e78936c1180ad439ee18d36478c1509c"
+checksum = "ef9d038ced38770a867f2300ef21e1193b5e26d8e8e060fa5c034d1dddc57452"
 dependencies = [
  "crossbeam-channel",
  "crossbeam-epoch",
@@ -1570,9 +1571,9 @@ dependencies = [
 
 [[package]]
 name = "rustls-pemfile"
-version = "0.3.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1ee86d63972a7c661d1536fefe8c3c8407321c3df668891286de28abcd087360"
+checksum = "e7522c9de787ff061458fe9a829dc790a3f5b22dc571694fc5883f448b94d9a9"
 dependencies = [
  "base64",
 ]
@@ -1861,12 +1862,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
 
 [[package]]
-name = "stable_deref_trait"
-version = "1.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a8f112729512f8e442d81f95a8a7ddf2b7c6b8a1a6f509a95864142b30cab2d3"
-
-[[package]]
 name = "std_prelude"
 version = "0.2.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2146,9 +2141,9 @@ checksum = "360dfd1d6d30e05fda32ace2c8c70e9c0a9da713275777f5a4dbb8a1893930c6"
 
 [[package]]
 name = "tracing"
-version = "0.1.32"
+version = "0.1.34"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a1bdf54a7c28a2bbf701e1d2233f6c77f473486b94bee4f9678da5a148dca7f"
+checksum = "5d0ecdcb44a79f0fe9844f0c4f33a342cbcbb5117de8001e6ba0dc2351327d09"
 dependencies = [
  "cfg-if 1.0.0",
  "pin-project-lite",
@@ -2183,8 +2178,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c45e322b26410d7260e00f64234810c2f17d7ece356182af4df8f7ff07890f09"
 dependencies = [
  "memoffset 0.6.5",
- "serde",
- "stable_deref_trait",
 ]
 
 [[package]]
@@ -2201,7 +2194,7 @@ checksum = "dcf81ac59edc17cc8697ff311e8f5ef2d99fcbd9817b34cec66f90b6c3dfd987"
 
 [[package]]
 name = "unftp"
-version = "0.13.0"
+version = "0.13.1"
 dependencies = [
  "async-trait",
  "base64",
@@ -2613,9 +2606,9 @@ checksum = "504a2476202769977a040c6364301a3f65d0cc9e3fb08600b2bda150a0488316"
 
 [[package]]
 name = "x509-parser"
-version = "0.13.1"
+version = "0.13.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e64bcfe6a33d9a2d5451de520881469863bd05a095f6b6f7f2ad1a5cd8d4ea2f"
+checksum = "9fb9bace5b5589ffead1afb76e43e34cff39cd0f3ce7e170ae0c29e53b88eb1c"
 dependencies = [
  "asn1-rs",
  "base64",

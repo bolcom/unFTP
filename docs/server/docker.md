@@ -34,6 +34,6 @@ docker run \
   -v /Users/xxx/unftp/unftp.crt:/unftp.crt \
   -v /Users/xxx/unftp/the-key.json:/key.json \
   -ti \
-  bolcom/unftp:v0.13.0-alpine
+  bolcom/unftp:v0.13.1-alpine
 ```
 

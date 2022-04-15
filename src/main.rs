@@ -654,7 +654,7 @@ fn get_host_name() -> String {
         return host;
     }
     match Command::new("hostname").output() {
-        Ok(output) => String::from_utf8_lossy(&output.stdout).replace("\n", ""),
+        Ok(output) => String::from_utf8_lossy(&output.stdout).replace('\n', ""),
         Err(_) => "unknown".to_string(),
     }
 }
