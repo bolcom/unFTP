@@ -660,6 +660,15 @@ fn get_host_name() -> String {
 }
 
 fn main() {
+    #[cfg(feature = "tokio_console")]
+    {
+        console_subscriber::ConsoleLayer::builder()
+            // set the address the server is bound to
+            .server_addr(([127, 0, 0, 1], 6669))
+            // ... other configurations ...
+            .init();
+    }
+
     let tmp_dir = env::temp_dir();
     let tmp_dir = tmp_dir.as_path().to_str().unwrap();
     let arg_matches = args::clap_app(tmp_dir).get_matches();

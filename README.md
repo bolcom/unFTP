@@ -11,7 +11,7 @@ When you need to FTP, but don't want to.
 
 [**Website**](https://unftp.rs) | [**Docs**](https://unftp.rs/server) | [**libunftp**](https://github.com/bolcom/libunftp)
 
-unFTP is a FTP(S) server written in [Rust](https://www.rust-lang.org) and built on top of [libunftp](https://github.com/bolcom/libunftp) and the [Tokio](https://tokio.rs) asynchronous run-time. It is **un**like your normal FTP server in that it provides:
+unFTP is an FTP(S) server written in [Rust](https://www.rust-lang.org) and built on top of [libunftp](https://github.com/bolcom/libunftp) and the [Tokio](https://tokio.rs) asynchronous run-time. It is **un**like your normal FTP server in that it provides:
 
 - Configurable Authentication (e.g. Anonymous, [PAM](https://en.wikipedia.org/wiki/Linux_PAM) or a JSON file).
 - Configurable storage back-ends (e.g. [GCS](https://cloud.google.com/storage/) or filesystem)
@@ -50,6 +50,25 @@ make docker-image-alpine
 ```
 
 Alternatively you can download pre-made images from [docker hub](https://hub.docker.com/r/bolcom/unftp/tags). 
+
+## Enabling tokio-console
+
+You can use [tokio-console](https://github.com/tokio-rs/console) to analyze async tasks running in unFTP. To do this you 
+need to compile a build or run with the `tokio_console` feature enabled while also enabling the `tokio_unstable cfg`. 
+
+For example:
+
+```sh
+RUSTFLAGS="--cfg tokio_unstable" cargo build --features tokio_console
+```
+
+or:
+
+```shell
+RUSTFLAGS="--cfg tokio_unstable" cargo run --features tokio_console -- -vv
+```
+
+unFTP will listen on default port 6669 for connections from tokio-console.
 
 ## Getting help and staying informed
 
