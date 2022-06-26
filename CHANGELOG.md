@@ -1,5 +1,13 @@
 # Changelog
 
+## 2022-06-26 unftp v0.13.2
+
+- Added support for [tokio-console])(https://github.com/tokio-rs/console), the debugger for async Rust. Enable through 
+  the `tokio_console` compile time feature.
+- [#414](https://github.com/bolcom/libunftp/pull/414) via libunftp: Fixed path display issues for Windows clients.
+- [#413](https://github.com/bolcom/libunftp/pull/413) via libunftp: Fixed issue where the `OPTS UTF8` command was not handled correctly as seen with the FTP client included in Windows Explorer.
+- Upgraded dependencies
+
 ## 2022-04-15 unftp v0.13.1
 
 - [#343](https://github.com/bolcom/libunftp/pull/343), Added anti - brute force password guessing feature. Choose from

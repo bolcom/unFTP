@@ -1,6 +1,6 @@
 [package]
 name = "unftp"
-version = "0.13.1"
+version = "0.13.2"
 authors = [
     "Agoston Horvath <ahorvath@bol.com>",
     "Dávid Kosztka <dkosztka@bol.com>",
@@ -37,7 +37,7 @@ http = "0.2.8"
 hyper = { version = "0.14.19", features = ["server", "http1"] }
 hyper-rustls = "0.23.0"
 lazy_static = "1.4.0"
-libunftp = "0.18.4"
+libunftp = "0.18.5"
 prometheus = { version = "0.13.1", features = ["process"] }
 serde = { version = "1.0.137", features = ["derive"] }
 serde_json = "1.0.81"
@@ -46,16 +46,16 @@ slog-async = "2.7.0"
 slog-term = "2.9.0"
 thiserror = "1.0.31"
 tokio = { version = "1.19.2", features = ["full"] }
-unftp-sbe-fs = "0.2.0"
-unftp-sbe-gcs = { version = "0.2.0", optional = true }
-unftp-auth-rest = { version = "0.2.0", optional = true }
-unftp-auth-jsonfile = { version = "0.2.0", optional = true }
+unftp-sbe-fs = "0.2.1"
+unftp-sbe-gcs = { version = "0.2.1", optional = true }
+unftp-auth-rest = { version = "0.2.1", optional = true }
+unftp-auth-jsonfile = { version = "0.2.1", optional = true }
 
 # Purely to resolve conflicts
 tracing= "0.1.35"
 
 [target.'cfg(unix)'.dependencies]
-unftp-auth-pam = { version = "0.2.0", optional = true }
+unftp-auth-pam = { version = "0.2.1", optional = true }
 
 
 [features]
