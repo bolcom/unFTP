@@ -25,6 +25,57 @@ unftp \
     --auth-json-path=credentials.json
 ```
 
+## Generating secure passwords
+
+We provide a tool that generates a secure password for you.
+
+Generating a secure password is as simple as this:
+
+```shell
+➜ docker run -ti bolcom/unftp-key-generator -u
+
+Enter username or press ENTER to finish: hannes
+Enter password or press ENTER to generate one:
+Generated password: 4?KH[FN=W@bztq%[
+[
+  {
+    "username": "hannes",
+    "pbkdf2_salt": "+uhutJYSS7Y=",
+    "pbkdf2_key": "sXdS1w0cH+bsNLKwW/Mek0hGXoJr+hrBJ1AjkubePiM=",
+    "pbkdf2_iter": 500000
+  }
+]
+```
+
+Then add it to the JSON credentials file. Notice the use of the `pbkdf2_salt`, `pbkdf2_key` and `pbkdf2_iter` fields 
+instead of the `password` field.
+
+```json
+[
+  {
+    "username": "alice",
+    "password": "12345678"
+  },
+  {
+    "username": "bob",
+    "password": "secret"
+  },
+  {
+    "username": "carol",
+    "pbkdf2_salt": "Hp1WZRnzOUM=",
+    "pbkdf2_key": "BOipkps/qYxlMLiuFcRjYUKivclvVXsc8f0T2pIvG6U=",
+    "pbkdf2_iter": 500000
+  }
+]
+```
+
+For more advanced usage see the documentation of the [unftp_auth_jsonfile](https://docs.rs/unftp-auth-jsonfile/0.2.1/unftp_auth_jsonfile)
+crate. The key generator tool also have advanced options that you can see by running the container with the `-h` option i.e.
+
+```shell
+docker run -ti bolcom/unftp-key-generator -h
+```
+
 ## Per-User Settings
 
 To do per-user settings you can expand the above-mentioned JSON file to also include some per user settings:
