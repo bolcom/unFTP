@@ -5,9 +5,9 @@ title: Docker
 You can download pre-made docker images from [docker hub](https://hub.docker.com/r/bolcom/unftp/tags) e.g.:
 
 ```sh
-docker pull bolcom/unftp:v0.13.0-alpine
-docker pull bolcom/unftp:v0.13.0-alpine-istio
-docker pull bolcom/unftp:v0.13.0-scratch
+docker pull bolcom/unftp:v0.13.2-alpine
+docker pull bolcom/unftp:v0.13.2-alpine-istio
+docker pull bolcom/unftp:v0.13.2-scratch
 ```
 
 Example running unFTP in a Docker container:
