@@ -64,7 +64,7 @@ impl libunftp::storage::Metadata for SbeMeta {
     fn modified(&self) -> storage::Result<SystemTime> {
         match self {
             SbeMeta::Cloud(m) => m.modified(),
-            SbeMeta::File(m) => m.modified().map_err(|e| e),
+            SbeMeta::File(m) => m.modified(),
         }
     }
 
