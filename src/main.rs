@@ -590,7 +590,7 @@ async fn main_task(arg_matches: ArgMatches, log: &Logger, root_log: &Logger) -> 
         let addr = String::from(addr);
         let log = log.clone();
         tokio::spawn(async move {
-            if let Err(e) = http::start(&log, &*addr, ftp_addr, http_receiver, http_done_sender).await {
+            if let Err(e) = http::start(&log, &addr, ftp_addr, http_receiver, http_done_sender).await {
                 error!(log, "HTTP Server error: {}", e)
             }
         });

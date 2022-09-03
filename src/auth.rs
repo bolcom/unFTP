@@ -6,7 +6,7 @@ use std::fmt::Formatter;
 use std::path::PathBuf;
 
 /// The unFTP user details
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct User {
     pub username: String,
     pub name: Option<String>,

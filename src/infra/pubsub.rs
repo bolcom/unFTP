@@ -146,7 +146,7 @@ mod tests {
         let payload = base64::encode("123");
         let r = PubSubRequest {
             messages: vec![PubSubMsg {
-                data: payload.to_owned(),
+                data: payload,
                 attributes: HashMap::new(),
             }],
         };
