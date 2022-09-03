@@ -90,7 +90,7 @@ fn redis_logger(m: &ArgMatches) -> Result<Option<FallbackToStderr<redislog::Logg
             } else {
                 format!("{}-{}", NAME, instance_name)
             };
-            let logger = Builder::new(&*app_name)
+            let logger = Builder::new(&app_name)
                 .redis(
                     String::from(host),
                     String::from(port).parse::<u32>().unwrap(),

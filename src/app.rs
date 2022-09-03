@@ -32,5 +32,5 @@ pub fn libunftp_version() -> &'static str {
         "libunftp" => Some(version),
         _ => None,
     });
-    *(libunftp_version.unwrap_or(&"unknown"))
+    libunftp_version.unwrap_or(&"unknown")
 }
