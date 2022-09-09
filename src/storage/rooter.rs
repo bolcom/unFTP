@@ -117,6 +117,14 @@ where
 {
     type Metadata = Delegate::Metadata;
 
+    fn name(&self) -> &str {
+        self.inner.name()
+    }
+
+    fn supported_features(&self) -> u32 {
+        self.inner.supported_features()
+    }
+
     async fn metadata<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> Result<Self::Metadata> {
         let path = Self::new_path(user, path.as_ref());
         self.inner.metadata(user, path).await
