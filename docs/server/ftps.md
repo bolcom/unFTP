@@ -16,7 +16,7 @@ openssl req \
    -subj '/CN=www.myunftp.domain/O=My Company Name LTD./C=NL'
 ```
 
-The run unFTP, pointing it to the certificate and key. You can use the `--ftps-required-on-control-channel` setting to enforce TLS on the FTP control channgel. In other words an FTP client will only be allowed to use FTP commands if it upgrades to a private TLS connection.
+The run unFTP, pointing it to the certificate and key. You can use the `--ftps-required-on-control-channel` setting to enforce TLS on the FTP control channel. In other words an FTP client will only be allowed to use FTP commands if it upgrades to a private TLS connection.
 
 ```sh
 ./unftp \

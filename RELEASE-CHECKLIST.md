@@ -19,4 +19,5 @@
   > slog-redis-v0.1.2
 * Create the artifacts: `make release-artifacts` and add to Github
 * Build and push the docker containers
+* Publish the docs site unftp.rs by running `make site`
 * Notify the Telegram channel.

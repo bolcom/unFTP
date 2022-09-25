@@ -1,5 +1,13 @@
 # Changelog
 
+## 2022-09-25 unftp v0.13.3
+
+- [#126](https://github.com/bolcom/unFTP/issues/126) Now support Elliptic Curve Private keys
+- [#130](https://github.com/bolcom/unFTP/pull/130) Fixed an issue where SITE MD5 was always disabled
+- [#127](https://github.com/bolcom/unFTP/pull/127) Removed unneeded [tokio](https://crates.io/crates/tokio) features
+- Upgraded to Rust 1.64.0
+- Upgraded dependencies
+
 ## 2022-06-26 unftp v0.13.2
 
 - Added support for [tokio-console])(https://github.com/tokio-rs/console), the debugger for async Rust. Enable through 
