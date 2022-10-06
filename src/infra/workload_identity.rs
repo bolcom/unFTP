@@ -31,7 +31,10 @@ const USER_AGENT: &str = concat!("github.com/bolcom/unFTP v", env!("BUILD_VERSIO
 pub enum Error {
     /// Something went wrong with the HTTP request
     #[error("request error: {0}: {1:?}")]
-    Request(String, #[source] Box<dyn std::error::Error + Send + Sync + 'static>),
+    Request(
+        String,
+        #[source] Box<dyn std::error::Error + Send + Sync + 'static>,
+    ),
 
     /// Access was denied when trying to retrieve the token
     #[error("access denied")]
@@ -79,8 +82,10 @@ pub(super) async fn request_token(
         .await
         .map_err(|e| Error::Request("error getting response body".to_owned(), Box::new(e)))?;
 
-    let unmarshall_result: serde_json::Result<TokenResponse> = serde_json::from_slice(body_bytes.to_vec().as_slice());
-    unmarshall_result.map_err(|e| Error::Request("error unmarshalling response body".to_owned(), Box::new(e)))
+    let unmarshall_result: serde_json::Result<TokenResponse> =
+        serde_json::from_slice(body_bytes.to_vec().as_slice());
+    unmarshall_result
+        .map_err(|e| Error::Request("error unmarshalling response body".to_owned(), Box::new(e)))
 }
 
 // Example:

@@ -18,12 +18,9 @@ pub fn create_event_dispatcher(
         m.value_of(args::PUBSUB_BASE_URL),
         m.value_of(args::PUBSUB_PROJECT),
     ) {
-        (Some(topic), Some(base_url), Some(project_name)) => Ok(Arc::new(PubsubEventDispatcher::with_api_base(
-            log,
-            project_name,
-            topic,
-            base_url,
-        ))),
+        (Some(topic), Some(base_url), Some(project_name)) => Ok(Arc::new(
+            PubsubEventDispatcher::with_api_base(log, project_name, topic, base_url),
+        )),
         (Some(_topic), _, None) => Err(format!(
             "--{} is required when specifying --{}",
             args::PUBSUB_PROJECT,

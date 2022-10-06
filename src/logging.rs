@@ -65,7 +65,9 @@ pub fn create_logger(arg_matches: &ArgMatches) -> Result<slog::Logger, String> {
     let drain = match redis_logger(arg_matches) {
         Ok(Some(redis_logger)) => {
             let both = Duplicate::new(redis_logger, term_drain).fuse();
-            Async::new(both.filter_level(min_log_level).fuse()).build().fuse()
+            Async::new(both.filter_level(min_log_level).fuse())
+                .build()
+                .fuse()
         }
         Ok(None) => Async::new(term_drain).build().fuse(),
         Err(e) => {
@@ -82,7 +84,11 @@ pub fn create_logger(arg_matches: &ArgMatches) -> Result<slog::Logger, String> {
 }
 
 fn redis_logger(m: &ArgMatches) -> Result<Option<FallbackToStderr<redislog::Logger>>, String> {
-    match (m.value_of(REDIS_KEY), m.value_of(REDIS_HOST), m.value_of(REDIS_PORT)) {
+    match (
+        m.value_of(REDIS_KEY),
+        m.value_of(REDIS_HOST),
+        m.value_of(REDIS_PORT),
+    ) {
         (Some(key), Some(host), Some(port)) => {
             let instance_name = m.value_of(INSTANCE_NAME).unwrap();
             let app_name = if instance_name == NAME {

@@ -32,5 +32,6 @@ fn generate_build_info() {
     opts.set_dependencies(true);
     opts.set_git(true);
     opts.set_time(true);
-    built::write_built_file_with_opts(&opts, src, &dst).expect("Failed to acquire build-time information");
+    built::write_built_file_with_opts(&opts, src, &dst)
+        .expect("Failed to acquire build-time information");
 }

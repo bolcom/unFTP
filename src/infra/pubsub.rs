@@ -34,20 +34,31 @@ impl PubsubEventDispatcher {
     where
         Str: Into<String>,
     {
-        Self::with_api_base(log, project.into(), topic.into(), DEFAULT_SERVICE_ENDPOINT.to_owned())
+        Self::with_api_base(
+            log,
+            project.into(),
+            topic.into(),
+            DEFAULT_SERVICE_ENDPOINT.to_owned(),
+        )
     }
 
-    pub fn with_api_base<Str>(log: Arc<slog::Logger>, project: Str, topic: Str, api_base: Str) -> Self
+    pub fn with_api_base<Str>(
+        log: Arc<slog::Logger>,
+        project: Str,
+        topic: Str,
+        api_base: Str,
+    ) -> Self
     where
         Str: Into<String>,
     {
-        let client: Client<HttpsConnector<HttpConnector<GaiResolver>>, Body> = Client::builder().build(
-            HttpsConnectorBuilder::new()
-                .with_native_roots()
-                .https_or_http()
-                .enable_http1()
-                .build(),
-        );
+        let client: Client<HttpsConnector<HttpConnector<GaiResolver>>, Body> = Client::builder()
+            .build(
+                HttpsConnectorBuilder::new()
+                    .with_native_roots()
+                    .https_or_http()
+                    .enable_http1()
+                    .build(),
+            );
         PubsubEventDispatcher {
             log,
             api_base_url: api_base.into(),
@@ -84,10 +95,14 @@ impl PubsubEventDispatcher {
         let b = PubSubRequest {
             messages: vec![PubSubMsg {
                 data: msg.to_owned(),
-                attributes: HashMap::from([(String::from("eventType"), Self::event_type(event.payload))]),
+                attributes: HashMap::from([(
+                    String::from("eventType"),
+                    Self::event_type(event.payload),
+                )]),
             }],
         };
-        let body_string = serde_json::to_string(&b).map_err(|e| format!("error marshalling message: {}", e))?;
+        let body_string =
+            serde_json::to_string(&b).map_err(|e| format!("error marshalling message: {}", e))?;
 
         // TODO: Implement other auth methods
         // FIXME: When testing locally there won't be a token, we might want to handle this better.
@@ -108,7 +123,10 @@ impl PubsubEventDispatcher {
 
         let response: Response<Body> = self.client.request(request).await.unwrap();
         if response.status() != StatusCode::OK {
-            Err(format!("bad HTTP status code received: {}", response.status()))
+            Err(format!(
+                "bad HTTP status code received: {}",
+                response.status()
+            ))
         } else {
             Ok(())
         }
@@ -120,7 +138,11 @@ impl EventDispatcher<FTPEvent> for PubsubEventDispatcher {
     async fn dispatch(&self, event: FTPEvent) {
         let r = self.publish(event).await;
         if r.is_err() {
-            slog::error!(self.log, "Could not dispatch event to pub/sub: {}", r.unwrap_err());
+            slog::error!(
+                self.log,
+                "Could not dispatch event to pub/sub: {}",
+                r.unwrap_err()
+            );
         }
     }
 }
@@ -151,6 +173,9 @@ mod tests {
             }],
         };
         let json = serde_json::to_string(&r).unwrap();
-        assert_eq!(json, "{\"messages\":[{\"data\":\"MTIz\",\"attributes\":{}}]}")
+        assert_eq!(
+            json,
+            "{\"messages\":[{\"data\":\"MTIz\",\"attributes\":{}}]}"
+        )
     }
 }
