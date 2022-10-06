@@ -85,7 +85,9 @@ pub trait UserDetailProvider: std::fmt::Debug {
 }
 
 impl LookupAuthenticator {
-    pub fn new<A: libunftp::auth::Authenticator<DefaultUser> + Send + Sync + 'static>(inner: A) -> Self {
+    pub fn new<A: libunftp::auth::Authenticator<DefaultUser> + Send + Sync + 'static>(
+        inner: A,
+    ) -> Self {
         LookupAuthenticator {
             inner: Box::new(inner),
             usr_detail: None,
@@ -99,7 +101,11 @@ impl LookupAuthenticator {
 
 #[async_trait]
 impl libunftp::auth::Authenticator<User> for LookupAuthenticator {
-    async fn authenticate(&self, username: &str, creds: &Credentials) -> Result<User, AuthenticationError> {
+    async fn authenticate(
+        &self,
+        username: &str,
+        creds: &Credentials,
+    ) -> Result<User, AuthenticationError> {
         self.inner.authenticate(username, creds).await?;
         let user_provider = self.usr_detail.as_ref().unwrap();
         if let Some(user) = user_provider.provide_user_detail(username) {
@@ -157,27 +163,28 @@ impl UserDetailProvider for JsonUserProvider {
                 surname: u.surname,
                 account_enabled: u.account_enabled.unwrap_or(true),
                 vfs_permissions: u.vfs_perms.map_or(VfsOperations::all(), |p| {
-                    p.iter().fold(VfsOperations::all(), |ops, s| match s.as_str() {
-                        "none" => VfsOperations::empty(),
-                        "all" => VfsOperations::all(),
-                        "-mkdir" => ops - VfsOperations::MK_DIR,
-                        "-rmdir" => ops - VfsOperations::RM_DIR,
-                        "-del" => ops - VfsOperations::DEL,
-                        "-ren" => ops - VfsOperations::RENAME,
-                        "-md5" => ops - VfsOperations::MD5,
-                        "-get" => ops - VfsOperations::GET,
-                        "-put" => ops - VfsOperations::PUT,
-                        "-list" => ops - VfsOperations::LIST,
-                        "+mkdir" => ops | VfsOperations::MK_DIR,
-                        "+rmdir" => ops | VfsOperations::RM_DIR,
-                        "+del" => ops | VfsOperations::DEL,
-                        "+ren" => ops | VfsOperations::RENAME,
-                        "+md5" => ops | VfsOperations::MD5,
-                        "+get" => ops | VfsOperations::GET,
-                        "+put" => ops | VfsOperations::PUT,
-                        "+list" => ops | VfsOperations::LIST,
-                        _ => ops,
-                    })
+                    p.iter()
+                        .fold(VfsOperations::all(), |ops, s| match s.as_str() {
+                            "none" => VfsOperations::empty(),
+                            "all" => VfsOperations::all(),
+                            "-mkdir" => ops - VfsOperations::MK_DIR,
+                            "-rmdir" => ops - VfsOperations::RM_DIR,
+                            "-del" => ops - VfsOperations::DEL,
+                            "-ren" => ops - VfsOperations::RENAME,
+                            "-md5" => ops - VfsOperations::MD5,
+                            "-get" => ops - VfsOperations::GET,
+                            "-put" => ops - VfsOperations::PUT,
+                            "-list" => ops - VfsOperations::LIST,
+                            "+mkdir" => ops | VfsOperations::MK_DIR,
+                            "+rmdir" => ops | VfsOperations::RM_DIR,
+                            "+del" => ops | VfsOperations::DEL,
+                            "+ren" => ops | VfsOperations::RENAME,
+                            "+md5" => ops | VfsOperations::MD5,
+                            "+get" => ops | VfsOperations::GET,
+                            "+put" => ops | VfsOperations::PUT,
+                            "+list" => ops | VfsOperations::LIST,
+                            _ => ops,
+                        })
                 }),
                 allowed_mime_types: None,
                 root: u.root.map(PathBuf::from),

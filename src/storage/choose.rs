@@ -101,7 +101,11 @@ impl StorageBackend<User> for ChoosingVfs {
         }
     }
 
-    async fn metadata<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<Self::Metadata> {
+    async fn metadata<P: AsRef<Path> + Send + Debug>(
+        &self,
+        user: &User,
+        path: P,
+    ) -> storage::Result<Self::Metadata> {
         match &self.inner {
             InnerVfs::Cloud(i) => i.metadata(user, path).await.map(SbeMeta::Cloud),
             InnerVfs::File(i) => i.metadata(user, path).await.map(SbeMeta::File),
@@ -199,7 +203,10 @@ impl StorageBackend<User> for ChoosingVfs {
     //     }
     // }
 
-    async fn put<P: AsRef<Path> + Send + Debug, R: tokio::io::AsyncRead + Send + Sync + Unpin + 'static>(
+    async fn put<
+        P: AsRef<Path> + Send + Debug,
+        R: tokio::io::AsyncRead + Send + Sync + Unpin + 'static,
+    >(
         &self,
         user: &User,
         input: R,
@@ -212,35 +219,56 @@ impl StorageBackend<User> for ChoosingVfs {
         }
     }
 
-    async fn del<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<()> {
+    async fn del<P: AsRef<Path> + Send + Debug>(
+        &self,
+        user: &User,
+        path: P,
+    ) -> storage::Result<()> {
         match &self.inner {
             InnerVfs::Cloud(i) => i.del(user, path).await,
             InnerVfs::File(i) => i.del(user, path).await,
         }
     }
 
-    async fn mkd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<()> {
+    async fn mkd<P: AsRef<Path> + Send + Debug>(
+        &self,
+        user: &User,
+        path: P,
+    ) -> storage::Result<()> {
         match &self.inner {
             InnerVfs::Cloud(i) => i.mkd(user, path).await,
             InnerVfs::File(i) => i.mkd(user, path).await,
         }
     }
 
-    async fn rename<P: AsRef<Path> + Send + Debug>(&self, user: &User, from: P, to: P) -> storage::Result<()> {
+    async fn rename<P: AsRef<Path> + Send + Debug>(
+        &self,
+        user: &User,
+        from: P,
+        to: P,
+    ) -> storage::Result<()> {
         match &self.inner {
             InnerVfs::Cloud(i) => i.rename(user, from, to).await,
             InnerVfs::File(i) => i.rename(user, from, to).await,
         }
     }
 
-    async fn rmd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<()> {
+    async fn rmd<P: AsRef<Path> + Send + Debug>(
+        &self,
+        user: &User,
+        path: P,
+    ) -> storage::Result<()> {
         match &self.inner {
             InnerVfs::Cloud(i) => i.rmd(user, path).await,
             InnerVfs::File(i) => i.rmd(user, path).await,
         }
     }
 
-    async fn cwd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<()> {
+    async fn cwd<P: AsRef<Path> + Send + Debug>(
+        &self,
+        user: &User,
+        path: P,
+    ) -> storage::Result<()> {
         match &self.inner {
             InnerVfs::Cloud(i) => i.cwd(user, path).await,
             InnerVfs::File(i) => i.cwd(user, path).await,

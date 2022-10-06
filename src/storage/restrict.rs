@@ -29,11 +29,19 @@ impl StorageBackend<User> for RestrictingVfs {
         self.delegate.supported_features()
     }
 
-    async fn metadata<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<Self::Metadata> {
+    async fn metadata<P: AsRef<Path> + Send + Debug>(
+        &self,
+        user: &User,
+        path: P,
+    ) -> storage::Result<Self::Metadata> {
         self.delegate.metadata(user, path).await
     }
 
-    async fn md5<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<String>
+    async fn md5<P: AsRef<Path> + Send + Debug>(
+        &self,
+        user: &User,
+        path: P,
+    ) -> storage::Result<String>
     where
         P: AsRef<Path> + Send + Debug,
     {
@@ -114,7 +122,10 @@ impl StorageBackend<User> for RestrictingVfs {
         }
     }
 
-    async fn put<P: AsRef<Path> + Send + Debug, R: tokio::io::AsyncRead + Send + Sync + Unpin + 'static>(
+    async fn put<
+        P: AsRef<Path> + Send + Debug,
+        R: tokio::io::AsyncRead + Send + Sync + Unpin + 'static,
+    >(
         &self,
         user: &User,
         input: R,
@@ -128,7 +139,11 @@ impl StorageBackend<User> for RestrictingVfs {
         }
     }
 
-    async fn del<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<()> {
+    async fn del<P: AsRef<Path> + Send + Debug>(
+        &self,
+        user: &User,
+        path: P,
+    ) -> storage::Result<()> {
         if user.vfs_permissions.contains(VfsOperations::DEL) {
             self.delegate.del(user, path).await
         } else {
@@ -136,7 +151,11 @@ impl StorageBackend<User> for RestrictingVfs {
         }
     }
 
-    async fn mkd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<()> {
+    async fn mkd<P: AsRef<Path> + Send + Debug>(
+        &self,
+        user: &User,
+        path: P,
+    ) -> storage::Result<()> {
         if user.vfs_permissions.contains(VfsOperations::MK_DIR) {
             self.delegate.mkd(user, path).await
         } else {
@@ -144,7 +163,12 @@ impl StorageBackend<User> for RestrictingVfs {
         }
     }
 
-    async fn rename<P: AsRef<Path> + Send + Debug>(&self, user: &User, from: P, to: P) -> storage::Result<()> {
+    async fn rename<P: AsRef<Path> + Send + Debug>(
+        &self,
+        user: &User,
+        from: P,
+        to: P,
+    ) -> storage::Result<()> {
         if user.vfs_permissions.contains(VfsOperations::RENAME) {
             self.delegate.rename(user, from, to).await
         } else {
@@ -152,7 +176,11 @@ impl StorageBackend<User> for RestrictingVfs {
         }
     }
 
-    async fn rmd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<()> {
+    async fn rmd<P: AsRef<Path> + Send + Debug>(
+        &self,
+        user: &User,
+        path: P,
+    ) -> storage::Result<()> {
         if user.vfs_permissions.contains(VfsOperations::RM_DIR) {
             self.delegate.rmd(user, path).await
         } else {
@@ -160,7 +188,11 @@ impl StorageBackend<User> for RestrictingVfs {
         }
     }
 
-    async fn cwd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> storage::Result<()> {
+    async fn cwd<P: AsRef<Path> + Send + Debug>(
+        &self,
+        user: &User,
+        path: P,
+    ) -> storage::Result<()> {
         self.delegate.cwd(user, path).await
     }
 }

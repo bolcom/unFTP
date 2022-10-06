@@ -88,7 +88,10 @@ where
 
             let tokens_length = tokens.len();
 
-            let size = tokens.iter().fold(tokens_length - 1, |acc, &x| acc + x.len()) - 1;
+            let size = tokens
+                .iter()
+                .fold(tokens_length - 1, |acc, &x| acc + x.len())
+                - 1;
 
             let mut path_string = OsString::with_capacity(size);
 
@@ -125,7 +128,11 @@ where
         self.inner.supported_features()
     }
 
-    async fn metadata<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> Result<Self::Metadata> {
+    async fn metadata<P: AsRef<Path> + Send + Debug>(
+        &self,
+        user: &User,
+        path: P,
+    ) -> Result<Self::Metadata> {
         let path = Self::new_path(user, path.as_ref());
         self.inner.metadata(user, path).await
     }
@@ -168,7 +175,13 @@ where
         self.inner.nlst(user, path).await
     }
 
-    async fn get_into<'a, P, W: ?Sized>(&self, user: &User, path: P, start_pos: u64, output: &'a mut W) -> Result<u64>
+    async fn get_into<'a, P, W: ?Sized>(
+        &self,
+        user: &User,
+        path: P,
+        start_pos: u64,
+        output: &'a mut W,
+    ) -> Result<u64>
     where
         W: tokio::io::AsyncWrite + Unpin + Sync + Send,
         P: AsRef<Path> + Send + Debug,
@@ -187,7 +200,10 @@ where
         self.inner.get(user, path, start_pos).await
     }
 
-    async fn put<P: AsRef<Path> + Send + Debug, R: tokio::io::AsyncRead + Send + Sync + Unpin + 'static>(
+    async fn put<
+        P: AsRef<Path> + Send + Debug,
+        R: tokio::io::AsyncRead + Send + Sync + Unpin + 'static,
+    >(
         &self,
         user: &User,
         input: R,
@@ -208,7 +224,12 @@ where
         self.inner.mkd(user, path).await
     }
 
-    async fn rename<P: AsRef<Path> + Send + Debug>(&self, user: &User, from: P, to: P) -> Result<()> {
+    async fn rename<P: AsRef<Path> + Send + Debug>(
+        &self,
+        user: &User,
+        from: P,
+        to: P,
+    ) -> Result<()> {
         let from = Self::new_path(user, from.as_ref());
         let to = Self::new_path(user, to.as_ref());
         self.inner.rename(user, from, to).await

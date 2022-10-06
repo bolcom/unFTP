@@ -109,7 +109,10 @@ impl HttpHandler {
 
     async fn ftp_probe(&self) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         let connect_to_addr = if self.ftp_addr.ip().is_unspecified() {
-            SocketAddr::new(IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)), self.ftp_addr.port())
+            SocketAddr::new(
+                IpAddr::V4(Ipv4Addr::new(127, 0, 0, 1)),
+                self.ftp_addr.port(),
+            )
         } else {
             self.ftp_addr
         };

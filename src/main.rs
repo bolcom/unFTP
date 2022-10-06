@@ -28,7 +28,9 @@ use libunftp::{
     auth as auth_spi,
     notification::{DataListener, PresenceListener},
     options,
-    options::{FailedLoginsBlock, FailedLoginsPolicy, FtpsClientAuth, FtpsRequired, SiteMd5, TlsFlags},
+    options::{
+        FailedLoginsBlock, FailedLoginsPolicy, FtpsClientAuth, FtpsRequired, SiteMd5, TlsFlags,
+    },
     storage::StorageBackend,
     Server,
 };
@@ -64,8 +66,8 @@ fn make_auth(
     }?;
     auth.set_usr_detail(match m.value_of(args::USR_JSON_PATH) {
         Some(path) => {
-            let json: String =
-                fs::read_to_string(path).map_err(|e| format!("could not load user file '{}': {}", path, e))?;
+            let json: String = fs::read_to_string(path)
+                .map_err(|e| format!("could not load user file '{}': {}", path, e))?;
             Box::new(JsonUserProvider::from_json(json.as_str())?)
         }
         None => Box::new(DefaultUserProvider {}),
@@ -81,7 +83,9 @@ fn make_pam_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
     #[cfg(not(feature = "pam_auth"))]
     {
         let _ = m;
-        Err(String::from("the pam authentication module was disabled at build time"))
+        Err(String::from(
+            "the pam authentication module was disabled at build time",
+        ))
     }
 
     #[cfg(feature = "pam_auth")]
@@ -90,7 +94,10 @@ fn make_pam_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
             let pam_auth = pam::PamAuthenticator::new(service);
             return Ok(LookupAuthenticator::new(pam_auth));
         }
-        Err(format!("--{} is required when using pam auth", args::AUTH_PAM_SERVICE))
+        Err(format!(
+            "--{} is required when using pam auth",
+            args::AUTH_PAM_SERVICE
+        ))
     }
 }
 
@@ -99,7 +106,9 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
     #[cfg(not(feature = "rest_auth"))]
     {
         let _ = m;
-        Err(format!("the rest authentication module was disabled at build time"))
+        Err(format!(
+            "the rest authentication module was disabled at build time"
+        ))
     }
 
     #[cfg(feature = "rest_auth")]
@@ -112,24 +121,28 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
         ) {
             (Some(url), Some(regex), Some(selector), Some(method)) => {
                 if method.to_uppercase() != "GET" && m.value_of(args::AUTH_REST_BODY).is_none() {
-                    return Err("REST authenticator error: no body provided for rest request".to_string());
+                    return Err(
+                        "REST authenticator error: no body provided for rest request".to_string(),
+                    );
                 }
 
-                let authenticator: unftp_auth_rest::RestAuthenticator = match unftp_auth_rest::Builder::new()
-                    .with_username_placeholder("{USER}".to_string())
-                    .with_password_placeholder("{PASS}".to_string())
-                    .with_url(String::from(url))
-                    .with_method(
-                        hyper::Method::from_str(method).map_err(|e| format!("error creating REST auth: {}", e))?,
-                    )
-                    .with_body(String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or("")))
-                    .with_selector(String::from(selector))
-                    .with_regex(String::from(regex))
-                    .build()
-                {
-                    Ok(res) => res,
-                    Err(e) => return Err(format!("Unable to create RestAuthenticator: {}", e)),
-                };
+                let authenticator: unftp_auth_rest::RestAuthenticator =
+                    match unftp_auth_rest::Builder::new()
+                        .with_username_placeholder("{USER}".to_string())
+                        .with_password_placeholder("{PASS}".to_string())
+                        .with_url(String::from(url))
+                        .with_method(
+                            hyper::Method::from_str(method)
+                                .map_err(|e| format!("error creating REST auth: {}", e))?,
+                        )
+                        .with_body(String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or("")))
+                        .with_selector(String::from(selector))
+                        .with_regex(String::from(regex))
+                        .build()
+                    {
+                        Ok(res) => res,
+                        Err(e) => return Err(format!("Unable to create RestAuthenticator: {}", e)),
+                    };
 
                 Ok(LookupAuthenticator::new(authenticator))
             }
@@ -142,22 +155,28 @@ fn make_json_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
     #[cfg(not(feature = "jsonfile_auth"))]
     {
         let _ = m;
-        Err(format!("the jsonfile authentication module was disabled at build time"))
+        Err(format!(
+            "the jsonfile authentication module was disabled at build time"
+        ))
     }
 
     #[cfg(feature = "jsonfile_auth")]
     {
-        let path = m
-            .value_of(args::AUTH_JSON_PATH)
-            .ok_or_else(|| "please provide the json credentials file by specifying auth-json-path".to_string())?;
+        let path = m.value_of(args::AUTH_JSON_PATH).ok_or_else(|| {
+            "please provide the json credentials file by specifying auth-json-path".to_string()
+        })?;
 
-        let authenticator = unftp_auth_jsonfile::JsonFileAuthenticator::from_file(path).map_err(|e| e.to_string())?;
+        let authenticator = unftp_auth_jsonfile::JsonFileAuthenticator::from_file(path)
+            .map_err(|e| e.to_string())?;
         Ok(LookupAuthenticator::new(authenticator))
     }
 }
 
-type VfsProducer =
-    Box<dyn (Fn() -> storage::RooterVfs<storage::RestrictingVfs, auth::User, storage::SbeMeta>) + Send + Sync>;
+type VfsProducer = Box<
+    dyn (Fn() -> storage::RooterVfs<storage::RestrictingVfs, auth::User, storage::SbeMeta>)
+        + Send
+        + Sync,
+>;
 
 // Creates the filesystem storage back-end
 fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> VfsProducer {
@@ -177,17 +196,35 @@ fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> VfsProducer {
 fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer, String> {
     let bucket: String = m
         .value_of(args::GCS_BUCKET)
-        .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_BUCKET))?
+        .ok_or_else(|| {
+            format!(
+                "--{} is required when using storage type gcs",
+                args::GCS_BUCKET
+            )
+        })?
         .into();
     let base_url: String = m
         .value_of(args::GCS_BASE_URL)
-        .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_BUCKET))?
+        .ok_or_else(|| {
+            format!(
+                "--{} is required when using storage type gcs",
+                args::GCS_BUCKET
+            )
+        })?
         .into();
     let root_dir: PathBuf = m
         .value_of(args::GCS_ROOT)
-        .ok_or_else(|| format!("--{} is required when using storage type gcs", args::GCS_ROOT))?
+        .ok_or_else(|| {
+            format!(
+                "--{} is required when using storage type gcs",
+                args::GCS_ROOT
+            )
+        })?
         .into();
-    let auth_method: AuthMethod = match (m.value_of(args::GCS_SERVICE_ACCOUNT), m.value_of(args::GCS_KEY_FILE)) {
+    let auth_method: AuthMethod = match (
+        m.value_of(args::GCS_SERVICE_ACCOUNT),
+        m.value_of(args::GCS_KEY_FILE),
+    ) {
         (None, None) => AuthMethod::WorkloadIdentity(None),
         (Some(_), Some(_)) => {
             return Err(format!(
@@ -199,8 +236,12 @@ fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer
         (Some(sevice_account), None) => AuthMethod::WorkloadIdentity(Some(sevice_account.into())),
         (None, Some(key_file_path)) => {
             let key_file: PathBuf = key_file_path.into();
-            let service_account_key = std::fs::read(key_file)
-                .map_err(|e| format!("could not load GCS back-end service account key from file: {}", e))?;
+            let service_account_key = std::fs::read(key_file).map_err(|e| {
+                format!(
+                    "could not load GCS back-end service account key from file: {}",
+                    e
+                )
+            })?;
             AuthMethod::ServiceAccountKey(service_account_key)
         }
     };
@@ -231,7 +272,8 @@ fn start_ftp(
     shutdown: tokio::sync::broadcast::Receiver<()>,
     done: tokio::sync::mpsc::Sender<()>,
 ) -> Result<(), String> {
-    let event_dispatcher = notify::create_event_dispatcher(Arc::new(log.new(o!("module" => "storage"))), m)?;
+    let event_dispatcher =
+        notify::create_event_dispatcher(Arc::new(log.new(o!("module" => "storage"))), m)?;
 
     match m.value_of(args::STORAGE_BACKEND_TYPE) {
         None | Some("filesystem") => start_ftp_with_storage(
@@ -260,7 +302,12 @@ fn resolve_dns(log: &Logger, dns_name: &str) -> Result<Ipv4Addr, String> {
     slog::info!(log, "Resolving domain name '{}'", dns_name);
     // Normalize the address. If lookup_host (https://doc.rust-lang.org/1.6.0/std/net/fn.lookup_host.html)
     // is stable we won't need this.
-    let host_port = dns_name.split(':').take(1).map(|s| format!("{}:21", s)).next().unwrap();
+    let host_port = dns_name
+        .split(':')
+        .take(1)
+        .map(|s| format!("{}:21", s))
+        .next()
+        .unwrap();
     let mut addrs_iter = host_port.to_socket_addrs().unwrap();
     loop {
         match addrs_iter.next() {
@@ -274,7 +321,10 @@ fn resolve_dns(log: &Logger, dns_name: &str) -> Result<Ipv4Addr, String> {
     }
 }
 
-fn get_passive_host_option(log: &Logger, arg_matches: &ArgMatches) -> Result<options::PassiveHost, String> {
+fn get_passive_host_option(
+    log: &Logger,
+    arg_matches: &ArgMatches,
+) -> Result<options::PassiveHost, String> {
     let passive_host_str = arg_matches.value_of(args::PASSIVE_HOST);
     match passive_host_str {
         None | Some("from-connection") => Ok(options::PassiveHost::FromConnection),
@@ -321,7 +371,9 @@ where
     let start_port: u16 = ports[0]
         .parse()
         .map_err(|_| "start of port range needs to be numeric")?;
-    let end_port: u16 = ports[1].parse().map_err(|_| "end of port range needs to be numeric")?;
+    let end_port: u16 = ports[1]
+        .parse()
+        .map_err(|_| "end of port range needs to be numeric")?;
 
     info!(log, "Using passive port range {}..{}", start_port, end_port);
 
@@ -329,16 +381,21 @@ where
     info!(log, "Using passive host option '{:?}'", passive_host);
 
     let idle_timeout_str = arg_matches.value_of(args::IDLE_SESSION_TIMEOUT).unwrap();
-    let idle_timeout = String::from(idle_timeout_str).parse::<u64>().map_err(move |e| {
-        format!(
-            "unable to parse given value '{}' for --{}: {}. Please use a numeric value",
-            idle_timeout_str,
-            args::IDLE_SESSION_TIMEOUT,
-            e
-        )
-    })?;
+    let idle_timeout = String::from(idle_timeout_str)
+        .parse::<u64>()
+        .map_err(move |e| {
+            format!(
+                "unable to parse given value '{}' for --{}: {}. Please use a numeric value",
+                idle_timeout_str,
+                args::IDLE_SESSION_TIMEOUT,
+                e
+            )
+        })?;
 
-    info!(log, "Idle session timeout is set to {} seconds", idle_timeout);
+    info!(
+        log,
+        "Idle session timeout is set to {} seconds", idle_timeout
+    );
 
     let md5_setting = match (
         arg_matches.value_of(args::STORAGE_BACKEND_TYPE),
@@ -350,7 +407,10 @@ where
     };
 
     let hostname = get_host_name();
-    let instance_name = arg_matches.value_of(args::INSTANCE_NAME).unwrap().to_owned();
+    let instance_name = arg_matches
+        .value_of(args::INSTANCE_NAME)
+        .unwrap()
+        .to_owned();
 
     let authenticator = make_auth(arg_matches)?;
 
@@ -380,33 +440,40 @@ where
 
     // Setup proxy protocol mode.
     if let Some(port) = arg_matches.value_of(args::PROXY_EXTERNAL_CONTROL_PORT) {
-        let port_num = String::from(port)
-            .parse::<u16>()
-            .map_err(|e| format!("unable to parse proxy protocol external control port {}: {}", port, e))?;
+        let port_num = String::from(port).parse::<u16>().map_err(|e| {
+            format!(
+                "unable to parse proxy protocol external control port {}: {}",
+                port, e
+            )
+        })?;
         server = server.proxy_protocol_mode(port_num);
     }
 
     // Set up failed logins policy (anti-bruteforce)
     if let Some(arg) = arg_matches.value_of(args::FAILED_LOGINS_POLICY) {
         let max_attempts_str = arg_matches.value_of(args::FAILED_MAX_ATTEMPTS).unwrap();
-        let max_attempts = String::from(max_attempts_str).parse::<u32>().map_err(move |e| {
-            format!(
-                "unable to parse given value '{}' for --{}: {}. Please use a numeric value",
-                max_attempts_str,
-                args::FAILED_MAX_ATTEMPTS,
-                e
-            )
-        })?;
+        let max_attempts = String::from(max_attempts_str)
+            .parse::<u32>()
+            .map_err(move |e| {
+                format!(
+                    "unable to parse given value '{}' for --{}: {}. Please use a numeric value",
+                    max_attempts_str,
+                    args::FAILED_MAX_ATTEMPTS,
+                    e
+                )
+            })?;
 
         let expires_after_str = arg_matches.value_of(args::FAILED_EXPIRE_AFTER).unwrap();
-        let expires_after = String::from(expires_after_str).parse::<u32>().map_err(move |e| {
-            format!(
-                "unable to parse given value '{}' for --{}: {}. Please use a numeric value",
-                expires_after_str,
-                args::FAILED_EXPIRE_AFTER,
-                e
-            )
-        })?;
+        let expires_after = String::from(expires_after_str)
+            .parse::<u32>()
+            .map_err(move |e| {
+                format!(
+                    "unable to parse given value '{}' for --{}: {}. Please use a numeric value",
+                    expires_after_str,
+                    args::FAILED_EXPIRE_AFTER,
+                    e
+                )
+            })?;
 
         let policy = match arg.parse::<args::FailedLoginsPolicyType>()? {
             args::FailedLoginsPolicyType::ip => {
@@ -466,7 +533,9 @@ where
                     None => libunftp::options::FtpsRequired::None,
                     Some(str) => match str.parse::<args::FtpsRequiredType>()? {
                         args::FtpsRequiredType::all => libunftp::options::FtpsRequired::All,
-                        args::FtpsRequiredType::accounts => libunftp::options::FtpsRequired::Accounts,
+                        args::FtpsRequiredType::accounts => {
+                            libunftp::options::FtpsRequired::Accounts
+                        }
                         args::FtpsRequiredType::none => libunftp::options::FtpsRequired::None,
                     },
                 };
@@ -480,7 +549,9 @@ where
             info!(log, "FTPS requirement for clients on data channel: {}", ftps_required_data; "mode" => format!("{:?}", ftps_required_data));
             server
                 .ftps_required(ftps_required_control, ftps_required_data)
-                .ftps_tls_flags(TlsFlags::V1_2 | TlsFlags::RESUMPTION_SESS_ID | TlsFlags::RESUMPTION_TICKETS)
+                .ftps_tls_flags(
+                    TlsFlags::V1_2 | TlsFlags::RESUMPTION_SESS_ID | TlsFlags::RESUMPTION_TICKETS,
+                )
         }
         (Some(_), None) | (None, Some(_)) => {
             warn!(
@@ -517,15 +588,25 @@ where
         }
         (FtpsClientAuthType::request, Some(file)) => {
             if !PathBuf::from(file).exists() {
-                return Err(format!("file specified for --{} not found", args::FTPS_TRUST_STORE));
+                return Err(format!(
+                    "file specified for --{} not found",
+                    args::FTPS_TRUST_STORE
+                ));
             }
-            server.ftps_client_auth(FtpsClientAuth::Request).ftps_trust_store(file)
+            server
+                .ftps_client_auth(FtpsClientAuth::Request)
+                .ftps_trust_store(file)
         }
         (FtpsClientAuthType::require, Some(file)) => {
             if !PathBuf::from(file).exists() {
-                return Err(format!("file specified for --{} not found", args::FTPS_TRUST_STORE));
+                return Err(format!(
+                    "file specified for --{} not found",
+                    args::FTPS_TRUST_STORE
+                ));
             }
-            server.ftps_client_auth(FtpsClientAuth::Require).ftps_trust_store(file)
+            server
+                .ftps_client_auth(FtpsClientAuth::Require)
+                .ftps_trust_store(file)
         }
     };
 
@@ -560,9 +641,10 @@ where
 struct ExitSignal(pub &'static str);
 
 async fn listen_for_signals() -> Result<ExitSignal, String> {
-    let mut term_sig =
-        signal(SignalKind::terminate()).map_err(|e| format!("could not listen for TERM signals: {}", e))?;
-    let mut int_sig = signal(SignalKind::interrupt()).map_err(|e| format!("Could not listen for INT signal: {}", e))?;
+    let mut term_sig = signal(SignalKind::terminate())
+        .map_err(|e| format!("could not listen for TERM signals: {}", e))?;
+    let mut int_sig = signal(SignalKind::interrupt())
+        .map_err(|e| format!("Could not listen for INT signal: {}", e))?;
 
     let sig_name = tokio::select! {
         Some(_signal) = term_sig.recv() => {
@@ -575,7 +657,11 @@ async fn listen_for_signals() -> Result<ExitSignal, String> {
     Ok(ExitSignal(sig_name))
 }
 
-async fn main_task(arg_matches: ArgMatches, log: &Logger, root_log: &Logger) -> Result<ExitSignal, String> {
+async fn main_task(
+    arg_matches: ArgMatches,
+    log: &Logger,
+    root_log: &Logger,
+) -> Result<ExitSignal, String> {
     let (shutdown_sender, http_receiver) = tokio::sync::broadcast::channel(1);
     let (http_done_sender, mut shutdown_done_received) = tokio::sync::mpsc::channel(1);
     let ftp_done_sender = http_done_sender.clone();
@@ -590,7 +676,9 @@ async fn main_task(arg_matches: ArgMatches, log: &Logger, root_log: &Logger) -> 
         let addr = String::from(addr);
         let log = log.clone();
         tokio::spawn(async move {
-            if let Err(e) = http::start(&log, &addr, ftp_addr, http_receiver, http_done_sender).await {
+            if let Err(e) =
+                http::start(&log, &addr, ftp_addr, http_receiver, http_done_sender).await
+            {
                 error!(log, "HTTP Server error: {}", e)
             }
         });
