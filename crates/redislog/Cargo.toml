@@ -13,7 +13,7 @@ repository = "https://github.com/bolcom/unFTP/tree/master/crates/redislog"
 readme = "README.md"
 
 [dependencies]
-chrono = "0.4.22"
+chrono = "0.4.23"
 r2d2 = "0.8.10"
 r2d2_redis = "0.14.0"
 redis = "0.20.2"

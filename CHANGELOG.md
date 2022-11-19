@@ -1,5 +1,11 @@
 # Changelog
 
+## 2022-09-25 unftp v0.13.4
+
+- Fixes from [libunftp v0.18.7](https://github.com/bolcom/libunftp/releases/tag/libunftp-0.18.7)
+- Upgraded dependencies
+- Upgraded to Rust 1.65.0
+
 ## 2022-09-25 unftp v0.13.3
 
 - [#126](https://github.com/bolcom/unFTP/issues/126) Now support Elliptic Curve Private keys

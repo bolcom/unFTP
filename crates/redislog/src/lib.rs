@@ -179,7 +179,9 @@ impl Builder {
     pub fn build(self) -> Result<Logger, Error> {
         // TODO: Get something that works on windows too
         fn get_host_name() -> String {
-            let output = Command::new("hostname").output().expect("failed to execute process");
+            let output = Command::new("hostname")
+                .output()
+                .expect("failed to execute process");
             String::from_utf8_lossy(&output.stdout).replace('\n', "")
         }
 
