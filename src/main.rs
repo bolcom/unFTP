@@ -68,30 +68,27 @@ fn load_user_file(
     let is_gz = n > 2 && magic[0] == 0x1F && magic[1] == 0x8B && magic[2] == 0x8;
     // the 3 magic bytes translate to "H4sI" in base64
     let is_base64gz =
-        n > 2 && magic[0] == b'H' && magic[1] == b'4' && magic[2] == b's' && magic[3] == b'I';
+        n > 3 && magic[0] == b'H' && magic[1] == b'4' && magic[2] == b's' && magic[3] == b'I';
 
     f.rewind()?;
-    match is_gz | is_base64gz {
-        true => {
-            let mut gzdata: Vec<u8> = Vec::new();
-            if is_base64gz {
-                let mut b = Vec::new();
-                f.read_to_end(&mut b)?;
-                b.retain(|&x| x != b'\n' && x != b'\r');
-                gzdata = base64::decode(b)?;
-            } else {
-                f.read_to_end(&mut gzdata)?;
-            }
-            let mut d = GzDecoder::new(&gzdata[..]);
-            let mut s = String::new();
-            d.read_to_string(&mut s)?;
-            Ok(s)
+    if is_gz | is_base64gz {
+        let mut gzdata: Vec<u8> = Vec::new();
+        if is_base64gz {
+            let mut b = Vec::new();
+            f.read_to_end(&mut b)?;
+            b.retain(|&x| x != b'\n' && x != b'\r');
+            gzdata = base64::decode(b)?;
+        } else {
+            f.read_to_end(&mut gzdata)?;
         }
-        false => {
-            let mut s = String::new();
-            f.read_to_string(&mut s)?;
-            Ok(s)
-        }
+        let mut d = GzDecoder::new(&gzdata[..]);
+        let mut s = String::new();
+        d.read_to_string(&mut s)?;
+        Ok(s)
+    } else {
+        let mut s = String::new();
+        f.read_to_string(&mut s)?;
+        Ok(s)
     }
 }
 
