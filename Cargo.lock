@@ -2552,6 +2552,7 @@ dependencies = [
  "built",
  "clap",
  "console-subscriber",
+ "flate2",
  "futures",
  "http",
  "hyper",
@@ -2578,13 +2579,14 @@ dependencies = [
 
 [[package]]
 name = "unftp-auth-jsonfile"
-version = "0.2.1"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6c8f8fd8aa9b51024f216d04e134fec92cab7142814e2c1362ab19a29c4b715c"
+checksum = "b0a7827715a2cae90cded7b9e460dbe1c4a171fee2f4452ebd7346ab2047c97f"
 dependencies = [
  "async-trait",
  "base64",
  "bytes",
+ "flate2",
  "ipnet",
  "iprange",
  "libunftp",
