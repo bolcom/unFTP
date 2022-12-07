@@ -131,10 +131,10 @@ In the above configuration we use:
 
 ## Compressing configuration files
 
-Since unFTP v0.14.0, the `auth-json-path` and `usr-json-path` also supports JSON files that are compressed with gzip, or gzip+base64.
+Since unFTP v0.14.0, the `auth-json-path` and `usr-json-path` also support JSON files that are compressed with gzip, or gzip+base64-encoded.
 
 This comes in handy when your storage is limited, and you have many users in your configuration.
 When running unFTP as a container in a [Kubernetes](https://kubernetes.io/) Pod for example.
 In such a setup you may have your JSON credentials file mapped into your pod via a [ConfigMap](https://kubernetes.io/docs/concepts/configuration/configmap/) or a [Secret](https://kubernetes.io/docs/concepts/configuration/secret/).
 The size of these resources is limited.
-By compressing the file you can grow to a larger number of users before you require a database.
+By compressing the file you can grow to a larger number of users before you technically require an external database solution.
