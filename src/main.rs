@@ -24,6 +24,7 @@ use crate::{
 };
 use auth::LookupAuthenticator;
 use clap::ArgMatches;
+use flate2::read::GzDecoder;
 use libunftp::{
     auth as auth_spi,
     notification::{DataListener, PresenceListener},
@@ -35,6 +36,7 @@ use libunftp::{
     Server,
 };
 use slog::*;
+use std::io::{Read, Seek};
 use std::{
     env, fs,
     net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs},
@@ -54,6 +56,42 @@ use tokio::{
 use unftp_auth_pam as pam;
 use unftp_sbe_gcs::options::AuthMethod;
 
+fn load_user_file(
+    path: &str,
+) -> Result<std::string::String, Box<dyn std::error::Error + Send + Sync + 'static>> {
+    let mut f = fs::File::open(&path)?;
+
+    // The user file can be plaintext, gzipped, or gzipped+base64-encoded
+    // The gzip-base64 format is useful for overcoming configmap size limits in Kubernetes
+    let mut magic: [u8; 4] = [0; 4];
+    let n = f.read(&mut magic[..])?;
+    let is_gz = n > 2 && magic[0] == 0x1F && magic[1] == 0x8B && magic[2] == 0x8;
+    // the 3 magic bytes translate to "H4sI" in base64
+    let is_base64gz =
+        n > 3 && magic[0] == b'H' && magic[1] == b'4' && magic[2] == b's' && magic[3] == b'I';
+
+    f.rewind()?;
+    if is_gz | is_base64gz {
+        let mut gzdata: Vec<u8> = Vec::new();
+        if is_base64gz {
+            let mut b = Vec::new();
+            f.read_to_end(&mut b)?;
+            b.retain(|&x| x != b'\n' && x != b'\r');
+            gzdata = base64::decode(b)?;
+        } else {
+            f.read_to_end(&mut gzdata)?;
+        }
+        let mut d = GzDecoder::new(&gzdata[..]);
+        let mut s = String::new();
+        d.read_to_string(&mut s)?;
+        Ok(s)
+    } else {
+        let mut s = String::new();
+        f.read_to_string(&mut s)?;
+        Ok(s)
+    }
+}
+
 fn make_auth(
     m: &clap::ArgMatches,
 ) -> Result<Arc<dyn auth_spi::Authenticator<auth::User> + Send + Sync + 'static>, String> {
@@ -66,7 +104,7 @@ fn make_auth(
     }?;
     auth.set_usr_detail(match m.value_of(args::USR_JSON_PATH) {
         Some(path) => {
-            let json: String = fs::read_to_string(path)
+            let json: String = load_user_file(path)
                 .map_err(|e| format!("could not load user file '{}': {}", path, e))?;
             Box::new(JsonUserProvider::from_json(json.as_str())?)
         }

@@ -85,6 +85,10 @@ release-artifacts: # Generates artifacts for a release
 publish: # Publishes to crates.io
 	cargo publish --verbose --features rest_auth,jsonfile_auth,cloud_storage
 
+.PHONY: site-preview
+site-preview:
+	doctave serve
+
 .PHONY: site
 site: # Publishes to the documentation to Github Pages and Netlify
 	sed -i '' 's|base_path: /|base_path: /unFTP|g' doctave.yaml
