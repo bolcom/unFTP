@@ -16,21 +16,21 @@ you can choose between a statically linked image (no PAM integration) or a dynam
 Linux (static, no PAM):
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.13.4/unftp_x86_64-unknown-linux-musl \
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.0/unftp_x86_64-unknown-linux-musl \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
 Linux (dynamic with PAM support):
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.13.4/unftp_x86_64-unknown-linux-gnu \
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.0/unftp_x86_64-unknown-linux-gnu \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
 macOS:
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.13.4/unftp_x86_64-apple-darwin \
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.0/unftp_x86_64-apple-darwin \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
