@@ -1,6 +1,6 @@
 # Changelog
 
-## Upcoming
+## 2022-12-08 unftp v0.14.0
 
 - The JSON authentication method (`--auth-json-path`) JSON user file (`--usr-json-path`) now support gzipped or gzipped+base64-encoded gzip files.
   The compression makes it possible to fit large configuration files in a Kubernetes configmap for example.

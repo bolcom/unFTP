@@ -72,7 +72,7 @@ All of them are of type JSON object. Examples of their format are shown below.
    "payload":{
       "Startup":{
          "libunftp_version":"0.18.3",
-         "unftp_version":"v0.13.4"
+         "unftp_version":"v0.14.0"
       }
    }
 }
