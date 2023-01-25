@@ -1,5 +1,10 @@
 # Changelog
 
+## (TBD) unftp v0.14.1
+
+- Upgraded dependencies including all crates from https://github.com/bolcom/libunftp
+  The main change here is [caching of access tokens in the GCS backend](https://github.com/bolcom/libunftp/issues/384)
+
 ## 2022-12-08 unftp v0.14.0
 
 - The JSON authentication method (`--auth-json-path`) JSON user file (`--usr-json-path`) now support gzipped or gzipped+base64-encoded gzip files.
