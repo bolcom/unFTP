@@ -59,7 +59,7 @@ use unftp_sbe_gcs::options::AuthMethod;
 fn load_user_file(
     path: &str,
 ) -> Result<std::string::String, Box<dyn std::error::Error + Send + Sync + 'static>> {
-    let mut f = fs::File::open(&path)?;
+    let mut f = fs::File::open(path)?;
 
     // The user file can be plaintext, gzipped, or gzipped+base64-encoded
     // The gzip-base64 format is useful for overcoming configmap size limits in Kubernetes
