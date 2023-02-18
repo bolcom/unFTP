@@ -1,0 +1,182 @@
+name: build
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_VERSION: 1.67.1
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+  release:
+    types: [created]
+
+jobs:
+
+  format:
+    runs-on: ubuntu-latest
+    if: ${{ github.ref != 'refs/heads/master' }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+    - name: Install Rust toolchain
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: ${{ env.RUST_VERSION }}
+        override: true
+        default: true
+        components: rustfmt
+    - name: Check formatting
+      uses: actions-rs/cargo@v1
+      with:
+        command: fmt
+        args: --all -- --check
+
+  clippy:
+      runs-on: ubuntu-latest
+      if: ${{ github.ref != 'refs/heads/master' }}
+      steps:
+        - name: Checkout sources
+          uses: actions/checkout@v3
+          with:
+            persist-credentials: false
+        - name: Install rust toolchain
+          uses: actions-rs/toolchain@v1
+          with:
+            toolchain: ${{ env.RUST_VERSION }}
+            override: true
+            default: true
+            components: clippy
+        - uses: actions-rs/cargo@v1
+          with:
+            command: clippy
+            args: --all-features --workspace -- -D warnings
+
+  test:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout sources
+          uses: actions/checkout@v3
+        - name: Install rust toolchain
+          uses: actions-rs/toolchain@v1
+          with:
+            toolchain: ${{ env.RUST_VERSION }}
+            override: true
+            default: true
+            components: clippy
+        - name: Install build dependencies
+          run: sudo apt-get update && sudo apt-get install -y libpam-dev
+        - name: Run tests
+          run: cargo test --verbose  --workspace --all --all-features
+
+  build-linux-gnu:
+    runs-on: ubuntu-latest
+    name: Build for Linux (GNU)
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+          default: true
+          target: x86_64-unknown-linux-gnu
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y libpam-dev
+      - name: Build for Linux (GNU)
+        run: rustup run ${{ env.RUST_VERSION }} cargo build --no-default-features --features gnu --release --target=x86_64-unknown-linux-gnu
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Linux-gnu
+          path: target/x86_64-unknown-linux-gnu/release/unftp
+
+  build-linux-musl:
+    runs-on: ubuntu-latest
+    name: Build for Linux (MUSL)
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+          default: true
+          target: x86_64-unknown-linux-musl
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+      - name: Build for Linux (MUSL)
+        run: RUSTFLAGS="-C target-feature=+crt-static" cargo build --no-default-features --features docker --release --target=x86_64-unknown-linux-musl
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Linux-musl
+          path: target/x86_64-unknown-linux-musl/release/unftp
+
+  build-windows:
+    runs-on: windows-latest
+    name: Build for Windows
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+          default: true
+          target: x86_64-pc-windows-msvc
+      - name: Build for Windows
+        run: cargo build --release --target=x86_64-pc-windows-msvc --features rest_auth,jsonfile_auth
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Windows
+          path: target/x86_64-pc-windows-msvc/release/unftp.exe
+    continue-on-error: true # Until we fix the Windows issue. See https://github.com/bolcom/unFTP/issues/86
+  
+  build-macos-intel:
+    runs-on: macos-latest
+    name: Build for macOS (Intel)
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+          default: true
+          target: x86_64-apple-darwin
+      - name: Build for macOS (Intel)
+        run: cargo build --release --target=x86_64-apple-darwin --features rest_auth,jsonfile_auth,cloud_storage
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: macOS-intel
+          path: target/x86_64-apple-darwin/release/unftp
+
+  build-macos-m1:
+    runs-on: macos-latest
+    name: Build for macOS (M1)
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+          default: true
+          target: aarch64-apple-darwin
+      - name: Install Rosetta
+        if: runner.os == 'macOS' && runner.arch == 'arm64'
+        run: softwareupdate --install-rosetta          
+      - name: Build for macOS (M1)
+        run: cargo build --release --target=aarch64-apple-darwin --features rest_auth,jsonfile_auth,cloud_storage
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: macOS-m1
+          path: target/aarch64-apple-darwin/release/unftp
