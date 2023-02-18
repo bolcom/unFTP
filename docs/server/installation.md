@@ -16,27 +16,27 @@ you can choose between a statically linked image (no PAM integration) or a dynam
 Linux (static, no PAM):
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.0/unftp_x86_64-unknown-linux-musl \
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.1/unftp_x86_64-unknown-linux-musl \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
 Linux (dynamic with PAM support):
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.0/unftp_x86_64-unknown-linux-gnu \
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.1/unftp_x86_64-unknown-linux-gnu \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
 macOS:
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.0/unftp_x86_64-apple-darwin \
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.1/unftp_x86_64-apple-darwin \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
 ## From Source
 
-You'll need [Rust](https://rust-lang.org) 1.45 (including `cargo`) or higher to build unFTP. Then: 
+You'll need [Rust](https://rust-lang.org) 1.67.1 (including `cargo`) or higher to build unFTP. Then: 
 
 ```sh
 cargo install unftp
