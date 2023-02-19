@@ -1,0 +1,301 @@
+<!doctype html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+
+    <title>Per User Config</title>
+    <meta name="description" content="Documentation for unFTP">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
+        rel="stylesheet">
+
+    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1676813896"
+        media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1676813896"
+        media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1676813896" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1676813896"
+        media="screen" />
+
+    <script>
+        var DOCTAVE_TIMESTAMP = "1676813896";
+        var BASE_PATH = "/";
+        var color = localStorage.getItem('doctave-color')
+
+        if (color === 'dark') {
+            document.getElementsByTagName('html')[0].classList.remove('light');
+            document.getElementsByTagName('html')[0].classList.add('dark');
+        } else {
+            document.getElementsByTagName('html')[0].classList.remove('dark');
+            document.getElementsByTagName('html')[0].classList.add('light');
+        }
+    </script>
+
+    
+</head>
+
+<body>
+    <label for='menu-toggle-switch' class='menu-toggle-button'>
+        ☰
+    </label>
+    <input type="checkbox" id="menu-toggle-switch" value='0' />
+    <div class='page'>
+        <div class='header'>
+            <div class='logo'>
+                
+                <a href="/">
+                    <img src="/assets/logo.png" alt='unFTP logo'></img>
+                </a>
+                
+                <h2 class='project-name'>
+                    <a href="/">
+                        unFTP
+                    </a>
+                </h2>
+            </div>
+            <div class='search'>
+                <form id='search-form'>
+    <input type='text' id='search-box' autocomplete="off" placeholder="Search..."></input>
+    <span class='search-icon'>S</span>
+    <ul id='search-results'></ul>
+</form>
+
+            </div>
+            <div class='header-dummy-right'>
+            </div>
+        </div>
+        <div class='container'>
+            <div class='sidebar-left'>
+                <nav class='site-nav'>
+    <ul>
+        
+            <li><a href="/libunftp">The Library</a></li>
+            
+        
+            <li><a href="/server">The Server</a></li>
+            
+                <ul>
+    
+        <li><a href="/server/installation">Installation</a></li>
+        
+    
+        <li><a href="/server/starting">unFTP Up</a></li>
+        
+    
+        <li><a href="/server/logging">Logging</a></li>
+        
+    
+        <li><a href="/server/monitoring">Monitoring</a></li>
+        
+    
+        <li><a href="/server/ftps">Enabling TLS</a></li>
+        
+    
+        <li><a href="/server/gcs">Cloud Storage</a></li>
+        
+    
+        <li><a class="active" href="/server/jsonconfig">Per User Config</a></li>
+        
+    
+        <li><a href="/server/pubsub">Pub/Sub</a></li>
+        
+    
+        <li><a href="/server/anti-brute">Anti password guessing</a></li>
+        
+    
+        <li><a href="/server/proxy-protocol">Proxy Protocol</a></li>
+        
+    
+        <li><a href="/server/docker">Docker</a></li>
+        
+    
+</ul>
+
+            
+        
+            <li><a href="/support">Support</a></li>
+            
+        
+            <li><a href="/licensing">Licensing</a></li>
+            
+        
+    </ul>
+    <span id='light-dark-mode-switch'>
+        <svg xmlns="http://www.w3.org/2000/svg" id="dark-mode-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+        </svg>
+
+        <svg xmlns="http://www.w3.org/2000/svg" id="light-mode-icon" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" />
+        </svg>
+    </span>
+</nav>
+
+            </div>
+            <div class='doctave-content'>
+                <h2 id="authentication-setup">Authentication setup</h2>
+<p>Create a credentials file (e.g. credentials.json):</p>
+<pre><code class="language-json">[
+  {
+    "username": "alice",
+    "password": "12345678"
+  },
+  {
+    "username": "bob",
+    "password": "secret"
+  }
+]
+</code></pre>
+<pre><code class="language-sh">unftp \
+    --auth-type=json \
+    --auth-json-path=credentials.json
+</code></pre>
+<h2 id="generating-secure-passwords">Generating secure passwords</h2>
+<p>We provide a tool that generates a secure password for you.</p>
+<p>Generating a secure password is as simple as this:</p>
+<pre><code class="language-shell">➜ docker run -ti bolcom/unftp-key-generator -u
+
+Enter username or press ENTER to finish: hannes
+Enter password or press ENTER to generate one:
+Generated password: 4?KH[FN=W@bztq%[
+[
+  {
+    "username": "hannes",
+    "pbkdf2_salt": "+uhutJYSS7Y=",
+    "pbkdf2_key": "sXdS1w0cH+bsNLKwW/Mek0hGXoJr+hrBJ1AjkubePiM=",
+    "pbkdf2_iter": 500000
+  }
+]
+</code></pre>
+<p>Then add it to the JSON credentials file. Notice the use of the <code>pbkdf2_salt</code>, <code>pbkdf2_key</code> and <code>pbkdf2_iter</code> fields 
+instead of the <code>password</code> field.</p>
+<pre><code class="language-json">[
+  {
+    "username": "alice",
+    "password": "12345678"
+  },
+  {
+    "username": "bob",
+    "password": "secret"
+  },
+  {
+    "username": "carol",
+    "pbkdf2_salt": "Hp1WZRnzOUM=",
+    "pbkdf2_key": "BOipkps/qYxlMLiuFcRjYUKivclvVXsc8f0T2pIvG6U=",
+    "pbkdf2_iter": 500000
+  }
+]
+</code></pre>
+<p>For more advanced usage see the documentation of the <a href="https://docs.rs/unftp-auth-jsonfile/0.2.1/unftp_auth_jsonfile">unftp_auth_jsonfile</a>
+crate. The key generator tool also have advanced options that you can see by running the container with the <code>-h</code> option i.e.</p>
+<pre><code class="language-shell">docker run -ti bolcom/unftp-key-generator -h
+</code></pre>
+<h2 id="per-user-settings">Per-User Settings</h2>
+<p>To do per-user settings you can expand the above-mentioned JSON file to also include some per user settings:</p>
+<pre><code class="language-json">[
+  {
+    "username": "alice",
+    "password": "12345678",
+    "vfs_perms": ["-mkdir","-rmdir","-del","-ren", "-md5"],
+    "root": "alice",
+    "account_enabled": true
+  },
+  {
+    "username": "bob",
+    "password": "secret",
+    "client_cert": {
+      "allowed_cn": "bob-the-builder"
+    }
+  },
+  {
+    "username": "vincent",
+    "root": "vincent",
+    "vfs_perms": ["none", "+put", "+md5"],
+    "client_cert": {}
+  }  
+]
+</code></pre>
+<p>And let unFTP point to it:</p>
+<pre><code class="language-sh">unftp \
+    --auth-type=json \
+    --auth-json-path=users.json \
+    --usr-json-path=users.json \
+    ...
+</code></pre>
+<p>In the above configuration we use:</p>
+<ul>
+<li><code>vfs_perms</code> - Specifies what permissions users can have. Alice cannot create directories, remove them, delete files nor 
+calculate the md5 of files. Bob can do everything while Vincent can only do uploads and calculate md5 files. Valid values
+here are "none", "all", "-mkdir, "-rmdir, "-del","-ren", "-md5", "-get", "-put", "-list", "+mkdir", "+rmdir", "+del", 
+"+ren", "+md5", "+get", "+put" and "+list".</li>
+<li><code>root</code> - Sets the home directory of the user relative to the storage back-end root. Alice can only see files inside 
+<code>$SB_ROOT/alice</code>, Bob can see all files and Vincent thinks <code>$SB_ROOT/vincent</code> is the FTP root similar to Alice.</li>
+<li><code>account_enabled</code> - Allows to disable the user's account completely</li>
+<li><code>client_cert</code> - Allows specifying whether a client certificate is required and how to handle it. Alice logs in with 
+normal user/password authentication. No client certificate needed. Bob needs to provide a valid client certificate 
+with common name (CN) containing, 'bob-the-builder' and also needs to provide a password. Vincent can do passwordless 
+login when providing a valid certificate.</li>
+</ul>
+<h2 id="compressing-configuration-files">Compressing configuration files</h2>
+<p>Since unFTP v0.14.0, the <code>auth-json-path</code> and <code>usr-json-path</code> also support JSON files that are compressed with gzip, or gzip+base64-encoded.</p>
+<p>This comes in handy when your storage is limited, and you have many users in your configuration.
+When running unFTP as a container in a <a href="https://kubernetes.io/">Kubernetes</a> Pod for example.
+In such a setup you may have your JSON credentials file mapped into your pod via a <a href="https://kubernetes.io/docs/concepts/configuration/configmap/">ConfigMap</a> or a <a href="https://kubernetes.io/docs/concepts/configuration/secret/">Secret</a>.
+The size of these resources is limited.
+By compressing the file you can grow to a larger number of users before you technically require an external database solution.</p>
+
+            </div>
+            <div class='sidebar-right'>
+                <div class='page-nav' id='page-nav'>
+                    <p class='page-nav-header'>On this page</p>
+                    <ul>
+                        
+                        <li class='page-nav-level-2'>
+                            <a href='#authentication-setup'>Authentication setup</a>
+                        </li>
+                        
+                        <li class='page-nav-level-2'>
+                            <a href='#generating-secure-passwords'>Generating secure passwords</a>
+                        </li>
+                        
+                        <li class='page-nav-level-2'>
+                            <a href='#per-user-settings'>Per-User Settings</a>
+                        </li>
+                        
+                        <li class='page-nav-level-2'>
+                            <a href='#compressing-configuration-files'>Compressing configuration files</a>
+                        </li>
+                        
+                    </ul>
+                </div>
+            </div>
+            <div class='wave-container'>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+                    <path fill-opacity="0.35"
+                        d="M0,192L60,213.3C120,235,240,277,360,277.3C480,277,600,235,720,192C840,149,960,107,1080,122.7C1200,139,1320,213,1380,250.7L1440,288L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z">
+                    </path>
+                    <path fill-opacity="0.5"
+                        d="M0,160L60,181.3C120,203,240,245,360,229.3C480,213,600,139,720,138.7C840,139,960,213,1080,229.3C1200,245,1320,203,1380,181.3L1440,160L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z">
+                    </path>
+                    <path fill-opacity="0.2"
+                        d="M0,224L60,197.3C120,171,240,117,360,117.3C480,117,600,171,720,186.7C840,203,960,181,1080,186.7C1200,192,1320,224,1380,240L1440,256L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z">
+                    </path>
+                </svg>
+                <p>Powered by <a href='https://cli.doctave.com' target='_blank'>Doctave</a></p>
+            </div>
+        </div>
+    </div>
+    <script type="text/javascript" src="/assets/katex.js?v=1676813896"></script>
+    <script type="text/javascript" src="/assets/mermaid.js?v=1676813896"></script>
+    <script type="text/javascript" src="/assets/elasticlunr.js?v=1676813896"></script>
+    <script type="text/javascript" src="/assets/prism.js?v=1676813896"></script>
+    <script type="text/javascript" src="/assets/doctave-app.js?v=1676813896"></script>
+
+    
+</body>
+
+</html>
