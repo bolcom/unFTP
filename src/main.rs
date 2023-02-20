@@ -48,10 +48,7 @@ use std::{
     sync::Arc,
     time::Duration,
 };
-use tokio::{
-    runtime::Runtime,
-    signal::unix::{signal, SignalKind},
-};
+use tokio::runtime::Runtime;
 #[cfg(feature = "pam_auth")]
 use unftp_auth_pam as pam;
 use unftp_sbe_gcs::options::AuthMethod;
@@ -679,20 +676,34 @@ where
 struct ExitSignal(pub &'static str);
 
 async fn listen_for_signals() -> Result<ExitSignal, String> {
-    let mut term_sig = signal(SignalKind::terminate())
-        .map_err(|e| format!("could not listen for TERM signals: {}", e))?;
-    let mut int_sig = signal(SignalKind::interrupt())
-        .map_err(|e| format!("Could not listen for INT signal: {}", e))?;
+    #[cfg(unix)]
+    {
+        use tokio::signal::unix::{signal, SignalKind};
 
-    let sig_name = tokio::select! {
-        Some(_signal) = term_sig.recv() => {
-            "SIG_TERM"
-        },
-        Some(_signal) = int_sig.recv() => {
-            "SIG_INT"
-        },
-    };
-    Ok(ExitSignal(sig_name))
+        let mut term_sig = signal(SignalKind::terminate())
+            .map_err(|e| format!("could not listen for TERM signals: {}", e))?;
+        let mut int_sig = signal(SignalKind::interrupt())
+            .map_err(|e| format!("Could not listen for INT signal: {}", e))?;
+
+        let sig_name = tokio::select! {
+            Some(_signal) = term_sig.recv() => {
+                "SIG_TERM"
+            },
+            Some(_signal) = int_sig.recv() => {
+                "SIG_INT"
+            },
+        };
+        Ok(ExitSignal(sig_name))
+    }
+
+    #[cfg(windows)]
+    {
+        use tokio::signal;
+        signal::ctrl_c()
+            .await
+            .map_err(|e| format!("could not listen for ctrl-c: {}", e))?;
+        Ok(ExitSignal("CTRL-C"))
+    }
 }
 
 async fn main_task(
