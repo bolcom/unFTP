@@ -136,7 +136,6 @@ jobs:
         with:
           name: Windows
           path: target/x86_64-pc-windows-msvc/release/unftp.exe
-    continue-on-error: true # Until we fix the Windows issue. See https://github.com/bolcom/unFTP/issues/86
   
   build-macos-intel:
     runs-on: macos-latest
