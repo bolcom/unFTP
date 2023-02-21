@@ -1,4 +1,4 @@
-RUST_VERSION=1.66.1
+RUST_VERSION=1.67.1
 DOCKER_TAG=$(shell git describe --tags)
 DOCKER_TEMPLATES:=$(wildcard *.Dockerfile.template)
 DOCKER_FILES=$(DOCKER_TEMPLATES:%.template=%)
@@ -67,19 +67,6 @@ pr-prep: # Runs checks to ensure you're ready for a pull request
 	cargo test --verbose  --workspace --all --all-features
 	cargo doc  --workspace --all-features --no-deps
 	cargo build --verbose  --workspace --all --all-features
-
-.PHONY: release-artifacts
-release-artifacts: # Generates artifacts for a release
-	rm -rf release && mkdir release
-	cargo build --release --target x86_64-apple-darwin --features rest_auth,jsonfile_auth,cloud_storage
-	cp target/x86_64-apple-darwin/release/unftp ./release/unftp_x86_64-apple-darwin
-	md5 -r release/unftp_x86_64-apple-darwin > release/unftp_x86_64-apple-darwin.md5
-	$(MAKE) docker-image-alpine
-	docker run --rm bolcom/unftp:$(DOCKER_TAG)-alpine cat /unftp/unftp > release/unftp_x86_64-unknown-linux-musl
-	md5 -r release/unftp_x86_64-unknown-linux-musl > release/unftp_x86_64-unknown-linux-musl.md5
-	$(MAKE) docker-image-gnubuilder
-	docker run --rm bolcom/unftp:$(DOCKER_TAG)-gnubuilder > release/unftp_x86_64-unknown-linux-gnu
-	md5 -r release/unftp_x86_64-unknown-linux-gnu > release/unftp_x86_64-unknown-linux-gnu.md5
 
 .PHONY: publish
 publish: # Publishes to crates.io

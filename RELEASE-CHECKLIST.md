@@ -1,5 +1,6 @@
 # Release Checklist
 
+* Update the Rust version in the Makefile and the Github actions file
 * Update minor versions dependencies
 * Update Cargo.toml with the new version number
 * Search for the old version number to find references to it in documentation and update those occurrences.
@@ -17,7 +18,7 @@
   > v0.12.12
   or
   > slog-redis-v0.1.2
-* Create the artifacts: `make release-artifacts` and add to Github
+* Wait for the Github Actions pipeline to finish. You should see all artifacts in the release page.
 * Build and push the docker containers
 * Publish the docs site unftp.rs by running `make site`
 * Notify the Telegram channel.
