@@ -1,5 +1,15 @@
+#
+# References:
+#  - https://github.com/marketplace/actions/get-the-latest-release-upload-url-tag-date
+#  - https://github.com/actions/upload-artifact
+#  - https://github.com/marketplace/actions/yet-another-upload-release-asset-action
+#  - https://github.com/marketplace/actions/download-a-build-artifact
+#
+
+# Its called 'build' so that the README badge displays nicely
 name: build
 
+# Update the RUST_VERSION here and in the Makefile when we upgrade
 env:
   CARGO_TERM_COLOR: always
   RUST_VERSION: 1.67.1
@@ -16,7 +26,24 @@ on:
 
 jobs:
 
+  get_version:
+    name: Get unFTP version
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_latest_tag.outputs.version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Otherwise we get a 'fatal: No names found, cannot describe anything.' error.
+      - name: Get latest tag
+        id: get_latest_tag
+        run: |
+          tag=$(git describe --tags)
+          echo "::set-output name=version::$tag"
+
   format:
+    name: Check Formatting
     runs-on: ubuntu-latest
     if: ${{ github.ref != 'refs/heads/master' }}
     steps:
@@ -36,26 +63,28 @@ jobs:
         args: --all -- --check
 
   clippy:
-      runs-on: ubuntu-latest
-      if: ${{ github.ref != 'refs/heads/master' }}
-      steps:
-        - name: Checkout sources
-          uses: actions/checkout@v3
-          with:
-            persist-credentials: false
-        - name: Install rust toolchain
-          uses: actions-rs/toolchain@v1
-          with:
-            toolchain: ${{ env.RUST_VERSION }}
-            override: true
-            default: true
-            components: clippy
-        - uses: actions-rs/cargo@v1
-          with:
-            command: clippy
-            args: --all-features --workspace -- -D warnings
+    name: Run Clippy
+    runs-on: ubuntu-latest
+    if: ${{ github.ref != 'refs/heads/master' }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+      - name: Install rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+          default: true
+          components: clippy
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: --all-features --workspace -- -D warnings
 
   test:
+      name: Run Tests
       runs-on: ubuntu-latest
       steps:
         - name: Checkout sources
@@ -71,10 +100,16 @@ jobs:
           run: sudo apt-get update && sudo apt-get install -y libpam-dev
         - name: Run tests
           run: cargo test --verbose  --workspace --all --all-features
+        - name: Build Docs
+          run: cargo doc --all-features --workspace --no-deps
 
   build-linux-gnu:
     runs-on: ubuntu-latest
     name: Build for Linux (GNU)
+    needs: get_version
+    env:
+      target: x86_64-unknown-linux-gnu
+      BUILD_VERSION: ${{ needs.get_version.outputs.version }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -84,20 +119,26 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
           override: true
           default: true
-          target: x86_64-unknown-linux-gnu
+          target: ${{ env.target }}
       - name: Install build dependencies
         run: sudo apt-get update && sudo apt-get install -y libpam-dev
       - name: Build for Linux (GNU)
-        run: rustup run ${{ env.RUST_VERSION }} cargo build --no-default-features --features gnu --release --target=x86_64-unknown-linux-gnu
+        run: cargo build --no-default-features --features gnu --release --target=${{ env.target }}
+      - name: Rename
+        run: mv target/${{ env.target }}/release/unftp target/${{ env.target }}/release/unftp_${{ env.target }}
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: Linux-gnu
-          path: target/x86_64-unknown-linux-gnu/release/unftp
+          name: unftp_${{ env.target }}
+          path: target/${{ env.target }}/release/unftp_${{ env.target }}
 
   build-linux-musl:
     runs-on: ubuntu-latest
     name: Build for Linux (MUSL)
+    needs: get_version
+    env:
+      target: x86_64-unknown-linux-musl
+      BUILD_VERSION: ${{ needs.get_version.outputs.version }}
     steps:
       - uses: actions/checkout@v3
       - name: Install Rust toolchain
@@ -106,20 +147,26 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
           override: true
           default: true
-          target: x86_64-unknown-linux-musl
+          target: ${{ env.target }}
       - name: Install build dependencies
         run: sudo apt-get update && sudo apt-get install -y musl-tools
       - name: Build for Linux (MUSL)
-        run: RUSTFLAGS="-C target-feature=+crt-static" cargo build --no-default-features --features docker --release --target=x86_64-unknown-linux-musl
+        run: RUSTFLAGS="-C target-feature=+crt-static" cargo build --no-default-features --features docker --release --target=${{ env.target }}
+      - name: Rename
+        run: mv target/${{ env.target }}/release/unftp target/${{ env.target }}/release/unftp_${{ env.target }}
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: Linux-musl
-          path: target/x86_64-unknown-linux-musl/release/unftp
+          name: unftp_${{ env.target }}
+          path: target/${{ env.target }}/release/unftp_${{ env.target }}
 
   build-windows:
     runs-on: windows-latest
     name: Build for Windows
+    needs: get_version
+    env:
+      trget: x86_64-pc-windows-msvc
+      BUILD_VERSION: ${{ needs.get_version.outputs.version }}
     steps:
       - uses: actions/checkout@v3
       - name: Install Rust toolchain
@@ -128,18 +175,24 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
           override: true
           default: true
-          target: x86_64-pc-windows-msvc
+          target: ${{ env.trget }}
       - name: Build for Windows
-        run: cargo build --release --target=x86_64-pc-windows-msvc --features rest_auth,jsonfile_auth
+        run: cargo build --release --target=${{ env.trget }} --features rest_auth,jsonfile_auth
+      - name: Rename
+        run: ren "target\${{ env.trget }}\release\unftp.exe" "unftp_${{ env.trget }}.exe"
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: Windows
-          path: target/x86_64-pc-windows-msvc/release/unftp.exe
-  
+          name: unftp_${{ env.trget }}.exe
+          path: target/${{ env.trget }}/release/unftp_${{ env.trget }}.exe
+
   build-macos-intel:
     runs-on: macos-latest
     name: Build for macOS (Intel)
+    needs: get_version
+    env:
+      target: x86_64-apple-darwin
+      BUILD_VERSION: ${{ needs.get_version.outputs.version }}
     steps:
       - uses: actions/checkout@v3
       - name: Install Rust toolchain
@@ -148,18 +201,24 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
           override: true
           default: true
-          target: x86_64-apple-darwin
+          target: ${{ env.target }}
       - name: Build for macOS (Intel)
-        run: cargo build --release --target=x86_64-apple-darwin --features rest_auth,jsonfile_auth,cloud_storage
+        run: cargo build --release --target=${{ env.target }} --features rest_auth,jsonfile_auth,cloud_storage
+      - name: Rename
+        run: mv target/${{ env.target }}/release/unftp target/${{ env.target }}/release/unftp_${{ env.target }}
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: macOS-intel
-          path: target/x86_64-apple-darwin/release/unftp
+          name: unftp_${{ env.target }}
+          path: target/${{ env.target }}/release/unftp_${{ env.target }}
 
-  build-macos-m1:
+  build-macos-arm:
     runs-on: macos-latest
-    name: Build for macOS (M1)
+    name: Build for macOS (ARM)
+    needs: get_version
+    env:
+      target: aarch64-apple-darwin
+      BUILD_VERSION: ${{ needs.get_version.outputs.version }}
     steps:
       - uses: actions/checkout@v3
       - name: Install Rust toolchain
@@ -168,14 +227,67 @@ jobs:
           toolchain: ${{ env.RUST_VERSION }}
           override: true
           default: true
-          target: aarch64-apple-darwin
+          target: ${{ env.target }}
       - name: Install Rosetta
         if: runner.os == 'macOS' && runner.arch == 'arm64'
         run: softwareupdate --install-rosetta          
-      - name: Build for macOS (M1)
-        run: cargo build --release --target=aarch64-apple-darwin --features rest_auth,jsonfile_auth,cloud_storage
+      - name: Build
+        run: cargo build --release --target=${{ env.target }} --features rest_auth,jsonfile_auth,cloud_storage
+      - name: Rename
+        run: mv target/${{ env.target }}/release/unftp target/${{ env.target }}/release/unftp_${{ env.target }}
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: macOS-m1
-          path: target/aarch64-apple-darwin/release/unftp
+          name: unftp_${{ env.target }}
+          path: target/${{ env.target }}/release/unftp_${{ env.target }}
+
+  upload-release-binaries:    
+    if: ${{ github.event_name == 'release' }}  # Testing: if: ${{ github.ref == 'refs/heads/hannes/upload' }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build:
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - x86_64-apple-darwin
+          - aarch64-apple-darwin
+          - x86_64-pc-windows-msvc
+    env:
+      file_name: unftp_${{ matrix.build }}${{ contains(matrix.build, 'windows') && '.exe' || '' }}
+      file_dir: ./${{ matrix.build }}
+    needs:
+      - build-linux-gnu
+      - build-linux-musl
+      - build-macos-intel
+      - build-macos-arm
+      - build-windows
+    name: Upload Release Artifacts
+    steps:
+      # For testing:
+      # - name: Gets latest created release info
+      #   id: latest_release_info
+      #   uses: jossef/action-latest-release-info@v1.2.1
+      #   env:
+      #     GITHUB_TOKEN: ${{ github.token }}    
+      - name: Download
+        uses: actions/download-artifact@v2
+        with:
+          name: ${{ env.file_name }}
+          path: ${{ env.file_dir }}
+      - name: Calculate MD5 checksum
+        id: calculate_checksum
+        run: md5sum ${{ env.file_dir }}/${{ env.file_name }} > ${{ env.file_dir }}/${{ env.file_name }}.md5
+      - name: Upload
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}  # Testing: ${{ steps.latest_release_info.outputs.upload_url }}
+          asset_path: ${{ env.file_dir }}/${{ env.file_name }}
+          asset_name: ${{ env.file_name }}
+          asset_content_type: application/octet-stream
+      - name: Upload MD5
+        uses: shogo82148/actions-upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ env.file_dir }}/${{ env.file_name }}.md5
+          asset_name: ${{ env.file_name }}.md5
+          asset_content_type: text/plain
