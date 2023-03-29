@@ -673,6 +673,7 @@ where
     Ok(())
 }
 
+#[derive(PartialEq)]
 struct ExitSignal(pub &'static str);
 
 async fn listen_for_signals() -> Result<ExitSignal, String> {
@@ -684,6 +685,8 @@ async fn listen_for_signals() -> Result<ExitSignal, String> {
             .map_err(|e| format!("could not listen for TERM signals: {}", e))?;
         let mut int_sig = signal(SignalKind::interrupt())
             .map_err(|e| format!("Could not listen for INT signal: {}", e))?;
+        let mut hup_sig = signal(SignalKind::hangup())
+            .map_err(|e| format!("Could not listen for HUP signal: {}", e))?;
 
         let sig_name = tokio::select! {
             Some(_signal) = term_sig.recv() => {
@@ -691,6 +694,9 @@ async fn listen_for_signals() -> Result<ExitSignal, String> {
             },
             Some(_signal) = int_sig.recv() => {
                 "SIG_INT"
+            },
+            Some(_signal) = hup_sig.recv() => {
+                "SIG_HUP"
             },
         };
         Ok(ExitSignal(sig_name))
@@ -778,7 +784,11 @@ fn run(arg_matches: ArgMatches) -> Result<(), String> {
     );
 
     let runtime = Runtime::new().map_err(|e| format!("could not construct runtime: {}", e))?;
-    let _ = runtime.block_on(main_task(arg_matches, &log, &root_logger))?;
+    while runtime.block_on(main_task(arg_matches.clone(), &log, &root_logger))?
+        == ExitSignal("SIG_HUP")
+    {
+        info!(log, "Received SIG_HUP, restarting");
+    }
     info!(log, "Exiting...");
     Ok(())
 }
