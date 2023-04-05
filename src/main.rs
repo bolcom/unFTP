@@ -784,6 +784,8 @@ fn run(arg_matches: ArgMatches) -> Result<(), String> {
     );
 
     let runtime = Runtime::new().map_err(|e| format!("could not construct runtime: {}", e))?;
+    // We wait for a signal (HUP, INT, TERM). If the signal is a HUP,
+    // we restart, otherwise we exit the loop and the program ends.
     while runtime.block_on(main_task(arg_matches.clone(), &log, &root_logger))?
         == ExitSignal("SIG_HUP")
     {
