@@ -13,11 +13,11 @@ repository = "https://github.com/bolcom/unFTP/tree/master/crates/redislog"
 readme = "README.md"
 
 [dependencies]
-chrono = "0.4.23"
+chrono = "0.4.26"
 r2d2 = "0.8.10"
 r2d2_redis = "0.14.0"
 redis = "0.20.2"
-serde_json = "1.0.93"
+serde_json = "1.0.96"
 slog = { version = "2.7.0", features = ["max_level_trace", "release_max_level_info"] }
 
 [dev-dependencies]

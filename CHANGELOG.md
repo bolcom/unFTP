@@ -1,5 +1,12 @@
 # Changelog
 
+## 2023-06-02 unftp v0.14.2
+
+- [#151](https://github.com/bolcom/unFTP/pull/151) Restart when receiving the HUP signal
+- Fixed Windows build
+- Upgraded dependencies including all crates from https://github.com/bolcom/libunftp
+- Upgraded to Rust 1.70.0
+
 ## 2023-02-01 unftp v0.14.1
 
 - Upgraded dependencies including all crates from https://github.com/bolcom/libunftp
