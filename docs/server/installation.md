@@ -27,12 +27,20 @@ curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.2/unftp_x86_64-u
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
-macOS:
+macOS Intel:
 
 ```sh
 curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.2/unftp_x86_64-apple-darwin \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
+
+macOS ARM:
+
+```sh
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.2/unftp_aarch64-apple-darwin \
+  | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
+```
+
 
 ## From Source
 
