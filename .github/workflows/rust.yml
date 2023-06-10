@@ -18,6 +18,7 @@ on:
   push:
     branches:
       - master
+      - hannes/arch
   pull_request:
     branches:
       - master
@@ -385,3 +386,22 @@ jobs:
           file: ./packaging/docker/alpine-istio-debug.Dockerfile.ci
           push: true
           tags: bolcom/unftp:${{ env.BUILD_VERSION }}-alpine-istio-debug
+
+  build-arch-pkg:
+    runs-on: arch-latest
+    name: Build ArchLinux Package
+    needs: get_version
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Otherwise the code that retrieves the git version doesn't work
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+          default: true
+          target: ${{ env.target }}
+      - name: Make package
+        run: "cd packaging/arch && makepkg"

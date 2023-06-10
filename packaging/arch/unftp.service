@@ -1,0 +1,17 @@
+[Unit]
+Description=unFTP
+After=network.target
+
+[Service]
+ExecStartPre=-/usr/bin/killall unftp
+ExecStart=/usr/bin/unftp \
+	--bind-address=0.0.0.0:2122 \
+	--bind-address-http=0.0.0.0:2180 \
+	-vv \
+	--root-dir=/srv \
+    --idle-session-timeout=300
+ExecStop=/usr/bin/killall unftp
+
+
+[Install]
+WantedBy=multi-user.target

@@ -3,7 +3,7 @@ title: The Server
 ---
 
 [![Crate Version](https://img.shields.io/crates/v/unftp.svg)](https://crates.io/crates/unftp)
-[![Build Status](https://travis-ci.org/bolcom/unFTP.svg)](https://travis-ci.org/bolcom/unFTP) 
+[![Build Status](https://github.com/bolcom/unFTP/workflows/build/badge.svg?branch=master)](https://github.com/bolcom/unFTP/actions) 
 [![Docker Pulls](https://img.shields.io/docker/pulls/bolcom/unftp.svg?maxAge=2592000?style=plastic)](https://hub.docker.com/r/bolcom/unftp/)
 [![Follow on Telegram](https://img.shields.io/badge/follow%20on-Telegram-brightgreen.svg)](https://t.me/unftp)
 
