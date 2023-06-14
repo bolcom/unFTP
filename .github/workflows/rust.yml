@@ -18,6 +18,7 @@ on:
   push:
     branches:
       - master
+      - hannes/armhf
   pull_request:
     branches:
       - master
@@ -254,6 +255,49 @@ jobs:
         with:
           name: unftp_${{ env.target }}
           path: target/${{ env.target }}/release/unftp_${{ env.target }}
+
+  build-armhf:
+    runs-on: ubuntu-latest
+    name: Build for ARMHF
+    needs: get_version
+    env:
+      target: armv7-unknown-linux-gnueabihf
+      BUILD_VERSION: ${{ needs.get_version.outputs.version }}
+    steps:
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Install ARM assembler
+        run: sudo apt-get update && sudo apt-get install -y gcc-arm-linux-gnueabihf        
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Otherwise the code that retrieves the git version doesn't work
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+          default: true
+          target: ${{ env.target }}
+      - name: Install ARM toolchain
+        run: rustup target add armv7-unknown-linux-gnueabihf
+      - name: List cross-compilation tools
+        run: |
+          ls /usr/bin | grep arm        
+      - name: Set environment variables
+        run: |
+          echo "export TARGET_CC=/usr/bin/arm-linux-gnueabihf-gcc" >> $GITHUB_ENV
+          echo "export TARGET_AR=/usr/bin/arm-linux-gnueabihf-ar" >> $GITHUB_ENV
+      - name: Build for ARMHF
+        run: cargo build --features rest_auth,jsonfile_auth,cloud_storage --release --target=${{ env.target }}
+      - name: Rename
+        run: mv target/${{ env.target }}/release/unftp target/${{ env.target }}/release/unftp_${{ env.target }}
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: unftp_${{ env.target }}
+          path: target/${{ env.target }}/release/unftp_${{ env.target }}
+
 
   upload-release-binaries:    
     if: ${{ github.event_name == 'release' }}  # Testing: if: ${{ github.ref == 'refs/heads/hannes/upload' }}
