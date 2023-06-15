@@ -2738,9 +2738,9 @@ dependencies = [
 
 [[package]]
 name = "unftp-sbe-gcs"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "42dff1409b083b5fa679b37f6aa84f0d006919323d6a74c8ecc003b5830830b8"
+checksum = "6409703c22656429877345ce69aa4797c9e703fce271582a2e78744a27330772"
 dependencies = [
  "async-trait",
  "base64 0.13.1",
