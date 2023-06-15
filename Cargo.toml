@@ -48,7 +48,7 @@ slog-term = "2.9.0"
 thiserror = "1.0.40"
 tokio = { version = "1.28.2", features = ["signal", "rt-multi-thread"] }
 unftp-sbe-fs = "0.2.2"
-unftp-sbe-gcs = { version = "0.2.2", optional = true }
+unftp-sbe-gcs = { version = "0.2.3", optional = true }
 unftp-auth-rest = { version = "0.2.2", optional = true }
 unftp-auth-jsonfile = { version = "0.3.1", optional = true }
 
