@@ -1,5 +1,9 @@
 # Changelog
 
+## 2023-06-16 unftp v0.14.3
+
+- Upgraded to latest version of the GCS back-end
+
 ## 2023-06-02 unftp v0.14.2
 
 - [#151](https://github.com/bolcom/unFTP/pull/151) Restart when receiving the HUP signal
