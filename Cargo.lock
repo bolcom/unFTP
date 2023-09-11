@@ -2650,6 +2650,7 @@ dependencies = [
  "unftp-auth-rest",
  "unftp-sbe-fs",
  "unftp-sbe-gcs",
+ "unftp-sbe-rooter",
 ]
 
 [[package]]
@@ -2747,6 +2748,17 @@ dependencies = [
  "tracing",
  "tracing-attributes",
  "yup-oauth2",
+]
+
+[[package]]
+name = "unftp-sbe-rooter"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ac2bc638adf879204d2809b8fda34ebe2592bd80ca6ff149aa77be779568676"
+dependencies = [
+ "async-trait",
+ "libunftp",
+ "tokio",
 ]
 
 [[package]]

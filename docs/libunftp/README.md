@@ -34,6 +34,7 @@ Known storage back-ends:
 
 * [unftp-sbe-fs](https://crates.io/crates/unftp-sbe-fs) - Stores files on the local filesystem
 * [unftp-sbe-gcs](https://crates.io/crates/unftp-sbe-gcs) - Stores files in Google Cloud Storage
+* [unftp-sbe-rooter](https://crates.io/crates/unftp-sbe-rooter) - Wraps another storage back-end in order to root a user to a specific home directory.
 
 Known authentication back-ends:
 
