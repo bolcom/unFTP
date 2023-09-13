@@ -208,8 +208,11 @@ fn make_json_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
 }
 
 type VfsProducer = Box<
-    dyn (Fn() -> storage::RooterVfs<storage::RestrictingVfs, auth::User, storage::SbeMeta>)
-        + Send
+    dyn (Fn() -> storage::RooterVfs<
+            storage::RestrictingVfs<storage::ChoosingVfs, auth::User, storage::SbeMeta>,
+            auth::User,
+            storage::SbeMeta,
+        >) + Send
         + Sync,
 >;
 
@@ -218,12 +221,10 @@ fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> VfsProducer {
     let p: PathBuf = m.value_of(args::ROOT_DIR).unwrap().into();
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
     Box::new(move || {
-        storage::RooterVfs::new(storage::RestrictingVfs {
-            delegate: storage::ChoosingVfs {
-                inner: storage::InnerVfs::File(unftp_sbe_fs::Filesystem::new(p.clone())),
-                log: sub_log.clone(),
-            },
-        })
+        storage::RooterVfs::new(storage::RestrictingVfs::new(storage::ChoosingVfs {
+            inner: storage::InnerVfs::File(unftp_sbe_fs::Filesystem::new(p.clone())),
+            log: sub_log.clone(),
+        }))
     })
 }
 
@@ -285,17 +286,15 @@ fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer
 
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
     Ok(Box::new(move || {
-        storage::RooterVfs::new(storage::RestrictingVfs {
-            delegate: storage::ChoosingVfs {
-                inner: storage::InnerVfs::Cloud(unftp_sbe_gcs::CloudStorage::with_api_base(
-                    base_url.clone(),
-                    bucket.clone(),
-                    root_dir.clone(),
-                    auth_method.clone(),
-                )),
-                log: sub_log.clone(),
-            },
-        })
+        storage::RooterVfs::new(storage::RestrictingVfs::new(storage::ChoosingVfs {
+            inner: storage::InnerVfs::Cloud(unftp_sbe_gcs::CloudStorage::with_api_base(
+                base_url.clone(),
+                bucket.clone(),
+                root_dir.clone(),
+                auth_method.clone(),
+            )),
+            log: sub_log.clone(),
+        }))
     }))
 }
 
