@@ -1,9 +1,9 @@
 use async_trait::async_trait;
-use bitflags::bitflags;
 use libunftp::auth::{AuthenticationError, Credentials, DefaultUser, UserDetail};
 use serde::Deserialize;
 use std::fmt::Formatter;
 use std::path::PathBuf;
+use unftp_sbe_restrict::{UserWithPermissions, VfsOperations};
 
 /// The unFTP user details
 #[derive(Debug, PartialEq, Eq)]
@@ -57,18 +57,9 @@ impl crate::storage::UserWithRoot for User {
     }
 }
 
-bitflags! {
-    pub struct VfsOperations: u32 {
-        const MK_DIR = 0b00000001;
-        const RM_DIR = 0b00000010;
-        const GET    = 0b00000100;
-        const PUT    = 0b00001000;
-        const DEL    = 0b00010000;
-        const RENAME = 0b00100000;
-        const MD5    = 0b01000000;
-        const LIST   = 0b10000000;
-
-        const WRITE_OPS = Self::MK_DIR.bits | Self::RM_DIR.bits | Self::PUT.bits | Self::DEL.bits | Self::RENAME.bits;
+impl UserWithPermissions for User {
+    fn permissions(&self) -> VfsOperations {
+        self.vfs_permissions
     }
 }
 
