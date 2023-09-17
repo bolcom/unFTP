@@ -1,5 +1,10 @@
 # Changelog
 
+## 2023-09-17 unftp v0.14.4
+
+- Upgraded dependencies
+
+
 ## 2023-06-16 unftp v0.14.3
 
 - Upgraded to latest version of the GCS back-end

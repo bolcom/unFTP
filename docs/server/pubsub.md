@@ -71,8 +71,8 @@ All of them are of type JSON object. Examples of their format are shown below.
    "hostname":"MYMAC-XYZ",
    "payload":{
       "Startup":{
-         "libunftp_version":"0.18.3",
-         "unftp_version":"v0.14.3"
+         "libunftp_version":"0.19.0",
+         "unftp_version":"v0.14.4"
       }
    }
 }

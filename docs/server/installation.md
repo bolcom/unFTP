@@ -16,28 +16,28 @@ you can choose between a statically linked image (no PAM integration) or a dynam
 Linux (static, no PAM):
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.3/unftp_x86_64-unknown-linux-musl \
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.4/unftp_x86_64-unknown-linux-musl \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
 Linux (dynamic with PAM support):
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.3/unftp_x86_64-unknown-linux-gnu \
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.4/unftp_x86_64-unknown-linux-gnu \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
 macOS Intel:
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.3/unftp_x86_64-apple-darwin \
+curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.4/unftp_x86_64-apple-darwin \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
 macOS ARM:
 
 ```sh
-curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.3/unftp_aarch64-apple-darwin \
+curl -L https://github.com/bolcom/unFTP/releases/download/v4/unftp_aarch64-apple-darwin \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
