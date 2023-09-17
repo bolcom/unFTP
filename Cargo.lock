@@ -2678,7 +2678,7 @@ checksum = "497961ef93d974e23eb6f433eb5fe1b7930b659f06d12dec6fc44a8f554c0bba"
 
 [[package]]
 name = "unftp"
-version = "0.14.3"
+version = "0.14.4"
 dependencies = [
  "async-trait",
  "base64 0.13.1",

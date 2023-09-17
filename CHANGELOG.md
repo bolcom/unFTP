@@ -2,8 +2,11 @@
 
 ## 2023-09-17 unftp v0.14.4
 
-- Upgraded dependencies
-
+- Upgraded to latest version of libunftp
+- Upgraded other dependencies
+- Fixed RUSTSEC-2020-0071
+- Moved the rooter virtual file system to its [own crate](https://crates.io/crates/unftp-sbe-rooter).
+- Moved the restricting virtual file system to its [own crate](https://crates.io/crates/unftp-sbe-restrict).
 
 ## 2023-06-16 unftp v0.14.3
 

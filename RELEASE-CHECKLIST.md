@@ -6,14 +6,15 @@
 * Search for the old version number to find references to it in documentation and update those occurrences.
 * Run `make pr-prep`, ensuring everything is green
 * Prepare release notes for the Github release page
-* Make a new commit (don't push) indicating the crate name and version number e.g.    
+* Make a new commit indicating the crate name and version number e.g.    
     > Release unftp version x.y.x
 
     or
 
     > Release slog-redis version x.y.x
-* Run `make publish`
-* Push to Github
+* Make a pull request for this but don't merge.
+* Wait till MR pipelins are OK then run `make publish`
+* Merge the MR via the command line by merging marster into the branch and pushing it.
 * Create the release in Github using tag format \[{component}-\]{version} e.g.
   > v0.14.4
   or
