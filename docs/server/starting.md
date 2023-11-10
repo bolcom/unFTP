@@ -26,8 +26,8 @@ by using the `--root-dir` argument. In addition, lets limit the data port range 
 
 ```sh
 unftp \
-  -v
+  -v \
   --root-dir=/home/unftp/data \
   --bind-address=0.0.0.0:2121 \
-  --passive-ports=50000-51000 \
+  --passive-ports=50000-51000
 ```
