@@ -16,6 +16,7 @@ navigation:
       - path: docs/server/ftps.md
       - path: docs/server/gcs.md
       - path: docs/server/jsonconfig.md
+      - path: docs/server/rest.md
       - path: docs/server/pubsub.md
       - path: docs/server/anti-brute.md
       - path: docs/server/proxy-protocol.md

@@ -16,7 +16,7 @@ use std::sync::Arc;
 //  - API Docs for publishing: https://cloud.google.com/pubsub/docs/reference/rest/v1/projects.topics/publish
 //
 
-/// An [EventDispatcher](crate::domain::EventDispatcher) that dispatches to Google Pub/sub
+/// An [EventDispatcher] that dispatches to Google Pub/sub
 #[derive(Debug)]
 pub struct PubsubEventDispatcher {
     log: Arc<slog::Logger>,
