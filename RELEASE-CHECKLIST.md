@@ -2,7 +2,7 @@
 
 * Update the Rust version in the Makefile and the Github actions file
 * Update minor versions dependencies
-* Update Cargo.toml with the new version number
+* Update Cargo.toml with the new version number (also check for libunftp version references)
 * Search for the old version number to find references to it in documentation and update those occurrences.
 * Run `make pr-prep`, ensuring everything is green
 * Prepare release notes for the Github release page
@@ -16,7 +16,7 @@
 * Wait till MR pipelins are OK then run `make publish`
 * Merge the MR via the command line by merging marster into the branch and pushing it.
 * Create the release in Github using tag format \[{component}-\]{version} e.g.
-  > v0.14.4
+  > v0.14.5
   or
   > slog-redis-v0.1.2
 * Wait for the Github Actions pipeline to finish. You should see all artifacts in the release page.

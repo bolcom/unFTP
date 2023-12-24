@@ -1,4 +1,4 @@
-RUST_VERSION=1.70.0
+RUST_VERSION=1.74.1
 DOCKER_TAG=$(shell git describe --tags)
 DOCKER_TEMPLATES:=$(wildcard *.Dockerfile.template)
 DOCKER_FILES=$(DOCKER_TEMPLATES:%.template=%)

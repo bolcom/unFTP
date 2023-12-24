@@ -1,5 +1,11 @@
 # Changelog
 
+## 2023-12-24 unftp v0.14.5
+
+- Added support for source IP in REST authentication requests
+- Upgraded to the latest version of libunftp
+- Upgraded other dependencies
+
 ## 2023-09-17 unftp v0.14.4
 
 - Upgraded to latest version of libunftp
