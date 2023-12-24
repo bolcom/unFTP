@@ -373,7 +373,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::Command {
             Arg::new(AUTH_REST_URL)
                 .long("auth-rest-url")
                 .value_name("URL")
-                .help("Define REST endpoint. {USER} and {PASS} are replaced by provided credentials.")
+                .help("Define REST endpoint. {USER}, {PASS} and/or {IP} are replaced by provided credentials and source IP respectively.")
                 .env("UNFTP_AUTH_REST_URL")
                 .takes_value(true),
         )
@@ -389,9 +389,9 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::Command {
         .arg(
             Arg::new(AUTH_REST_BODY)
                 .long("auth-rest-body")
-                .value_name("URL")
-                .help("If HTTP method contains body, it can be specified here. {USER} and {PASS} \
-                are replaced by provided credentials.")
+                .value_name("TEMPLATE")
+                .help("If HTTP method contains body, it can be specified here. {USER}, {PASS} and/or {IP}\
+                are replaced by provided credentials and source IP respectively.")
                 .env("UNFTP_AUTH_REST_BODY")
                 .takes_value(true),
         )

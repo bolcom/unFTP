@@ -37,7 +37,7 @@ http = "0.2.9"
 hyper = { version = "0.14.27", features = ["server", "http1"] }
 hyper-rustls = "0.23.2"
 lazy_static = "1.4.0"
-libunftp = "0.19.0"
+libunftp = "0.19.1"
 prometheus = { version = "0.13.3", features = ["process"] }
 serde = { version = "1.0.188", features = ["derive"] }
 serde_json = "1.0.107"
@@ -46,10 +46,10 @@ slog-async = "2.8.0"
 slog-term = "2.9.0"
 thiserror = "1.0.48"
 tokio = { version = "1.32.0", features = ["signal", "rt-multi-thread"] }
-unftp-sbe-fs = "0.2.3"
-unftp-sbe-gcs = { version = "0.2.4", optional = true }
-unftp-auth-rest = { version = "0.2.3", optional = true }
-unftp-auth-jsonfile = { version = "0.3.2", optional = true }
+unftp-sbe-fs = "0.2.4"
+unftp-sbe-gcs = { version = "0.2.5", optional = true }
+unftp-auth-rest = { version = "0.2.4", optional = true }
+unftp-auth-jsonfile = { version = "0.3.3", optional = true }
 unftp-sbe-rooter = "0.2.0"
 unftp-sbe-restrict = "0.1.1"
 

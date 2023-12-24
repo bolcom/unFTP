@@ -94,7 +94,7 @@ pub struct Builder {
     connection_pool_size: u32,
 }
 
-/// Errors returned by the [`Builder`](crate::Builder) and the [`Logger`](crate::Logger)
+/// Errors returned by the [`Builder`] and the [`Logger`]
 #[derive(Debug)]
 pub enum Error {
     ConnectionPoolErr(r2d2::Error),

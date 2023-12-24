@@ -21,5 +21,5 @@
   > slog-redis-v0.1.2
 * Wait for the Github Actions pipeline to finish. You should see all artifacts in the release page.
 * Build and push the docker containers
-* Publish the docs site unftp.rs by running `make site`
+* Publish the docs site unftp.rs by running `make site`.
 * Notify the Telegram channel.

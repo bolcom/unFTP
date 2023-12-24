@@ -136,7 +136,6 @@ fn make_pam_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
     }
 }
 
-// FIXME: add user support
 fn make_rest_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
     #[cfg(not(feature = "rest_auth"))]
     {
@@ -161,23 +160,33 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
                     );
                 }
 
-                let authenticator: unftp_auth_rest::RestAuthenticator =
-                    match unftp_auth_rest::Builder::new()
-                        .with_username_placeholder("{USER}".to_string())
-                        .with_password_placeholder("{PASS}".to_string())
-                        .with_url(String::from(url))
-                        .with_method(
-                            hyper::Method::from_str(method)
-                                .map_err(|e| format!("error creating REST auth: {}", e))?,
-                        )
-                        .with_body(String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or("")))
-                        .with_selector(String::from(selector))
-                        .with_regex(String::from(regex))
-                        .build()
-                    {
-                        Ok(res) => res,
-                        Err(e) => return Err(format!("Unable to create RestAuthenticator: {}", e)),
-                    };
+                let body = String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or(""));
+                let mut builder = unftp_auth_rest::Builder::new()
+                    .with_url(String::from(url))
+                    .with_method(
+                        hyper::Method::from_str(method)
+                            .map_err(|e| format!("error creating REST auth: {}", e))?,
+                    )
+                    .with_body(String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or("")))
+                    .with_selector(String::from(selector))
+                    .with_regex(String::from(regex));
+
+                if url.contains("{USER}") || body.contains("{USER}") {
+                    builder = builder.with_username_placeholder("{USER}".to_string());
+                }
+
+                if url.contains("{PASS}") || body.contains("{PASS}") {
+                    builder = builder.with_password_placeholder("{PASS}".to_string());
+                }
+
+                if url.contains("{IP}") || body.contains("{IP}") {
+                    builder = builder.with_source_ip_placeholder("{IP}".to_string());
+                }
+
+                let authenticator: unftp_auth_rest::RestAuthenticator = match builder.build() {
+                    Ok(res) => res,
+                    Err(e) => return Err(format!("Unable to create RestAuthenticator: {}", e)),
+                };
 
                 Ok(LookupAuthenticator::new(authenticator))
             }
