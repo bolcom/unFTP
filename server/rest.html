@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
 
-    <title>unFTP</title>
+    <title>REST auth</title>
     <meta name="description" content="Documentation for unFTP">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -101,7 +101,7 @@
         <li><a href="/unFTPunFTPunFTP/server/jsonconfig">Per User Config</a></li>
         
     
-        <li><a href="/unFTPunFTPunFTP/server/rest">REST auth</a></li>
+        <li><a class="active" href="/unFTPunFTPunFTP/server/rest">REST auth</a></li>
         
     
         <li><a href="/unFTPunFTPunFTP/server/pubsub">Pub/Sub</a></li>
@@ -140,26 +140,32 @@
 
             </div>
             <div class='doctave-content'>
-                <h2 id="when-you-need-to-ftp-💾,-but-don't-want-to...-deploy-🚀-an-ftps-server-to-kubernetes-or-build-🧰-your-own.">When you need to FTP 💾, but don't want to... Deploy 🚀 an FTPS server to Kubernetes or build 🧰 your own.</h2>
-<hr>
-<p><strong>unFTP is an open-source FTP(S)</strong> (not SFTP) server aimed at the <strong>Cloud</strong> that allows bespoke <strong>extension</strong> through 
-its pluggable authenticator, storage back-end and user detail store architectures. It aims to bring features typically 
-needed in cloud environments like integration with proxy servers, Prometheus monitoring and shipping of structured 
-logs while capitalizing on the memory safety and speed provided by its implementation language, <a href="https://www.rust-lang.org/">Rust</a>.</p>
-<p>unFTP is first an <strong>embeddable library</strong> (<a href="https://crates.io/crates/libunftp">libunftp</a>) and second an 
-FTPS <strong>server application</strong> (<a href="https://github.com/bolcom/unFTP">unFTP</a>). You can run it out of the box, embed it in your 
-app, craft your own server or build extensions for it.</p>
-<p><strong>un</strong>FTP tries to <strong>un</strong>tangle you from old-school environments so you can move all the things, even FTP, to the cloud 
-while your users still get that familiar FTP feeling.</p>
-<h3 id="looking-for-something-else?">Looking for something else?</h3>
-<ul>
-<li><a href="https://github.com/bolcom/libunftp">libunftp on Github</a></li>
-<li><a href="https://docs.rs/libunftp/latest">libunftp API docs</a></li>
-<li><a href="https://crates.io/crates/libunftp">libunftp crate</a></li>
-<li><a href="https://github.com/bolcom/unFTP">unFTP server on Github</a></li>
-<li><a href="https://crates.io/search?page=1&amp;per_page=10&amp;q=unftp-sbe-">Storage Backends for libunftp</a></li>
-<li><a href="https://crates.io/search?page=1&amp;per_page=10&amp;q=unftp-auth-">Authentication Backends for libunftp</a></li>
-</ul>
+                <p>There are multiple ways to externalize authentication, rather than <a href="/unFTPunFTPunFTP/server/jsonconfig">local JSON authentication</a>.
+This page explains how to use the REST authenticator.
+With the REST method, you provide your own HTTP endpoint.
+You can use any method like GET or POST, and you can customize unFTP to support your API.</p>
+<h2 id="set-up">Set up</h2>
+<p>Example:</p>
+<pre><code class="language-sh">unftp \
+    --auth-type rest \
+    --auth-rest-method POST \
+    --auth-rest-url http://localhost:5000/v1/ftp-auth \
+    --auth-rest-body '{"username":"{USER}","password":"{PASS}"}' \
+    --auth-rest-selector /status \
+    --auth-rest-regex successful
+</code></pre>
+<p>Let's say, a user <code>alice</code> logs in on the unFTP server.
+With the above configuration unFTP will build an HTTP POST authentication request for http://localhost:5000/v1/ftp-auth
+It will replace the placeholders <code>{USER}</code>, and <code>{PASS}</code> with the given FTP username and password:</p>
+<pre><code class="language-json">{"username":"alice","password":"abc1234"}
+</code></pre>
+<p>And, if the login was successful, the server should respond with something like:</p>
+<pre><code class="language-json">{"message":"User logged in.","status":"successful"}
+</code></pre>
+<p>The REST authenticator uses the <code>/status</code> JSON pointer, and matches it to <code>"successful"</code>.</p>
+<p>Aside from the placeholders <code>{USER}</code> and <code>{PASS}</code> you can use <code>{IP}</code>.
+That will add the source IP address of the connected client.
+That is in case if you want to perform client-IP whitelisting, next to regular username and password.</p>
 
             </div>
             <div class='sidebar-right'>
@@ -168,11 +174,7 @@ while your users still get that familiar FTP feeling.</p>
                     <ul>
                         
                         <li class='page-nav-level-2'>
-                            <a href='#when-you-need-to-ftp-💾,-but-don&#x27;t-want-to...-deploy-🚀-an-ftps-server-to-kubernetes-or-build-🧰-your-own.'>When you need to FTP 💾, but don&#x27;t want to... Deploy 🚀 an FTPS server to Kubernetes or build 🧰 your own.</a>
-                        </li>
-                        
-                        <li class='page-nav-level-3'>
-                            <a href='#looking-for-something-else?'>Looking for something else?</a>
+                            <a href='#set-up'>Set up</a>
                         </li>
                         
                     </ul>
