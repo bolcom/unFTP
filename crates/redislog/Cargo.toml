@@ -17,7 +17,7 @@ chrono = { version = "0.4.31", default-features = false, features = ["std", "clo
 r2d2 = "0.8.10"
 r2d2_redis = "0.14.0"
 redis = "0.20.2"
-serde_json = "1.0.107"
+serde_json = "1.0.108"
 slog = { version = "2.7.0", features = ["max_level_trace", "release_max_level_info"] }
 
 [dev-dependencies]

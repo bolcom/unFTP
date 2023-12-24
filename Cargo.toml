@@ -1,6 +1,6 @@
 [package]
 name = "unftp"
-version = "0.14.4"
+version = "0.14.5"
 authors = [
     "Agoston Horvath <ahorvath@bol.com>",
     "Dávid Kosztka <dkosztka@bol.com>",
@@ -27,25 +27,25 @@ path="crates/redislog"
 version="0.1.2"
 
 [dependencies]
-async-trait = "0.1.73"
+async-trait = "0.1.75"
 base64 = "0.13.1"
 clap = { version = "3.2.25", features = ["derive", "env"] }
 console-subscriber = { version = "0.1.10", optional = true }
-flate2 = "1.0.27"
-futures = "0.3.28"
-http = "0.2.9"
-hyper = { version = "0.14.27", features = ["server", "http1"] }
+flate2 = "1.0.28"
+futures = "0.3.30"
+http = "0.2.11"
+hyper = { version = "0.14.28", features = ["server", "http1"] }
 hyper-rustls = "0.23.2"
 lazy_static = "1.4.0"
 libunftp = "0.19.1"
 prometheus = { version = "0.13.3", features = ["process"] }
-serde = { version = "1.0.188", features = ["derive"] }
-serde_json = "1.0.107"
+serde = { version = "1.0.193", features = ["derive"] }
+serde_json = "1.0.108"
 slog = { version = "2.7.0", features = ["max_level_trace", "release_max_level_info"] }
 slog-async = "2.8.0"
 slog-term = "2.9.0"
-thiserror = "1.0.48"
-tokio = { version = "1.32.0", features = ["signal", "rt-multi-thread"] }
+thiserror = "1.0.51"
+tokio = { version = "1.35.1", features = ["signal", "rt-multi-thread"] }
 unftp-sbe-fs = "0.2.4"
 unftp-sbe-gcs = { version = "0.2.5", optional = true }
 unftp-auth-rest = { version = "0.2.4", optional = true }
@@ -54,7 +54,7 @@ unftp-sbe-rooter = "0.2.0"
 unftp-sbe-restrict = "0.1.1"
 
 [target.'cfg(unix)'.dependencies]
-unftp-auth-pam = { version = "0.2.3", optional = true }
+unftp-auth-pam = { version = "0.2.4", optional = true }
 
 [features]
 default = ["rest_auth", "cloud_storage", "jsonfile_auth"]
