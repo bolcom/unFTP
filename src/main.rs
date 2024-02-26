@@ -3,7 +3,6 @@ extern crate lazy_static;
 
 extern crate clap;
 
-#[allow(dead_code)]
 mod app;
 mod args;
 mod auth;
@@ -16,15 +15,14 @@ mod notify;
 mod storage;
 
 use crate::{
-    app::libunftp_version,
-    args::FtpsClientAuthType,
-    auth::{DefaultUserProvider, JsonUserProvider},
-    domain::{EventDispatcher, FTPEvent, FTPEventPayload},
-    notify::FTPListener,
+    app::libunftp_version, args::FtpsClientAuthType, auth::DefaultUserProvider, notify::FTPListener,
 };
 use auth::LookupAuthenticator;
 use clap::ArgMatches;
+use domain::events::{EventDispatcher, FTPEvent, FTPEventPayload};
+use domain::user;
 use flate2::read::GzDecoder;
+use infra::usrdetail_json::JsonUserProvider;
 use libunftp::{
     auth as auth_spi,
     notification::{DataListener, PresenceListener},
@@ -52,6 +50,8 @@ use tokio::runtime::Runtime;
 #[cfg(feature = "pam_auth")]
 use unftp_auth_pam as pam;
 use unftp_sbe_gcs::options::AuthMethod;
+use unftp_sbe_restrict::RestrictingVfs;
+use unftp_sbe_rooter::RooterVfs;
 
 fn load_user_file(
     path: &str,
@@ -91,7 +91,7 @@ fn load_user_file(
 
 fn make_auth(
     m: &clap::ArgMatches,
-) -> Result<Arc<dyn auth_spi::Authenticator<auth::User> + Send + Sync + 'static>, String> {
+) -> Result<Arc<dyn auth_spi::Authenticator<user::User> + Send + Sync + 'static>, String> {
     let mut auth: LookupAuthenticator = match m.value_of(args::AUTH_TYPE) {
         None | Some("anonymous") => make_anon_auth(),
         Some("pam") => make_pam_auth(m),
@@ -217,9 +217,9 @@ fn make_json_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
 }
 
 type VfsProducer = Box<
-    dyn (Fn() -> storage::RooterVfs<
-            storage::RestrictingVfs<storage::ChoosingVfs, auth::User, storage::SbeMeta>,
-            auth::User,
+    dyn (Fn() -> RooterVfs<
+            RestrictingVfs<storage::ChoosingVfs, user::User, storage::SbeMeta>,
+            user::User,
             storage::SbeMeta,
         >) + Send
         + Sync,
@@ -230,7 +230,7 @@ fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> VfsProducer {
     let p: PathBuf = m.value_of(args::ROOT_DIR).unwrap().into();
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
     Box::new(move || {
-        storage::RooterVfs::new(storage::RestrictingVfs::new(storage::ChoosingVfs {
+        RooterVfs::new(RestrictingVfs::new(storage::ChoosingVfs {
             inner: storage::InnerVfs::File(unftp_sbe_fs::Filesystem::new(p.clone())),
             log: sub_log.clone(),
         }))
@@ -295,7 +295,7 @@ fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer
 
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
     Ok(Box::new(move || {
-        storage::RooterVfs::new(storage::RestrictingVfs::new(storage::ChoosingVfs {
+        RooterVfs::new(RestrictingVfs::new(storage::ChoosingVfs {
             inner: storage::InnerVfs::Cloud(unftp_sbe_gcs::CloudStorage::with_api_base(
                 base_url.clone(),
                 bucket.clone(),
@@ -393,7 +393,7 @@ fn start_ftp_with_storage<S>(
     done: tokio::sync::mpsc::Sender<()>,
 ) -> Result<(), String>
 where
-    S: StorageBackend<auth::User> + Send + Sync + 'static,
+    S: StorageBackend<user::User> + Send + Sync + 'static,
     S::Metadata: Sync + Send,
 {
     let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());

@@ -1,9 +1,6 @@
-use crate::{
-    args,
-    domain::{EventDispatcher, FTPEvent, FTPEventPayload, NullEventDispatcher},
-    infra::PubsubEventDispatcher,
-};
+use crate::{args, infra::PubsubEventDispatcher};
 
+use crate::domain::events::{EventDispatcher, FTPEvent, FTPEventPayload, NullEventDispatcher};
 use async_trait::async_trait;
 use clap::ArgMatches;
 use libunftp::notification::{DataEvent, EventMeta, PresenceEvent};
