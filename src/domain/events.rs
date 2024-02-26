@@ -1,6 +1,10 @@
+//! Event definitions
+//!
+//! Packages elsewhere e.g. in the [`infra`](crate::infra) module implements these traits defined here.
+
 use async_trait::async_trait;
-use serde::__private::fmt::Debug;
 use serde::{Deserialize, Serialize};
+use std::fmt::Debug;
 
 // EventDispatcher can send events to the outside world.
 #[async_trait]
@@ -8,16 +12,16 @@ pub trait EventDispatcher<T>: Send + Sync + Debug {
     async fn dispatch(&self, event: T);
 }
 
-// An EventDispatcher that dispatches to the void of nothingness.
-#[derive(Debug)]
-pub struct NullEventDispatcher {}
-
 #[async_trait]
 impl EventDispatcher<FTPEvent> for NullEventDispatcher {
     async fn dispatch(&self, _event: FTPEvent) {
         // Do Nothing
     }
 }
+
+// An EventDispatcher that dispatches to the void of nothingness.
+#[derive(Debug)]
+pub struct NullEventDispatcher {}
 
 // The event that will be sent
 #[derive(Serialize, Deserialize, Debug)]

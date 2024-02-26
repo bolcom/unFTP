@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 /// The application name
 pub const NAME: &str = "unFTP";
 

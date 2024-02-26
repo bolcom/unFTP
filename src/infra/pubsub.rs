@@ -1,4 +1,4 @@
-use crate::domain::{EventDispatcher, FTPEvent, FTPEventPayload};
+use crate::domain::events::{EventDispatcher, FTPEvent, FTPEventPayload};
 use crate::infra::workload_identity;
 use async_trait::async_trait;
 use http::{header, Method, Request, StatusCode, Uri};

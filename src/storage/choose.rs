@@ -8,7 +8,7 @@ use async_trait::async_trait;
 use libunftp::storage;
 use libunftp::storage::{Fileinfo, StorageBackend};
 
-use crate::auth::User;
+use crate::domain::user::User;
 
 /**
  * A virtual file system that represents either a Cloud or file system back-end.
