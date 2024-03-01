@@ -42,6 +42,7 @@ pub const REDIS_PORT: &str = "log-redis-port";
 pub const ROOT_DIR: &str = "root-dir";
 pub const STORAGE_BACKEND_TYPE: &str = "sbe-type";
 pub const USR_JSON_PATH: &str = "usr-json-path";
+pub const USR_HTTP_URL: &str = "usr-http-url";
 pub const VERBOSITY: &str = "verbosity";
 
 #[derive(ArgEnum, Clone, Debug)]
@@ -500,6 +501,14 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::Command {
                 .value_name("PATH")
                 .help("The path to a JSON user detail file")
                 .env("UNFTP_USR_JSON_PATH")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::new(USR_HTTP_URL)
+                .long("usr-http-url")
+                .value_name("URL")
+                .help("The URL to fetch user details from via a GET request. The username will be appended to this path.")
+                .env("UNFTP_USR_HTTP_URL")
                 .takes_value(true),
         )
         .arg(

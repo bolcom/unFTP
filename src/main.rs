@@ -14,6 +14,7 @@ mod metrics;
 mod notify;
 mod storage;
 
+use crate::infra::userdetail_http::HTTPUserDetailProvider;
 use crate::{
     app::libunftp_version, args::FtpsClientAuthType, auth::DefaultUserProvider, notify::FTPListener,
 };
@@ -99,14 +100,27 @@ fn make_auth(
         Some("json") => make_json_auth(m),
         unknown_type => Err(format!("unknown auth type: {}", unknown_type.unwrap())),
     }?;
-    auth.set_usr_detail(match m.value_of(args::USR_JSON_PATH) {
-        Some(path) => {
-            let json: String = load_user_file(path)
-                .map_err(|e| format!("could not load user file '{}': {}", path, e))?;
-            Box::new(JsonUserProvider::from_json(json.as_str())?)
-        }
-        None => Box::new(DefaultUserProvider {}),
-    });
+    auth.set_usr_detail(
+        match (
+            m.value_of(args::USR_JSON_PATH),
+            m.value_of(args::USR_HTTP_URL),
+        ) {
+            (Some(path), None) => {
+                let json: String = load_user_file(path)
+                    .map_err(|e| format!("could not load user file '{}': {}", path, e))?;
+                Box::new(JsonUserProvider::from_json(json.as_str())?)
+            }
+            (None, Some(url)) => Box::new(HTTPUserDetailProvider::new(url)),
+            (None, None) => Box::new(DefaultUserProvider {}),
+            _ => {
+                return Err(format!(
+                    "please specify either '{}' or '{}' but not both",
+                    args::USR_JSON_PATH,
+                    args::USR_HTTP_URL
+                ))
+            }
+        },
+    );
     Ok(Arc::new(auth))
 }
 
