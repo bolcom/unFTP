@@ -52,6 +52,7 @@ unftp-auth-rest = { version = "0.2.6", optional = true }
 unftp-auth-jsonfile = { version = "0.3.4", optional = true }
 unftp-sbe-rooter = "0.2.1"
 unftp-sbe-restrict = "0.1.2"
+url = "2.5.0"
 
 [target.'cfg(unix)'.dependencies]
 unftp-auth-pam = { version = "0.2.5", optional = true }
