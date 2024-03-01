@@ -1,4 +1,4 @@
-use crate::domain::user::{User, UserDetailProvider};
+use crate::domain::user::{User, UserDetailError, UserDetailProvider};
 use async_trait::async_trait;
 use libunftp::auth::{AuthenticationError, Credentials, DefaultUser};
 
@@ -32,11 +32,10 @@ impl libunftp::auth::Authenticator<User> for LookupAuthenticator {
     ) -> Result<User, AuthenticationError> {
         self.inner.authenticate(username, creds).await?;
         let user_provider = self.usr_detail.as_ref().unwrap();
-        if let Some(user) = user_provider.provide_user_detail(username) {
-            Ok(user)
-        } else {
-            Ok(User::with_defaults(username))
-        }
+        Ok(user_provider
+            .provide_user_detail(username)
+            .await
+            .map_err(|e| AuthenticationError::with_source("error getting user detail", e))?)
     }
 
     async fn cert_auth_sufficient(&self, username: &str) -> bool {
@@ -47,8 +46,9 @@ impl libunftp::auth::Authenticator<User> for LookupAuthenticator {
 #[derive(Debug)]
 pub struct DefaultUserProvider {}
 
+#[async_trait]
 impl UserDetailProvider for DefaultUserProvider {
-    fn provide_user_detail(&self, username: &str) -> Option<User> {
-        Some(User::with_defaults(username))
+    async fn provide_user_detail(&self, username: &str) -> Result<User, UserDetailError> {
+        Ok(User::with_defaults(username))
     }
 }
