@@ -1172,8 +1172,7 @@ dependencies = [
 [[package]]
 name = "libunftp"
 version = "0.19.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1f49971080b2ea8c8f254a94bd98d7873e236b32c1f2b486ab514009e09fdb4b"
+source = "git+https://github.com/bolcom/libunftp.git?branch=backport-fbs-fix-508#af503dd779131c7fa5a4d6e63db54a5fdf368aad"
 dependencies = [
  "async-trait",
  "bitflags 2.4.1",
@@ -2707,8 +2706,7 @@ dependencies = [
 [[package]]
 name = "unftp-auth-jsonfile"
 version = "0.3.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6e70b92dc601a8b364a9048879f0d0866eee41d700da1c825cd32a714dadb85d"
+source = "git+https://github.com/bolcom/libunftp.git?branch=backport-fbs-fix-508#af503dd779131c7fa5a4d6e63db54a5fdf368aad"
 dependencies = [
  "async-trait",
  "base64 0.21.5",
@@ -2742,8 +2740,7 @@ dependencies = [
 [[package]]
 name = "unftp-auth-rest"
 version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "092ea9a32364a7160dadddd277bd386ed679bdf272cd3f74d50a81645dc58395"
+source = "git+https://github.com/bolcom/libunftp.git?branch=backport-fbs-fix-508#af503dd779131c7fa5a4d6e63db54a5fdf368aad"
 dependencies = [
  "async-trait",
  "hyper",
@@ -2761,8 +2758,7 @@ dependencies = [
 [[package]]
 name = "unftp-sbe-fs"
 version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3f7165a6e8d96504e2515247fec05fac7f3add1b295d53d81f6aa3c0eee69ace"
+source = "git+https://github.com/bolcom/libunftp.git?branch=backport-fbs-fix-508#af503dd779131c7fa5a4d6e63db54a5fdf368aad"
 dependencies = [
  "async-trait",
  "cfg-if",
@@ -2778,8 +2774,7 @@ dependencies = [
 [[package]]
 name = "unftp-sbe-gcs"
 version = "0.2.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "539b07479f2139bab50bcef472f0169abda057fdd00ae86313b22350701d18b0"
+source = "git+https://github.com/bolcom/libunftp.git?branch=backport-fbs-fix-508#af503dd779131c7fa5a4d6e63db54a5fdf368aad"
 dependencies = [
  "async-trait",
  "base64 0.21.5",

@@ -109,3 +109,10 @@ unlike your normal FTP server in that it provides:
 With unFTP, you can present RFC compliant FTP(S) to the outside world while freeing yourself to use modern APIs and
 techniques on the inside of your perimeter.
 """
+
+[patch.crates-io]
+libunftp = { git = "https://github.com/bolcom/libunftp.git", branch = "backport-fbs-fix-508"}
+unftp-sbe-gcs = { git = "https://github.com/bolcom/libunftp.git", branch = "backport-fbs-fix-508" }
+unftp-sbe-fs =  { git = "https://github.com/bolcom/libunftp.git", branch = "backport-fbs-fix-508" }
+unftp-auth-rest =  { git = "https://github.com/bolcom/libunftp.git", branch = "backport-fbs-fix-508" }
+unftp-auth-jsonfile =  { git = "https://github.com/bolcom/libunftp.git", branch = "backport-fbs-fix-508" }
