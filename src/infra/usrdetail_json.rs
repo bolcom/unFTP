@@ -3,7 +3,7 @@ use serde::Deserialize;
 use std::path::PathBuf;
 use unftp_sbe_restrict::VfsOperations;
 
-/// A [`UserDetail`] provider that gets user details from a JSON file.
+/// A [`UserDetailProvider`] that gets user details from a JSON file.
 #[derive(Debug, Deserialize)]
 pub struct JsonUserProvider {
     users: Vec<UserJsonObj>,

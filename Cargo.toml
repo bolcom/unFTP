@@ -1,6 +1,6 @@
 [package]
 name = "unftp"
-version = "0.14.5"
+version = "0.14.6"
 authors = [
     "Agoston Horvath <ahorvath@bol.com>",
     "Dávid Kosztka <dkosztka@bol.com>",
@@ -23,38 +23,38 @@ documentation = "https://github.com/bolcom/unFTP"
 [workspace]
 
 [dependencies.slog-redis]
-path="crates/redislog"
-version="0.1.2"
+path = "crates/redislog"
+version = "0.1.2"
 
 [dependencies]
-async-trait = "0.1.75"
+async-trait = "0.1.80"
 base64 = "0.13.1"
 clap = { version = "3.2.25", features = ["derive", "env"] }
 console-subscriber = { version = "0.1.10", optional = true }
-flate2 = "1.0.28"
+flate2 = "1.0.30"
 futures = "0.3.30"
-http = "0.2.11"
+http = "0.2.12"
 hyper = { version = "0.14.28", features = ["server", "http1"] }
 hyper-rustls = "0.23.2"
 lazy_static = "1.4.0"
-libunftp = "0.19.1"
-prometheus = { version = "0.13.3", features = ["process"] }
-serde = { version = "1.0.193", features = ["derive"] }
-serde_json = "1.0.108"
+libunftp = "0.20.0"
+prometheus = { version = "0.13.4", features = ["process"] }
+serde = { version = "1.0.202", features = ["derive"] }
+serde_json = "1.0.117"
 slog = { version = "2.7.0", features = ["max_level_trace", "release_max_level_info"] }
 slog-async = "2.8.0"
-slog-term = "2.9.0"
-thiserror = "1.0.51"
-tokio = { version = "1.35.1", features = ["signal", "rt-multi-thread"] }
-unftp-sbe-fs = "0.2.4"
-unftp-sbe-gcs = { version = "0.2.5", optional = true }
-unftp-auth-rest = { version = "0.2.4", optional = true }
-unftp-auth-jsonfile = { version = "0.3.3", optional = true }
-unftp-sbe-rooter = "0.2.0"
-unftp-sbe-restrict = "0.1.1"
+slog-term = "2.9.1"
+thiserror = "1.0.60"
+tokio = { version = "1.37.0", features = ["signal", "rt-multi-thread"] }
+unftp-sbe-fs = "0.2.5"
+unftp-sbe-gcs = { version = "0.2.6", optional = true }
+unftp-auth-rest = { version = "0.2.6", optional = true }
+unftp-auth-jsonfile = { version = "0.3.4", optional = true }
+unftp-sbe-rooter = "0.2.1"
+unftp-sbe-restrict = "0.1.2"
 
 [target.'cfg(unix)'.dependencies]
-unftp-auth-pam = { version = "0.2.4", optional = true }
+unftp-auth-pam = { version = "0.2.5", optional = true }
 
 [features]
 default = ["rest_auth", "cloud_storage", "jsonfile_auth"]

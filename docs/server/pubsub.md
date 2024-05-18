@@ -7,9 +7,10 @@ integration with [Google Pub/Sub](https://cloud.google.com/pubsub).
 
 # Enabling the Pub/Sub integration
 
-You can enable the unFTP Pub/Sub notifier by specifying the `--ntf-pubsub-project` and `--ntf-pubsub-topic` arguments. 
+You can enable the unFTP Pub/Sub notifier by specifying the `--ntf-pubsub-project` and `--ntf-pubsub-topic` arguments.
 
-NOTE: Currently authentication with [workload identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) is the 
+NOTE: Currently authentication
+with [workload identity](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity) is the
 only supported authentication mechanism.
 
 Here is an example:
@@ -30,9 +31,9 @@ Message attributes can be used to [filter messages](https://cloud.google.com/pub
 when you receive messages from a subscription with a filter, you only receive the messages that match the filter. unFTP
 only specifies an `eventType` attribute:
 
-Key              | Value  | Description |
------------------|--------|-----|
-eventType        | _One of_: <p/>- startup <br/> - login <br/>- logout <br/>- get <br/>- put <br/>- delete <br/>- makeDir <br/>- rename <br/>- removeDir | Indicates the type of event |
+ Key       | Value                                                                                                                                 | Description                 |
+-----------|---------------------------------------------------------------------------------------------------------------------------------------|-----------------------------|
+ eventType | _One of_: <p/>- startup <br/> - login <br/>- logout <br/>- get <br/>- put <br/>- delete <br/>- makeDir <br/>- rename <br/>- removeDir | Indicates the type of event |
 
 ## Message Body
 
@@ -67,14 +68,14 @@ All of them are of type JSON object. Examples of their format are shown below.
 
 ```json
 {
-   "source_instance":"unFTP",
-   "hostname":"MYMAC-XYZ",
-   "payload":{
-      "Startup":{
-         "libunftp_version":"0.19.1",
-         "unftp_version":"v0.14.5"
-      }
-   }
+  "source_instance": "unFTP",
+  "hostname": "MYMAC-XYZ",
+  "payload": {
+    "Startup": {
+      "libunftp_version": "0.19.1",
+      "unftp_version": "v0.14.6"
+    }
+  }
 }
 ```
 
@@ -82,14 +83,14 @@ All of them are of type JSON object. Examples of their format are shown below.
 
 ```json
 {
-   "source_instance":"unFTP",
-   "hostname":"MYMAC-XYZ",
-   "payload":{
-      "Login":{ }
-   },
-   "username":"hannes",
-   "trace_id":"0xe25ceb1d960303f3",
-   "sequence_number":1
+  "source_instance": "unFTP",
+  "hostname": "MYMAC-XYZ",
+  "payload": {
+    "Login": {}
+  },
+  "username": "hannes",
+  "trace_id": "0xe25ceb1d960303f3",
+  "sequence_number": 1
 }
 ```
 
@@ -97,14 +98,14 @@ All of them are of type JSON object. Examples of their format are shown below.
 
 ```json
 {
-   "source_instance":"unFTP",
-   "hostname":"MYMAC-XYZ",
-   "payload":{
-      "Logout":{ }
-   },
-   "username":"hannes",
-   "trace_id":"0xe25ceb1d960303f3",
-   "sequence_number":2
+  "source_instance": "unFTP",
+  "hostname": "MYMAC-XYZ",
+  "payload": {
+    "Logout": {}
+  },
+  "username": "hannes",
+  "trace_id": "0xe25ceb1d960303f3",
+  "sequence_number": 2
 }
 ```
 
@@ -112,16 +113,16 @@ All of them are of type JSON object. Examples of their format are shown below.
 
 ```json
 {
-   "source_instance":"unFTP",
-   "hostname":"MYMAC-XYZ",
-   "payload":{
-      "Get":{
-         "path":"hello.txt"
-      }
-   },
-   "username":"hannes",
-   "trace_id":"0x687ee52555459a9c",
-   "sequence_number":2
+  "source_instance": "unFTP",
+  "hostname": "MYMAC-XYZ",
+  "payload": {
+    "Get": {
+      "path": "hello.txt"
+    }
+  },
+  "username": "hannes",
+  "trace_id": "0x687ee52555459a9c",
+  "sequence_number": 2
 }
 ```
 
@@ -129,16 +130,16 @@ All of them are of type JSON object. Examples of their format are shown below.
 
 ```json
 {
-   "source_instance":"unFTP",
-   "hostname":"MYMAC-XYZ",
-   "payload":{
-      "MakeDir":{
-         "path":"/x"
-      }
-   },
-   "username":"hannes",
-   "trace_id":"0x687ee52555459a9c",
-   "sequence_number":3
+  "source_instance": "unFTP",
+  "hostname": "MYMAC-XYZ",
+  "payload": {
+    "MakeDir": {
+      "path": "/x"
+    }
+  },
+  "username": "hannes",
+  "trace_id": "0x687ee52555459a9c",
+  "sequence_number": 3
 }
 ```
 
@@ -146,17 +147,17 @@ All of them are of type JSON object. Examples of their format are shown below.
 
 ```json
 {
-   "source_instance":"unFTP",
-   "hostname":"MYMAC-XYZ",
-   "payload":{
-      "Rename":{
-         "from":"/x",
-         "to":"/y"
-      }
-   },
-   "username":"hannes",
-   "trace_id":"0x687ee52555459a9c",
-   "sequence_number":4
+  "source_instance": "unFTP",
+  "hostname": "MYMAC-XYZ",
+  "payload": {
+    "Rename": {
+      "from": "/x",
+      "to": "/y"
+    }
+  },
+  "username": "hannes",
+  "trace_id": "0x687ee52555459a9c",
+  "sequence_number": 4
 }
 ```
 
@@ -164,15 +165,15 @@ All of them are of type JSON object. Examples of their format are shown below.
 
 ```json
 {
-   "source_instance":"unFTP",
-   "hostname":"MYMAC-XYZ",
-   "payload":{
-      "Put":{
-         "path":"x.yaml"
-      }
-   },
-   "username":"hannes",
-   "trace_id":"0x687ee52555459a9c",
-   "sequence_number":5
+  "source_instance": "unFTP",
+  "hostname": "MYMAC-XYZ",
+  "payload": {
+    "Put": {
+      "path": "x.yaml"
+    }
+  },
+  "username": "hannes",
+  "trace_id": "0x687ee52555459a9c",
+  "sequence_number": 5
 }
 ```

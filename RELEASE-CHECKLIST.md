@@ -1,22 +1,23 @@
 # Release Checklist
 
 * Update the Rust version in the Makefile and the Github actions file
-* Update minor versions dependencies
+* Update minor versions dependencies. Install [cargo-edit](https://crates.io/crates/cargo-edit) and run `cargo upgrade`.
+  Cargo-edit also covers all the crates in the workspace
 * Update Cargo.toml with the new version number (also check for libunftp version references)
 * Search for the old version number to find references to it in documentation and update those occurrences.
 * Run `make pr-prep`, ensuring everything is green
 * Prepare release notes for the Github release page
-* Make a new commit indicating the crate name and version number e.g.    
-    > Release unftp version x.y.x
+* Make a new commit indicating the crate name and version number e.g.
+  > Release unftp version x.y.x
 
-    or
+  or
 
-    > Release slog-redis version x.y.x
+  > Release slog-redis version x.y.x
 * Make a pull request for this but don't merge.
 * Wait till MR pipelins are OK then run `make publish`
 * Merge the MR via the command line by merging marster into the branch and pushing it.
 * Create the release in Github using tag format \[{component}-\]{version} e.g.
-  > v0.14.5
+  > v0.14.6
   or
   > slog-redis-v0.1.2
 * Wait for the Github Actions pipeline to finish. You should see all artifacts in the release page.

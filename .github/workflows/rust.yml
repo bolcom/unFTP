@@ -12,7 +12,7 @@ name: build
 # Update the RUST_VERSION here and in the Makefile when we upgrade
 env:
   CARGO_TERM_COLOR: always
-  RUST_VERSION: 1.74.1
+  RUST_VERSION: 1.78.0
 
 on:
   push:
@@ -22,7 +22,7 @@ on:
     branches:
       - master
   release:
-    types: [created]
+    types: [ created ]
 
 jobs:
 
@@ -47,20 +47,20 @@ jobs:
     runs-on: ubuntu-latest
     if: ${{ github.ref != 'refs/heads/master' }}
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-    - name: Install Rust toolchain
-      uses: actions-rs/toolchain@v1
-      with:
-        toolchain: ${{ env.RUST_VERSION }}
-        override: true
-        default: true
-        components: rustfmt
-    - name: Check formatting
-      uses: actions-rs/cargo@v1
-      with:
-        command: fmt
-        args: --all -- --check
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+          default: true
+          components: rustfmt
+      - name: Check formatting
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
 
   clippy:
     name: Run Clippy
@@ -84,24 +84,24 @@ jobs:
           args: --all-features --workspace -- -D warnings
 
   test:
-      name: Run Tests
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout sources
-          uses: actions/checkout@v3
-        - name: Install rust toolchain
-          uses: actions-rs/toolchain@v1
-          with:
-            toolchain: ${{ env.RUST_VERSION }}
-            override: true
-            default: true
-            components: clippy
-        - name: Install build dependencies
-          run: sudo apt-get update && sudo apt-get install -y libpam-dev
-        - name: Run tests
-          run: cargo test --verbose  --workspace --all --all-features
-        - name: Build Docs
-          run: cargo doc --all-features --workspace --no-deps
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+      - name: Install rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+          default: true
+          components: clippy
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y libpam-dev
+      - name: Run tests
+        run: cargo test --verbose  --workspace --all --all-features
+      - name: Build Docs
+        run: cargo doc --all-features --workspace --no-deps
 
   build-linux-gnu:
     runs-on: ubuntu-latest
@@ -244,7 +244,7 @@ jobs:
           target: ${{ env.target }}
       - name: Install Rosetta
         if: runner.os == 'macOS' && runner.arch == 'arm64'
-        run: softwareupdate --install-rosetta          
+        run: softwareupdate --install-rosetta --agree-to-license
       - name: Build
         run: cargo build --release --target=${{ env.target }} --features rest_auth,jsonfile_auth,cloud_storage
       - name: Rename
@@ -255,7 +255,7 @@ jobs:
           name: unftp_${{ env.target }}
           path: target/${{ env.target }}/release/unftp_${{ env.target }}
 
-  upload-release-binaries:    
+  upload-release-binaries:
     if: ${{ github.event_name == 'release' }}  # Testing: if: ${{ github.ref == 'refs/heads/hannes/upload' }}
     runs-on: ubuntu-latest
     strategy:
@@ -329,7 +329,7 @@ jobs:
         run: chmod +x ./x86_64-unknown-linux-musl/unftp_x86_64-unknown-linux-musl
 
       - name: Build Docker image
-        run: docker build -t bolcom/unftp:${{ env.BUILD_VERSION }}-scratch -f packaging/docker/scratch.Dockerfile.ci . 
+        run: docker build -t bolcom/unftp:${{ env.BUILD_VERSION }}-scratch -f packaging/docker/scratch.Dockerfile.ci .
 
       - name: Save Docker image as tar
         run: docker save -o docker-image-scratch.tar bolcom/unftp:${{ env.BUILD_VERSION }}-scratch

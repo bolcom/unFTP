@@ -31,7 +31,7 @@ use libunftp::{
         FailedLoginsBlock, FailedLoginsPolicy, FtpsClientAuth, FtpsRequired, SiteMd5, TlsFlags,
     },
     storage::StorageBackend,
-    Server,
+    ServerBuilder,
 };
 use slog::*;
 use std::io::{Read, Seek};
@@ -465,7 +465,7 @@ where
         hostname: hostname.clone(),
     });
 
-    let mut server = Server::with_authenticator(storage_backend, authenticator)
+    let mut server = ServerBuilder::with_authenticator(storage_backend, authenticator)
         .greeting("Welcome to unFTP")
         .passive_ports(start_port..end_port)
         .idle_session_timeout(idle_timeout)
@@ -652,6 +652,10 @@ where
                 .ftps_trust_store(file)
         }
     };
+
+    let server = server
+        .build()
+        .map_err(|e| format!("Could not build server: {}", e))?;
 
     let log = log.clone();
     tokio::spawn(async move {
