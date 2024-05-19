@@ -1,6 +1,7 @@
 use crate::app;
 use clap::{Arg, ArgEnum, Command};
 use std::str::FromStr;
+use strum_macros::{Display, EnumString};
 
 pub const AUTH_JSON_PATH: &str = "auth-json-path";
 pub const AUTH_PAM_SERVICE: &str = "auth-pam-service";
@@ -45,13 +46,13 @@ pub const USR_JSON_PATH: &str = "usr-json-path";
 pub const USR_HTTP_URL: &str = "usr-http-url";
 pub const VERBOSITY: &str = "verbosity";
 
-#[derive(ArgEnum, Clone, Debug)]
-#[allow(non_camel_case_types)]
+#[derive(Debug, EnumString, Display, PartialEq)]
+#[strum(serialize_all = "lowercase")]
 pub enum AuthType {
-    anonymous,
-    pam,
-    rest,
-    json,
+    Anonymous,
+    Pam,
+    Rest,
+    Json,
 }
 
 #[derive(ArgEnum, Clone, Debug)]

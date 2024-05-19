@@ -18,6 +18,7 @@ use crate::infra::userdetail_http::HTTPUserDetailProvider;
 use crate::{
     app::libunftp_version, args::FtpsClientAuthType, auth::DefaultUserProvider, notify::FTPListener,
 };
+use args::AuthType;
 use auth::LookupAuthenticator;
 use clap::ArgMatches;
 use domain::events::{EventDispatcher, FTPEvent, FTPEventPayload};
@@ -93,13 +94,49 @@ fn load_user_file(
 fn make_auth(
     m: &clap::ArgMatches,
 ) -> Result<Arc<dyn auth_spi::Authenticator<user::User> + Send + Sync + 'static>, String> {
-    let mut auth: LookupAuthenticator = match m.value_of(args::AUTH_TYPE) {
-        None | Some("anonymous") => make_anon_auth(),
-        Some("pam") => make_pam_auth(m),
-        Some("rest") => make_rest_auth(m),
-        Some("json") => make_json_auth(m),
-        unknown_type => Err(format!("unknown auth type: {}", unknown_type.unwrap())),
+    let default_auth_type = AuthType::Anonymous.to_string();
+    let input_auth_type = m.value_of(args::AUTH_TYPE).unwrap_or(&default_auth_type);
+    let auth_type_variant = match input_auth_type.parse::<AuthType>() {
+        Ok(auth_type_variant) => auth_type_variant,
+        Err(strum::ParseError::VariantNotFound) => {
+            return Err(format!("unknown auth type: {}", input_auth_type))
+        }
+    };
+
+    let mut auth: LookupAuthenticator = match auth_type_variant {
+        AuthType::Anonymous => make_anon_auth(),
+        AuthType::Pam => make_pam_auth(m),
+        AuthType::Rest => make_rest_auth(m),
+        AuthType::Json => make_json_auth(m),
     }?;
+
+    if auth_type_variant != AuthType::Pam && m.is_present(args::AUTH_PAM_SERVICE) {
+        return Err(format!(
+            "parameter {} set while auth_type is set to {}",
+            args::AUTH_PAM_SERVICE,
+            auth_type_variant
+        ));
+    } else if auth_type_variant != AuthType::Json && m.is_present(args::AUTH_JSON_PATH) {
+        return Err(format!(
+            "parameter {} set while auth_type is set to {}",
+            args::AUTH_JSON_PATH,
+            auth_type_variant
+        ));
+    } else if auth_type_variant != AuthType::Rest
+        && [
+            args::AUTH_REST_URL,
+            args::AUTH_REST_REGEX,
+            args::AUTH_REST_SELECTOR,
+        ]
+        .iter()
+        .any(|&arg| m.is_present(arg))
+    {
+        return Err(format!(
+            "REST auth parameter(s) set while auth_type is set to {}",
+            auth_type_variant
+        ));
+    }
+
     auth.set_usr_detail(
         match (
             m.value_of(args::USR_JSON_PATH),
