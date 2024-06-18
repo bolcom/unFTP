@@ -1,4 +1,4 @@
-//! A libunftp [`UserDetail`](libunftp::auth::user::UserDetail) provider that obtains user detail
+//! A libunftp [`UserDetail`](libunftp::auth::UserDetail) provider that obtains user detail
 //! over HTTP.
 
 use crate::domain::user::{User, UserDetailError, UserDetailProvider};
@@ -8,7 +8,7 @@ use http::{Method, Request};
 use hyper::{Body, Client};
 use url::form_urlencoded;
 
-/// A libunftp [`UserDetail`](libunftp::auth::user::UserDetail) provider that obtains user detail
+/// A libunftp [`UserDetail`](libunftp::auth::UserDetail) provider that obtains user detail
 /// over HTTP.
 #[derive(Debug)]
 pub struct HTTPUserDetailProvider {

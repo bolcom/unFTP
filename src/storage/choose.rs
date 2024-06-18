@@ -16,6 +16,7 @@ use crate::domain::user::User;
 #[derive(Debug)]
 pub struct ChoosingVfs {
     pub inner: InnerVfs,
+    #[allow(dead_code)]
     pub log: Arc<slog::Logger>,
 }
 
