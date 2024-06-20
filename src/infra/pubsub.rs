@@ -1,6 +1,7 @@
 use crate::domain::events::{EventDispatcher, FTPEvent, FTPEventPayload};
 use crate::infra::workload_identity;
 use async_trait::async_trait;
+use base64::Engine;
 use http::{header, Method, Request, StatusCode, Uri};
 use hyper::client::connect::dns::GaiResolver;
 use hyper::client::HttpConnector;
@@ -91,7 +92,8 @@ impl PubsubEventDispatcher {
 
     // publishes to Google pub/sub
     async fn publish(&self, event: FTPEvent) -> Result<(), String> {
-        let msg = base64::encode(serde_json::to_string(&event).unwrap());
+        let msg = base64::engine::general_purpose::STANDARD
+            .encode(serde_json::to_string(&event).unwrap());
         let b = PubSubRequest {
             messages: vec![PubSubMsg {
                 data: msg.to_owned(),

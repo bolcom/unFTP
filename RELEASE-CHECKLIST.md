@@ -14,8 +14,8 @@
 
   > Release slog-redis version x.y.x
 * Make a pull request for this but don't merge.
-* Wait till MR pipelins are OK then run `make publish`
-* Merge the MR via the command line by merging marster into the branch and pushing it.
+* Wait till MR pipelines are OK then run `make publish`
+* Merge the MR via the command line by merging master into the branch and pushing it.
 * Create the release in Github using tag format \[{component}-\]{version} e.g.
   > v0.14.6
   or

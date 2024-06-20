@@ -20,6 +20,7 @@ use crate::{
 };
 use args::AuthType;
 use auth::LookupAuthenticator;
+use base64::{engine, Engine};
 use clap::ArgMatches;
 use domain::events::{EventDispatcher, FTPEvent, FTPEventPayload};
 use domain::user;
@@ -76,7 +77,7 @@ fn load_user_file(
             let mut b = Vec::new();
             f.read_to_end(&mut b)?;
             b.retain(|&x| x != b'\n' && x != b'\r');
-            gzdata = base64::decode(b)?;
+            gzdata = engine::general_purpose::STANDARD.decode(b)?;
         } else {
             f.read_to_end(&mut gzdata)?;
         }
