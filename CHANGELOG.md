@@ -1,5 +1,13 @@
 # Changelog
 
+## 2023-12-24 unftp v0.14.7
+
+- Upgraded to libunftp v0.20.1
+- Fixed builds on Windows
+- Compile with Rust 1.79.0
+- [#171](https://github.com/bolcom/unFTP/pull/171) Ability to obtain User info over HTTP with `--usr-http-url`
+- [#175](https://github.com/bolcom/unFTP/pull/175) Guard against configuration mistakes leading to security issues
+
 ## 2023-12-24 unftp v0.14.6
 
 - Upgraded to libunftp v0.20.0
