@@ -28,33 +28,33 @@ version = "0.1.2"
 
 [dependencies]
 async-trait = "0.1.80"
-base64 = "0.13.1"
+base64 = "0.22.1"
 clap = { version = "3.2.25", features = ["derive", "env"] }
-console-subscriber = { version = "0.1.10", optional = true }
+console-subscriber = { version = "0.3.0", optional = true }
 flate2 = "1.0.30"
 futures = "0.3.30"
 http = "0.2.12"
-hyper = { version = "0.14.28", features = ["server", "http1"] }
+hyper = { version = "0.14.29", features = ["server", "http1"] }
 hyper-rustls = "0.23.2"
 lazy_static = "1.4.0"
-libunftp = "0.20.0"
+libunftp = "0.20.1"
 prometheus = { version = "0.13.4", features = ["process"] }
-serde = { version = "1.0.202", features = ["derive"] }
+serde = { version = "1.0.203", features = ["derive"] }
 serde_json = "1.0.117"
 slog = { version = "2.7.0", features = ["max_level_trace", "release_max_level_info"] }
 slog-async = "2.8.0"
 slog-term = "2.9.1"
-thiserror = "1.0.60"
-tokio = { version = "1.37.0", features = ["signal", "rt-multi-thread"] }
+strum = { version = "0.26.2", features = ["derive"] }
+strum_macros = "0.26.2"
+thiserror = "1.0.61"
+tokio = { version = "1.38.0", features = ["signal", "rt-multi-thread"] }
 unftp-sbe-fs = "0.2.5"
 unftp-sbe-gcs = { version = "0.2.6", optional = true }
 unftp-auth-rest = { version = "0.2.6", optional = true }
 unftp-auth-jsonfile = { version = "0.3.4", optional = true }
 unftp-sbe-rooter = "0.2.1"
 unftp-sbe-restrict = "0.1.2"
-url = "2.5.0"
-strum = { version = "0.26.2", features = ["derive"] }
-strum_macros = "0.26.2"
+url = "2.5.2"
 
 [target.'cfg(unix)'.dependencies]
 unftp-auth-pam = { version = "0.2.5", optional = true }
