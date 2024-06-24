@@ -13,16 +13,16 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1703447343"
+    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1719261604"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1703447343"
+    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1719261604"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1703447343" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1703447343"
+    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1719261604" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1719261604"
         media="screen" />
 
     <script>
-        var DOCTAVE_TIMESTAMP = "1703447343";
+        var DOCTAVE_TIMESTAMP = "1719261604";
         var BASE_PATH = "/";
         var color = localStorage.getItem('doctave-color')
 
@@ -104,6 +104,9 @@
         <li><a href="/server/rest">REST auth</a></li>
         
     
+        <li><a href="/server/http-usr">User config over HTTP</a></li>
+        
+    
         <li><a href="/server/pubsub">Pub/Sub</a></li>
         
     
@@ -142,7 +145,8 @@
             <div class='doctave-content'>
                 <h2 id="binaries">Binaries</h2>
 <p><a href="https://github.com/bolcom/unFTP/releases">Precompiled binaries for unFTP are available</a> for Linux and macOS. On Linux
-you can choose between a statically linked image (no PAM integration) or a dynamically linked image with PAM integration:</p>
+you can choose between a statically linked image (no PAM integration) or a dynamically linked image with PAM
+integration:</p>
 <ul>
 <li>unftp_x86_64-apple-darwin - macOS</li>
 <li>unftp_x86_64-unknown-linux-musl - Linux statically linked, no PAM support.</li>
@@ -150,26 +154,27 @@ you can choose between a statically linked image (no PAM integration) or a dynam
 </ul>
 <h3 id="to-install-with-curl:">To install with Curl:</h3>
 <p>Linux (static, no PAM):</p>
-<pre><code class="language-sh">curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.5/unftp_x86_64-unknown-linux-musl \
+<pre><code class="language-sh">curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.7/unftp_x86_64-unknown-linux-musl \
   | sudo tee /usr/local/bin/unftp &gt; /dev/null &amp;&amp; sudo chmod +x /usr/local/bin/unftp
 </code></pre>
 <p>Linux (dynamic with PAM support):</p>
-<pre><code class="language-sh">curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.5/unftp_x86_64-unknown-linux-gnu \
+<pre><code class="language-sh">curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.7/unftp_x86_64-unknown-linux-gnu \
   | sudo tee /usr/local/bin/unftp &gt; /dev/null &amp;&amp; sudo chmod +x /usr/local/bin/unftp
 </code></pre>
 <p>macOS Intel:</p>
-<pre><code class="language-sh">curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.5/unftp_x86_64-apple-darwin \
+<pre><code class="language-sh">curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.7/unftp_x86_64-apple-darwin \
   | sudo tee /usr/local/bin/unftp &gt; /dev/null &amp;&amp; sudo chmod +x /usr/local/bin/unftp
 </code></pre>
 <p>macOS ARM:</p>
-<pre><code class="language-sh">curl -L https://github.com/bolcom/unFTP/releases/download/v4/unftp_aarch64-apple-darwin \
+<pre><code class="language-sh">curl -L https://github.com/bolcom/unFTP/releases/download/v0.14.7/unftp_aarch64-apple-darwin \
   | sudo tee /usr/local/bin/unftp &gt; /dev/null &amp;&amp; sudo chmod +x /usr/local/bin/unftp
 </code></pre>
 <h2 id="from-source">From Source</h2>
-<p>You'll need <a href="https://rust-lang.org">Rust</a> 1.67.1 (including <code>cargo</code>) or higher to build unFTP. Then: </p>
+<p>You'll need <a href="https://rust-lang.org">Rust</a> 1.67.1 (including <code>cargo</code>) or higher to build unFTP. Then:</p>
 <pre><code class="language-sh">cargo install unftp
 </code></pre>
-<p>and find unftp in <code>~/.cargo/bin/unftp</code>. You may want to add <code>~/.cargo/bin</code> to your PATH if you haven't done so. The above 
+<p>and find unftp in <code>~/.cargo/bin/unftp</code>. You may want to add <code>~/.cargo/bin</code> to your PATH if you haven't done so. The
+above
 merely creates the binary there, it won't start it as a service at the moment.</p>
 <h2 id="docker-images">Docker Images</h2>
 <p>See <a href="/server/docker">the Docker section</a></p>
@@ -215,11 +220,11 @@ merely creates the binary there, it won't start it as a service at the moment.</
             </div>
         </div>
     </div>
-    <script type="text/javascript" src="/assets/katex.js?v=1703447343"></script>
-    <script type="text/javascript" src="/assets/mermaid.js?v=1703447343"></script>
-    <script type="text/javascript" src="/assets/elasticlunr.js?v=1703447343"></script>
-    <script type="text/javascript" src="/assets/prism.js?v=1703447343"></script>
-    <script type="text/javascript" src="/assets/doctave-app.js?v=1703447343"></script>
+    <script type="text/javascript" src="/assets/katex.js?v=1719261604"></script>
+    <script type="text/javascript" src="/assets/mermaid.js?v=1719261604"></script>
+    <script type="text/javascript" src="/assets/elasticlunr.js?v=1719261604"></script>
+    <script type="text/javascript" src="/assets/prism.js?v=1719261604"></script>
+    <script type="text/javascript" src="/assets/doctave-app.js?v=1719261604"></script>
 
     
 </body>

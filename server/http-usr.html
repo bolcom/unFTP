@@ -5,7 +5,7 @@
 <head>
     <meta charset="utf-8">
 
-    <title>Licensing</title>
+    <title>User config over HTTP</title>
     <meta name="description" content="Documentation for unFTP">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -104,7 +104,7 @@
         <li><a href="/server/rest">REST auth</a></li>
         
     
-        <li><a href="/server/http-usr">User config over HTTP</a></li>
+        <li><a class="active" href="/server/http-usr">User config over HTTP</a></li>
         
     
         <li><a href="/server/pubsub">Pub/Sub</a></li>
@@ -126,7 +126,7 @@
             <li><a href="/support">Support</a></li>
             
         
-            <li><a class="active" href="/licensing">Licensing</a></li>
+            <li><a href="/licensing">Licensing</a></li>
             
         
     </ul>
@@ -143,18 +143,135 @@
 
             </div>
             <div class='doctave-content'>
-                <h2 id="licensing">Licensing</h2>
-<p>You're free to use, modify and distribute both libunftp and unFTP under the terms of the Apache-2.0 license.</p>
+                <p>In the "Per User Config" section we showed how to create configuration unique for each user.
+This
+configuration was stored in a JSON file. This same JSON file can be consumed by unFTP over HTTP.</p>
+<p>Start be defining the user configuration:</p>
+<pre><code class="language-shell">touch user-options.json
+</code></pre>
+<pre><code class="language-json">[
+  {
+    "username": "alice",
+    "vfs_perms": [
+      "-mkdir",
+      "-rmdir",
+      "-del",
+      "-ren",
+      "-md5"
+    ],
+    "root": "alice",
+    "account_enabled": true
+  },
+  {
+    "username": "bob",
+    "vfs_perms": [
+      "none",
+      "+put",
+      "+list",
+      "+md5"
+    ],
+    "root": "bob"
+  }
+]
+</code></pre>
+<p>Then serve this over HTTP with any method you prefer. Here is an example doing with a Go script:</p>
+<pre><code class="language-shell">touch main.go
+</code></pre>
+<pre><code class="language-go">package main
+
+import (
+	"fmt"
+	"net/http"
+	"os"
+)
+
+func main() {
+	// Specify the path to the JSON file containing user details
+	jsonFilePath := "./user-options.json"
+
+	// Create a simple HTTP handler function
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+
+    fmt.Println("Requested URL: ", r.URL)
+
+		// Check if the request method is GET
+		if r.Method == http.MethodGet {
+			// Read the contents of the JSON file
+			jsonData, err := os.ReadFile(jsonFilePath)
+			if err != nil {
+				http.Error(w, fmt.Sprintf("Error reading JSON file: %s", err), http.StatusInternalServerError)
+				return
+			}
+
+			// Set the Content-Type header to indicate JSON content
+			w.Header().Set("Content-Type", "application/json")
+
+			// Write the JSON data to the response writer
+			w.Write(jsonData)
+		} else {
+			// If the request method is not GET, respond with a 405 Method Not Allowed status
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
+		}
+	})
+
+	// Start the web server on port 8080
+	fmt.Println("Server is running on http://localhost:8080")
+	err := http.ListenAndServe(":8080", nil)
+	if err != nil {
+		fmt.Printf("Error starting server: %s\n", err)
+	}
+}
+</code></pre>
+<p>You'll need <a href="https://go.dev/">Go</a> installed and then you can do:</p>
+<pre><code class="language-go">go run main.go
+</code></pre>
+<p>and then notice the HTTP address in the output:</p>
+<pre><code>Server is running on http://localhost:8080
+</code></pre>
+<p>You then run unFTP with the <code>--usr-http-url</code> command line argument:</p>
+<pre><code class="language-shell">unftp \
+    --root-dir=. \
+    --auth-type=json \
+    --auth-json-path=credentials.json \
+    --usr-http-url='http://localhost:8080/users/'
+</code></pre>
+<p>Notice that when running unFTP, we still do <code>--auth-type=json</code> and <code>--auth-json-path=credentials.json</code>. The
+authenticator and user detail provider mechanisms are disjoint. So passwords are specified in <code>credentials.json</code> and
+the user details or options like where the user's root path is gets served over HTTP.</p>
+<p>Create the credentials file:</p>
+<pre><code class="language-shell">touch credentials.json
+</code></pre>
+<p>and add this as contents:</p>
+<pre><code class="language-json">[
+  {
+    "username": "alice",
+    "password": "12345678"
+  },
+  {
+    "username": "bob",
+    "password": "secret"
+  }
+]
+</code></pre>
+<p>Let us also make home directories for Bob and Alice:</p>
+<pre><code class="language-shell">mkdir bob
+mkdir alice
+touch bob/hello-bob.txt
+touch alice/hello-alice.txt
+</code></pre>
+<p>Finally, let us run an FTP client</p>
+<pre><code class="language-shell">lftp localhost -p 2121 -u bob
+</code></pre>
+<p>Provide the password 'secret' for Bob do an FPT <code>ls</code>.</p>
+<p>You should see the file <code>hello-bob.txt</code> being listed and the output of the little Go webserver should be:</p>
+<pre><code>Requested URL:  /users/bob
+</code></pre>
 
             </div>
             <div class='sidebar-right'>
                 <div class='page-nav' id='page-nav'>
                     <p class='page-nav-header'>On this page</p>
                     <ul>
-                        
-                        <li class='page-nav-level-2'>
-                            <a href='#licensing'>Licensing</a>
-                        </li>
                         
                     </ul>
                 </div>

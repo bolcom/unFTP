@@ -13,16 +13,16 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1703447343"
+    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1719261604"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1703447343"
+    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1719261604"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1703447343" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1703447343"
+    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1719261604" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1719261604"
         media="screen" />
 
     <script>
-        var DOCTAVE_TIMESTAMP = "1703447343";
+        var DOCTAVE_TIMESTAMP = "1719261604";
         var BASE_PATH = "/";
         var color = localStorage.getItem('doctave-color')
 
@@ -104,6 +104,9 @@
         <li><a href="/server/rest">REST auth</a></li>
         
     
+        <li><a href="/server/http-usr">User config over HTTP</a></li>
+        
+    
         <li><a class="active" href="/server/pubsub">Pub/Sub</a></li>
         
     
@@ -143,8 +146,9 @@
                 <p>For systems working alongside unFTP it might be useful to know of FTP related events happening. For this unFTP supports
 integration with <a href="https://cloud.google.com/pubsub">Google Pub/Sub</a>.</p>
 <h1 id="enabling-the-pub/sub-integration">Enabling the Pub/Sub integration</h1>
-<p>You can enable the unFTP Pub/Sub notifier by specifying the <code>--ntf-pubsub-project</code> and <code>--ntf-pubsub-topic</code> arguments. </p>
-<p>NOTE: Currently authentication with <a href="https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity">workload identity</a> is the 
+<p>You can enable the unFTP Pub/Sub notifier by specifying the <code>--ntf-pubsub-project</code> and <code>--ntf-pubsub-topic</code> arguments.</p>
+<p>NOTE: Currently authentication
+with <a href="https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity">workload identity</a> is the
 only supported authentication mechanism.</p>
 <p>Here is an example:</p>
 <pre><code class="language-sh">unftp \
@@ -186,95 +190,95 @@ only specifies an <code>eventType</code> attribute:</p>
 <h3 id="example-events">Example Events</h3>
 <p><strong>Startup Event:</strong></p>
 <pre><code class="language-json">{
-   "source_instance":"unFTP",
-   "hostname":"MYMAC-XYZ",
-   "payload":{
-      "Startup":{
-         "libunftp_version":"0.19.1",
-         "unftp_version":"v0.14.5"
-      }
-   }
+  "source_instance": "unFTP",
+  "hostname": "MYMAC-XYZ",
+  "payload": {
+    "Startup": {
+      "libunftp_version": "0.19.1",
+      "unftp_version": "v0.14.7"
+    }
+  }
 }
 </code></pre>
 <p><strong>Login Event:</strong></p>
 <pre><code class="language-json">{
-   "source_instance":"unFTP",
-   "hostname":"MYMAC-XYZ",
-   "payload":{
-      "Login":{ }
-   },
-   "username":"hannes",
-   "trace_id":"0xe25ceb1d960303f3",
-   "sequence_number":1
+  "source_instance": "unFTP",
+  "hostname": "MYMAC-XYZ",
+  "payload": {
+    "Login": {}
+  },
+  "username": "hannes",
+  "trace_id": "0xe25ceb1d960303f3",
+  "sequence_number": 1
 }
 </code></pre>
 <p><strong>Logout Event:</strong></p>
 <pre><code class="language-json">{
-   "source_instance":"unFTP",
-   "hostname":"MYMAC-XYZ",
-   "payload":{
-      "Logout":{ }
-   },
-   "username":"hannes",
-   "trace_id":"0xe25ceb1d960303f3",
-   "sequence_number":2
+  "source_instance": "unFTP",
+  "hostname": "MYMAC-XYZ",
+  "payload": {
+    "Logout": {}
+  },
+  "username": "hannes",
+  "trace_id": "0xe25ceb1d960303f3",
+  "sequence_number": 2
 }
 </code></pre>
 <p><strong>Get Event (FTP RETR):</strong></p>
 <pre><code class="language-json">{
-   "source_instance":"unFTP",
-   "hostname":"MYMAC-XYZ",
-   "payload":{
-      "Get":{
-         "path":"hello.txt"
-      }
-   },
-   "username":"hannes",
-   "trace_id":"0x687ee52555459a9c",
-   "sequence_number":2
+  "source_instance": "unFTP",
+  "hostname": "MYMAC-XYZ",
+  "payload": {
+    "Get": {
+      "path": "hello.txt"
+    }
+  },
+  "username": "hannes",
+  "trace_id": "0x687ee52555459a9c",
+  "sequence_number": 2
 }
 </code></pre>
 <p><strong>Make Directory Event (FTP MKD):</strong></p>
 <pre><code class="language-json">{
-   "source_instance":"unFTP",
-   "hostname":"MYMAC-XYZ",
-   "payload":{
-      "MakeDir":{
-         "path":"/x"
-      }
-   },
-   "username":"hannes",
-   "trace_id":"0x687ee52555459a9c",
-   "sequence_number":3
+  "source_instance": "unFTP",
+  "hostname": "MYMAC-XYZ",
+  "payload": {
+    "MakeDir": {
+      "path": "/x"
+    }
+  },
+  "username": "hannes",
+  "trace_id": "0x687ee52555459a9c",
+  "sequence_number": 3
 }
 </code></pre>
 <p><strong>Rename Event (FTP RNFR and RNTO):</strong></p>
 <pre><code class="language-json">{
-   "source_instance":"unFTP",
-   "hostname":"MYMAC-XYZ",
-   "payload":{
-      "Rename":{
-         "from":"/x",
-         "to":"/y"
-      }
-   },
-   "username":"hannes",
-   "trace_id":"0x687ee52555459a9c",
-   "sequence_number":4
+  "source_instance": "unFTP",
+  "hostname": "MYMAC-XYZ",
+  "payload": {
+    "Rename": {
+      "from": "/x",
+      "to": "/y"
+    }
+  },
+  "username": "hannes",
+  "trace_id": "0x687ee52555459a9c",
+  "sequence_number": 4
 }
 </code></pre>
 <p><strong>Put Event (FTP STOR):</strong></p>
 <pre><code class="language-json">{
-   "source_instance":"unFTP",
-   "hostname":"MYMAC-XYZ",
-   "payload":{
-      "Put":{
-         "path":"x.yaml"
-      }
-   },
-   "username":"hannes",
-   "trace_id":"0x687ee52555459a9c",
-   "sequence_number":5
+  "source_instance": "unFTP",
+  "hostname": "MYMAC-XYZ",
+  "payload": {
+    "Put": {
+      "path": "x.yaml"
+    }
+  },
+  "username": "hannes",
+  "trace_id": "0x687ee52555459a9c",
+  "sequence_number": 5
 }
 </code></pre>
 
@@ -323,11 +327,11 @@ only specifies an <code>eventType</code> attribute:</p>
             </div>
         </div>
     </div>
-    <script type="text/javascript" src="/assets/katex.js?v=1703447343"></script>
-    <script type="text/javascript" src="/assets/mermaid.js?v=1703447343"></script>
-    <script type="text/javascript" src="/assets/elasticlunr.js?v=1703447343"></script>
-    <script type="text/javascript" src="/assets/prism.js?v=1703447343"></script>
-    <script type="text/javascript" src="/assets/doctave-app.js?v=1703447343"></script>
+    <script type="text/javascript" src="/assets/katex.js?v=1719261604"></script>
+    <script type="text/javascript" src="/assets/mermaid.js?v=1719261604"></script>
+    <script type="text/javascript" src="/assets/elasticlunr.js?v=1719261604"></script>
+    <script type="text/javascript" src="/assets/prism.js?v=1719261604"></script>
+    <script type="text/javascript" src="/assets/doctave-app.js?v=1719261604"></script>
 
     
 </body>
