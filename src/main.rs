@@ -36,6 +36,7 @@ use libunftp::{
     storage::StorageBackend,
     ServerBuilder,
 };
+use opendal::Builder;
 use slog::*;
 use std::io::{Read, Seek};
 use std::{
@@ -359,6 +360,48 @@ fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer
     }))
 }
 
+fn azblob_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer, String> {
+    let mut b = opendal::services::Azblob::default();
+    if let Some(val) = m.value_of(args::AZBLOB_ROOT) {
+        b.root(val);
+    }
+    if let Some(val) = m.value_of(args::AZBLOB_CONTAINER) {
+        b.container(val);
+    }
+    if let Some(val) = m.value_of(args::AZBLOB_ENDPOINT) {
+        b.endpoint(val);
+    }
+    if let Some(val) = m.value_of(args::AZBLOB_ACCOUNT_NAME) {
+        b.account_name(val);
+    }
+    if let Some(val) = m.value_of(args::AZBLOB_ACCOUNT_KEY) {
+        b.account_key(val);
+    }
+    if let Some(val) = m.value_of(args::AZBLOB_SAS_TOKEN) {
+        b.sas_token(val);
+    }
+    if let Some(val) = m.value_of(args::AZBLOB_BATCH_MAX_OPERATIONS) {
+        b.batch_max_operations(
+            val.parse::<usize>().map_err(|e| {
+                format!("could not parse AZBLOB_BATCH_MAX_OPERATIONS to usize: {e}")
+            })?,
+        );
+    }
+    let accessor = b
+        .build()
+        .map_err(|e| format!("could not build Azblob: {e}"))?;
+    let op = opendal::OperatorBuilder::new(accessor).finish();
+    let sbe = unftp_sbe_opendal::OpendalStorage::new(op);
+    let sub_log = Arc::new(log.new(o!("module" => "storage")));
+
+    Ok(Box::new(move || {
+        RooterVfs::new(RestrictingVfs::new(storage::ChoosingVfs {
+            inner: storage::InnerVfs::OpenDAL(sbe.clone()),
+            log: sub_log.clone(),
+        }))
+    }))
+}
+
 // starts the FTP server as a Tokio task.
 fn start_ftp(
     log: &Logger,
@@ -369,26 +412,14 @@ fn start_ftp(
 ) -> Result<(), String> {
     let event_dispatcher =
         notify::create_event_dispatcher(Arc::new(log.new(o!("module" => "storage"))), m)?;
+    let svc = |prod: VfsProducer| {
+        start_ftp_with_storage(log, root_log, m, prod, event_dispatcher, shutdown, done)
+    };
 
     match m.value_of(args::STORAGE_BACKEND_TYPE) {
-        None | Some("filesystem") => start_ftp_with_storage(
-            log,
-            root_log,
-            m,
-            fs_storage_backend(root_log, m),
-            event_dispatcher,
-            shutdown,
-            done,
-        ),
-        Some("gcs") => start_ftp_with_storage(
-            log,
-            root_log,
-            m,
-            gcs_storage_backend(root_log, m)?,
-            event_dispatcher,
-            shutdown,
-            done,
-        ),
+        None | Some("filesystem") => svc(fs_storage_backend(root_log, m)),
+        Some("gcs") => svc(gcs_storage_backend(root_log, m)?),
+        Some("azblob") => svc(azblob_storage_backend(root_log, m)?),
         Some(x) => Err(format!("unknown storage back-end type {}", x)),
     }
 }

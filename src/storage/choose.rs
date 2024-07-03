@@ -23,12 +23,14 @@ pub struct ChoosingVfs {
 #[derive(Debug)]
 #[allow(clippy::large_enum_variant)]
 pub enum InnerVfs {
+    OpenDAL(unftp_sbe_opendal::OpendalStorage),
     Cloud(unftp_sbe_gcs::CloudStorage),
     File(unftp_sbe_fs::Filesystem),
 }
 
 #[derive(Debug)]
 pub enum SbeMeta {
+    OpenDAL(unftp_sbe_opendal::OpendalMetadata),
     Cloud(unftp_sbe_gcs::object_metadata::ObjectMetadata),
     File(unftp_sbe_fs::Meta),
 }
@@ -36,6 +38,7 @@ pub enum SbeMeta {
 impl libunftp::storage::Metadata for SbeMeta {
     fn len(&self) -> u64 {
         match self {
+            SbeMeta::OpenDAL(m) => m.len(),
             SbeMeta::Cloud(m) => m.len(),
             SbeMeta::File(m) => m.len(),
         }
@@ -43,6 +46,7 @@ impl libunftp::storage::Metadata for SbeMeta {
 
     fn is_dir(&self) -> bool {
         match self {
+            SbeMeta::OpenDAL(m) => m.is_dir(),
             SbeMeta::Cloud(m) => m.is_dir(),
             SbeMeta::File(m) => m.is_dir(),
         }
@@ -50,6 +54,7 @@ impl libunftp::storage::Metadata for SbeMeta {
 
     fn is_file(&self) -> bool {
         match self {
+            SbeMeta::OpenDAL(m) => m.is_file(),
             SbeMeta::Cloud(m) => m.is_file(),
             SbeMeta::File(m) => m.is_file(),
         }
@@ -57,6 +62,7 @@ impl libunftp::storage::Metadata for SbeMeta {
 
     fn is_symlink(&self) -> bool {
         match self {
+            SbeMeta::OpenDAL(m) => m.is_symlink(),
             SbeMeta::Cloud(m) => m.is_symlink(),
             SbeMeta::File(m) => m.is_symlink(),
         }
@@ -64,6 +70,7 @@ impl libunftp::storage::Metadata for SbeMeta {
 
     fn modified(&self) -> storage::Result<SystemTime> {
         match self {
+            SbeMeta::OpenDAL(m) => m.modified(),
             SbeMeta::Cloud(m) => m.modified(),
             SbeMeta::File(m) => m.modified(),
         }
@@ -71,6 +78,7 @@ impl libunftp::storage::Metadata for SbeMeta {
 
     fn gid(&self) -> u32 {
         match self {
+            SbeMeta::OpenDAL(m) => m.gid(),
             SbeMeta::Cloud(m) => m.gid(),
             SbeMeta::File(m) => m.gid(),
         }
@@ -78,6 +86,7 @@ impl libunftp::storage::Metadata for SbeMeta {
 
     fn uid(&self) -> u32 {
         match self {
+            SbeMeta::OpenDAL(m) => m.uid(),
             SbeMeta::Cloud(m) => m.uid(),
             SbeMeta::File(m) => m.uid(),
         }
@@ -90,6 +99,7 @@ impl StorageBackend<User> for ChoosingVfs {
 
     fn name(&self) -> &str {
         match &self.inner {
+            InnerVfs::OpenDAL(i) => StorageBackend::<User>::name(i),
             InnerVfs::Cloud(i) => StorageBackend::<User>::name(i),
             InnerVfs::File(i) => StorageBackend::<User>::name(i),
         }
@@ -97,6 +107,7 @@ impl StorageBackend<User> for ChoosingVfs {
 
     fn supported_features(&self) -> u32 {
         match &self.inner {
+            InnerVfs::OpenDAL(i) => StorageBackend::<User>::supported_features(i),
             InnerVfs::Cloud(i) => StorageBackend::<User>::supported_features(i),
             InnerVfs::File(i) => StorageBackend::<User>::supported_features(i),
         }
@@ -108,6 +119,7 @@ impl StorageBackend<User> for ChoosingVfs {
         path: P,
     ) -> storage::Result<Self::Metadata> {
         match &self.inner {
+            InnerVfs::OpenDAL(i) => i.metadata(user, path).await.map(SbeMeta::OpenDAL),
             InnerVfs::Cloud(i) => i.metadata(user, path).await.map(SbeMeta::Cloud),
             InnerVfs::File(i) => i.metadata(user, path).await.map(SbeMeta::File),
         }
@@ -122,6 +134,14 @@ impl StorageBackend<User> for ChoosingVfs {
         <Self as StorageBackend<User>>::Metadata: libunftp::storage::Metadata,
     {
         match &self.inner {
+            InnerVfs::OpenDAL(i) => i.list(user, path).await.map(|v| {
+                v.into_iter()
+                    .map(|fi| Fileinfo {
+                        path: fi.path,
+                        metadata: SbeMeta::OpenDAL(fi.metadata),
+                    })
+                    .collect()
+            }),
             InnerVfs::Cloud(i) => i.list(user, path).await.map(|v| {
                 v.into_iter()
                     .map(|fi| Fileinfo {
@@ -147,6 +167,7 @@ impl StorageBackend<User> for ChoosingVfs {
         Self::Metadata: libunftp::storage::Metadata + 'static,
     {
         match &self.inner {
+            InnerVfs::OpenDAL(i) => i.list_fmt(user, path).await,
             InnerVfs::Cloud(i) => i.list_fmt(user, path).await,
             InnerVfs::File(i) => i.list_fmt(user, path).await,
         }
@@ -158,6 +179,7 @@ impl StorageBackend<User> for ChoosingVfs {
         Self::Metadata: libunftp::storage::Metadata + 'static,
     {
         match &self.inner {
+            InnerVfs::OpenDAL(i) => i.nlst(user, path).await,
             InnerVfs::Cloud(i) => i.nlst(user, path).await,
             InnerVfs::File(i) => i.nlst(user, path).await,
         }
@@ -175,6 +197,7 @@ impl StorageBackend<User> for ChoosingVfs {
         P: AsRef<Path> + Send + Debug,
     {
         match &self.inner {
+            InnerVfs::OpenDAL(i) => i.get_into(user, path, start_pos, output).await,
             InnerVfs::Cloud(i) => i.get_into(user, path, start_pos, output).await,
             InnerVfs::File(i) => i.get_into(user, path, start_pos, output).await,
         }
@@ -187,6 +210,7 @@ impl StorageBackend<User> for ChoosingVfs {
         start_pos: u64,
     ) -> storage::Result<Box<dyn tokio::io::AsyncRead + Send + Sync + Unpin>> {
         match &self.inner {
+            InnerVfs::OpenDAL(i) => i.get(user, path, start_pos).await,
             InnerVfs::Cloud(i) => i.get(user, path, start_pos).await,
             InnerVfs::File(i) => i.get(user, path, start_pos).await,
         }
@@ -215,6 +239,7 @@ impl StorageBackend<User> for ChoosingVfs {
         start_pos: u64,
     ) -> storage::Result<u64> {
         match &self.inner {
+            InnerVfs::OpenDAL(i) => i.put(user, input, path, start_pos).await,
             InnerVfs::Cloud(i) => i.put(user, input, path, start_pos).await,
             InnerVfs::File(i) => i.put(user, input, path, start_pos).await,
         }
@@ -226,6 +251,7 @@ impl StorageBackend<User> for ChoosingVfs {
         path: P,
     ) -> storage::Result<()> {
         match &self.inner {
+            InnerVfs::OpenDAL(i) => i.del(user, path).await,
             InnerVfs::Cloud(i) => i.del(user, path).await,
             InnerVfs::File(i) => i.del(user, path).await,
         }
@@ -237,6 +263,7 @@ impl StorageBackend<User> for ChoosingVfs {
         path: P,
     ) -> storage::Result<()> {
         match &self.inner {
+            InnerVfs::OpenDAL(i) => i.mkd(user, path).await,
             InnerVfs::Cloud(i) => i.mkd(user, path).await,
             InnerVfs::File(i) => i.mkd(user, path).await,
         }
@@ -249,6 +276,7 @@ impl StorageBackend<User> for ChoosingVfs {
         to: P,
     ) -> storage::Result<()> {
         match &self.inner {
+            InnerVfs::OpenDAL(i) => i.rename(user, from, to).await,
             InnerVfs::Cloud(i) => i.rename(user, from, to).await,
             InnerVfs::File(i) => i.rename(user, from, to).await,
         }
@@ -260,6 +288,7 @@ impl StorageBackend<User> for ChoosingVfs {
         path: P,
     ) -> storage::Result<()> {
         match &self.inner {
+            InnerVfs::OpenDAL(i) => i.rmd(user, path).await,
             InnerVfs::Cloud(i) => i.rmd(user, path).await,
             InnerVfs::File(i) => i.rmd(user, path).await,
         }
@@ -271,6 +300,7 @@ impl StorageBackend<User> for ChoosingVfs {
         path: P,
     ) -> storage::Result<()> {
         match &self.inner {
+            InnerVfs::OpenDAL(i) => i.cwd(user, path).await,
             InnerVfs::Cloud(i) => i.cwd(user, path).await,
             InnerVfs::File(i) => i.cwd(user, path).await,
         }
