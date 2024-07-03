@@ -387,10 +387,9 @@ fn azblob_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProdu
             })?,
         );
     }
-    let accessor = b
-        .build()
-        .map_err(|e| format!("could not build Azblob: {e}"))?;
-    let op = opendal::OperatorBuilder::new(accessor).finish();
+    let op = opendal::Operator::new(b)
+        .map_err(|e| format!("could not build Azblob: {e}"))?
+        .finish();
     let sbe = unftp_sbe_opendal::OpendalStorage::new(op);
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
 
