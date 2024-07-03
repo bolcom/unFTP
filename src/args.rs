@@ -27,6 +27,13 @@ pub const GCS_BUCKET: &str = "sbe-gcs-bucket";
 pub const GCS_KEY_FILE: &str = "sbe-gcs-key-file";
 pub const GCS_ROOT: &str = "sbe-gcs-root";
 pub const GCS_SERVICE_ACCOUNT: &str = "sbe-gcs-service-account";
+pub const AZBLOB_ROOT: &str = "sbe-opendal-azblob-root";
+pub const AZBLOB_CONTAINER: &str = "sbe-opendal-azblob-container";
+pub const AZBLOB_ENDPOINT: &str = "sbe-opendal-azblob-endpoint";
+pub const AZBLOB_ACCOUNT_NAME: &str = "sbe-opendal-azblob-account-name";
+pub const AZBLOB_ACCOUNT_KEY: &str = "sbe-opendal-azblob-account-key";
+pub const AZBLOB_SAS_TOKEN: &str = "sbe-opendal-azblob-sas-token";
+pub const AZBLOB_BATCH_MAX_OPERATIONS: &str = "sbe-opendal-azblob-batch-max-operations";
 pub const HTTP_BIND_ADDRESS: &str = "bind-address-http";
 pub const IDLE_SESSION_TIMEOUT: &str = "idle-session-timeout";
 pub const INSTANCE_NAME: &str = "instance-name";
@@ -60,6 +67,7 @@ pub enum AuthType {
 pub enum StorageBackendType {
     filesystem,
     gcs,
+    azblob,
 }
 
 #[derive(ArgEnum, Clone, Debug)]
@@ -471,6 +479,54 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::Command {
                 .help("The name of the service account to use when authenticating using GKE workload identity.")
                 .env("UNFTP_SBE_GCS_SERVICE_ACCOUNT")
                 .takes_value(true),
+        )
+        .arg(
+            Arg::new(AZBLOB_ROOT)
+            .long("sbe-opendal-azblob-root")
+            .help("Root of this backend. All operations will happen under this root.")
+            .env("UNFTP_SBE_OPENDAL_AZBLOB_ROOT")
+            .takes_value(true))
+        .arg(
+            Arg::new(AZBLOB_CONTAINER)
+            .long("sbe-opendal-azblob-container")
+            .help("Container name of this backend.")
+            .env("UNFTP_SBE_OPENDAL_AZBLOB_CONTAINER")
+            .takes_value(true)
+        )
+        .arg(
+            Arg::new(AZBLOB_ENDPOINT)
+            .long("sbe-opendal-azblob-endpoint")
+            .help("Endpoint of this backend. Endpoint must be full uri.")
+            .env("UNFTP_SBE_OPENDAL_AZBLOB_ENDPOINT")
+            .takes_value(true)
+        )
+        .arg(
+            Arg::new(AZBLOB_ACCOUNT_NAME)
+            .long("sbe-opendal-azblob-account-name")
+            .help("Set account_name of this backend. If account_name is set, we will take user's input first. If not, we will try to load it from environment.")
+            .env("UNFTP_SBE_OPENDAL_AZBLOB_ACCOUNT_NAME")
+            .takes_value(true)
+        )
+        .arg(
+            Arg::new(AZBLOB_ACCOUNT_KEY)
+            .long("sbe-opendal-azblob-account-key")
+            .help("Set account_key of this backend. If account_name is set, we will take user's input first. If not, we will try to load it from environment.")
+            .env("UNFTP_SBE_OPENDAL_AZBLOB_ACCOUNT_KEY")
+            .takes_value(true)
+        )
+        .arg(
+            Arg::new(AZBLOB_SAS_TOKEN)
+            .long("sbe-opendal-azblob-sas-token")
+            .help("Set sas_token of this backend. If account_name is set, we will take user's input first. If not, we will try to load it from environment. See https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview for more info.")
+            .env("UNFTP_SBE_OPENDAL_AZBLOB_SAS_TOKEN")
+            .takes_value(true)
+        )
+        .arg(
+            Arg::new(AZBLOB_BATCH_MAX_OPERATIONS)
+            .long("sbe-opendal-azblob-batch-max-operations")
+            .help("Set maximum batch operations of this backend.")
+            .env("UNFTP_SBE_OPENDAL_AZBLOB_BATCH_MAX_OPERATIONS")
+            .takes_value(true)
         )
         .arg(
             Arg::new(IDLE_SESSION_TIMEOUT)
