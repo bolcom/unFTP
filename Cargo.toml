@@ -50,9 +50,8 @@ thiserror = "1.0.61"
 tokio = { version = "1.38.0", features = ["signal", "rt-multi-thread"] }
 unftp-sbe-fs = "0.2.5"
 unftp-sbe-gcs = { version = "0.2.6", optional = true }
-# unftp-sbe-opendal = { version = "0.0.0", optional = true }
-opendal = { version = "0.47.1", optional = true, git = "https://github.com/apache/opendal.git" }
-unftp-sbe-opendal = { version = "0.0.0", optional = true, git = "https://github.com/apache/opendal.git" }
+unftp-sbe-opendal = { version = "0.0.1", optional = true }
+opendal = { version = "0.47.1", optional = true }
 unftp-auth-rest = { version = "0.2.6", optional = true }
 unftp-auth-jsonfile = { version = "0.3.4", optional = true }
 unftp-sbe-rooter = "0.2.1"
