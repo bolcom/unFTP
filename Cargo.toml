@@ -75,7 +75,7 @@ azblob = ["dep:unftp-sbe-opendal", "dep:opendal", "opendal/services-azblob"]
 gnu = ["all_extentions"]
 
 # All features able to link statically
-musl = ["rest_auth", "cloud_storage", "jsonfile_auth"]
+musl = ["rest_auth", "cloud_storage", "jsonfile_auth", "azblob"]
 
 # Features used in our docker builds
 docker = ["musl"]
