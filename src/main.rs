@@ -36,7 +36,6 @@ use libunftp::{
     storage::StorageBackend,
     ServerBuilder,
 };
-use opendal::Builder;
 use slog::*;
 use std::io::{Read, Seek};
 use std::{

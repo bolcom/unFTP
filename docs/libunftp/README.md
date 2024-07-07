@@ -10,7 +10,7 @@ title: The Library
 
 # libunftp - The FTPS library
 
-**libunftp** is a [Rust](https://www.rust-lang.org/) [crate](https://crates.io/crates/libunftp) that you can use to 
+**libunftp** is a [Rust](https://www.rust-lang.org/) [crate](https://crates.io/crates/libunftp) that you can use to
 build your own FTPS server with. You can extend it with your own storage back-ends or authentication back-ends.
 
 It runs on top of the [Tokio](https://tokio.rs) asynchronous run-time and tries to make use of Async IO as much as
@@ -36,6 +36,7 @@ Known storage back-ends:
 * [unftp-sbe-gcs](https://crates.io/crates/unftp-sbe-gcs) - Stores files in Google Cloud Storage
 * [unftp-sbe-rooter](https://crates.io/crates/unftp-sbe-rooter) - Wraps another storage back-end in order to root a user to a specific home directory.
 * [unftp-sbe-restrict](https://crates.io/crates/unftp-sbe-rooter) - Wraps another storage back-end in order to restrict the FTP operations a user can do i.e. provide authorization.
+* [unftp-sbe-opendal](https://crates.io/crates/unftp-sbe-opendal) - Access ANY storage back-end using OpenDAL.
 
 Known authentication back-ends:
 
