@@ -359,7 +359,8 @@ fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer
     }))
 }
 
-fn azblob_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer, String> {
+#[cfg(feature = "azblob")]
+pub fn azblob_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer, String> {
     let mut b = opendal::services::Azblob::default();
     if let Some(val) = m.value_of(args::AZBLOB_ROOT) {
         b.root(val);
@@ -417,6 +418,7 @@ fn start_ftp(
     match m.value_of(args::STORAGE_BACKEND_TYPE) {
         None | Some("filesystem") => svc(fs_storage_backend(root_log, m)),
         Some("gcs") => svc(gcs_storage_backend(root_log, m)?),
+        #[cfg(feature = "azblob")]
         Some("azblob") => svc(azblob_storage_backend(root_log, m)?),
         Some(x) => Err(format!("unknown storage back-end type {}", x)),
     }

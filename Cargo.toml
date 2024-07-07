@@ -62,14 +62,15 @@ url = "2.5.2"
 unftp-auth-pam = { version = "0.2.5", optional = true }
 
 [features]
-default = ["rest_auth", "cloud_storage", "jsonfile_auth"]
+default = ["rest_auth", "cloud_storage", "jsonfile_auth", "opendal"]
 all_extentions = ["pam_auth", "rest_auth", "jsonfile_auth", "cloud_storage"]
 cloud_storage = ["unftp-sbe-gcs"]
 jsonfile_auth = ["unftp-auth-jsonfile"]
 pam_auth = ["unftp-auth-pam"]
 rest_auth = ["unftp-auth-rest"]
 tokio_console = ["console-subscriber", "tokio/tracing"]
-azblob = ["dep:unftp-sbe-opendal", "dep:opendal", "opendal/services-azblob"]
+opendal = ["dep:unftp-sbe-opendal", "dep:opendal"]
+azblob = ["opendal/services-azblob"]
 
 # With this we link dynamically to libc and pam
 gnu = ["all_extentions"]
