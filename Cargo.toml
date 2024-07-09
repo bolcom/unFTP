@@ -63,7 +63,7 @@ unftp-auth-pam = { version = "0.2.5", optional = true }
 
 [features]
 default = ["rest_auth", "cloud_storage", "jsonfile_auth", "opendal"]
-all_extentions = ["pam_auth", "rest_auth", "jsonfile_auth", "cloud_storage"]
+all_extentions = ["pam_auth", "rest_auth", "jsonfile_auth", "cloud_storage", "opendal"]
 cloud_storage = ["unftp-sbe-gcs"]
 jsonfile_auth = ["unftp-auth-jsonfile"]
 pam_auth = ["unftp-auth-pam"]
