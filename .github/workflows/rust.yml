@@ -215,7 +215,7 @@ jobs:
           default: true
           target: ${{ env.target }}
       - name: Build for macOS (Intel)
-        run: cargo build --release --target=${{ env.target }} --features rest_auth,jsonfile_auth,cloud_storage
+        run: cargo build --release --target=${{ env.target }} --features rest_auth,jsonfile_auth,cloud_storage,azblob
       - name: Rename
         run: mv target/${{ env.target }}/release/unftp target/${{ env.target }}/release/unftp_${{ env.target }}
       - name: Upload build artifacts
@@ -247,7 +247,7 @@ jobs:
         if: runner.os == 'macOS' && runner.arch == 'arm64'
         run: softwareupdate --install-rosetta --agree-to-license
       - name: Build
-        run: cargo build --release --target=${{ env.target }} --features rest_auth,jsonfile_auth,cloud_storage
+        run: cargo build --release --target=${{ env.target }} --features rest_auth,jsonfile_auth,cloud_storage,azblob
       - name: Rename
         run: mv target/${{ env.target }}/release/unftp target/${{ env.target }}/release/unftp_${{ env.target }}
       - name: Upload build artifacts
@@ -283,7 +283,7 @@ jobs:
       #   id: latest_release_info
       #   uses: jossef/action-latest-release-info@v1.2.1
       #   env:
-      #     GITHUB_TOKEN: ${{ github.token }}    
+      #     GITHUB_TOKEN: ${{ github.token }}
       - name: Download
         uses: actions/download-artifact@v2
         with:
