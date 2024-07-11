@@ -26,6 +26,11 @@ documentation = "https://github.com/bolcom/unFTP"
 path = "crates/redislog"
 version = "0.1.2"
 
+[dependencies.googlelog]
+path = "crates/googlelog"
+features = ["shipper"]
+version = "0.1.0"
+
 [dependencies]
 async-trait = "0.1.80"
 base64 = "0.22.1"
