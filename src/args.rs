@@ -52,6 +52,10 @@ pub const STORAGE_BACKEND_TYPE: &str = "sbe-type";
 pub const USR_JSON_PATH: &str = "usr-json-path";
 pub const USR_HTTP_URL: &str = "usr-http-url";
 pub const VERBOSITY: &str = "verbosity";
+pub const GLOG_LOGNAME: &str = "log-google-logname";
+pub const GLOG_LEVEL_LABEL: &str = "log-google-level-label";
+pub const GLOG_RESOURCE_TYPE: &str = "log-google-resource-type";
+pub const GLOG_LABELS_FILE: &str = "log-google-labels-file";
 
 #[derive(Debug, EnumString, Display, PartialEq)]
 #[strum(serialize_all = "lowercase")]
@@ -591,6 +595,38 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::Command {
                 .value_name("PROJECT_ID")
                 .help("The ID of the GCP project where the Google Pub/Sub topic exists")
                 .env("UNFTP_NTF_PUBSUB_PROJECT")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::new(GLOG_LOGNAME)
+                .long("log-google-logname")
+                .value_name("LOG_GOOGLE_LOGNAME")
+                .help("Required for google logging: The logName to set in the LogEntry records going to Google Logging. See https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry")
+                .env("UNFTP_GLOG_LOGNAME")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::new(GLOG_RESOURCE_TYPE)
+                .long("log-google-resource-type")
+                .value_name("LOG_GOOGLE_RESOURCE_TYPE")
+                .help("Required for google logging: The resource type to add to all Google log entries. E.g.: 'k8s_container'. See See https://cloud.google.com/logging/docs/reference/v2/rest/v2/MonitoredResource")
+                .env("UNFTP_GLOG_RESOURCE_TYPE")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::new(GLOG_LEVEL_LABEL)
+                .long("log-google-level-label")
+                .value_name("LOG_GOOGLE_LEVEL_LABEL")
+                .help("The name you want for the label in 'labels' that will contain the log level")
+                .env("UNFTP_GLOG_LEVEL_LABEL")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::new(GLOG_LABELS_FILE)
+                .long("log-google-labels-file")
+                .value_name("LOG_GOOGLE_LABELS_FILE")
+                .help("Default labels for 'labels' and 'resource.labels' to add to all Google log entries. See https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry")
+                .env("UNFTP_GLOG_LABELS_FILE")
                 .takes_value(true),
         )
 }

@@ -49,7 +49,7 @@ use std::{
     sync::Arc,
     time::Duration,
 };
-use tokio::runtime::Runtime;
+
 #[cfg(feature = "pam_auth")]
 use unftp_auth_pam as pam;
 use unftp_sbe_gcs::options::AuthMethod;
@@ -854,8 +854,8 @@ async fn main_task(
     Ok(signal)
 }
 
-fn run(arg_matches: ArgMatches) -> Result<(), String> {
-    let root_logger = logging::create_logger(&arg_matches)?;
+async fn run(arg_matches: ArgMatches) -> Result<(), String> {
+    let (root_logger, google_shipper) = logging::create_logger(&arg_matches)?;
     let log = root_logger.new(o!("module" => "main"));
 
     let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());
@@ -878,12 +878,31 @@ fn run(arg_matches: ArgMatches) -> Result<(), String> {
     "sbe-type" => sbe_type,
     );
 
-    let runtime = Runtime::new().map_err(|e| format!("could not construct runtime: {}", e))?;
+    // If logging needs to be sent to Google, we need to start tasks
+    // to bridge between the sync and async channels, as well as start
+    // the log shipper. For now this is the only clean way I could
+    // find to ship from the slog Drain to the Google API
+    if let Some(mut shipper) = google_shipper {
+        // This is an sync to async bridge: The drain creates the
+        // Google LogEntry's, and sends them over the sync
+        // channel. The bridge receives it and forwards it over the
+        // async bridge to the shipper.
+        let bridge = shipper.yield_bridge();
+        tokio::task::spawn_blocking(move || {
+            bridge.run_sync_to_async_bridge();
+        });
+
+        // The shipper does the calls to Google Logging API
+        tokio::task::spawn(async move {
+            shipper.run_log_shipper().await;
+        });
+
+        info!(log, "Started Google Logger");
+    }
+
     // We wait for a signal (HUP, INT, TERM). If the signal is a HUP,
     // we restart, otherwise we exit the loop and the program ends.
-    while runtime.block_on(main_task(arg_matches.clone(), &log, &root_logger))?
-        == ExitSignal("SIG_HUP")
-    {
+    while main_task(arg_matches.clone(), &log, &root_logger).await? == ExitSignal("SIG_HUP") {
         info!(log, "Received SIG_HUP, restarting");
     }
     info!(log, "Exiting...");
@@ -903,7 +922,8 @@ fn get_host_name() -> String {
     }
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
     #[cfg(feature = "tokio_console")]
     {
         console_subscriber::ConsoleLayer::builder()
@@ -916,7 +936,7 @@ fn main() {
     let tmp_dir = env::temp_dir();
     let tmp_dir = tmp_dir.as_path().to_str().unwrap();
     let arg_matches = args::clap_app(tmp_dir).get_matches();
-    if let Err(e) = run(arg_matches) {
+    if let Err(e) = run(arg_matches).await {
         eprintln!("\nError: {}", e);
         process::exit(1);
     };
