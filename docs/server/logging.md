@@ -29,11 +29,34 @@ module: main
 
 If you want DEBUG level then specify `-vv`.
 
-## Log shipping via Redis
+## Log shipping
 
-In a cloud environment it is useful to send logs to a central location for analysis. unFTP can send structured logging 
-in JSON format to a [Redis](https://redis.io/) instance. With a tool like [Logstash](https://www.elastic.co/logstash/)
-this can then be processed further.
+In a cloud environment it is useful to send logs to a central location for analysis.
+UnFTP can send structured logging to [Google Logging](https://cloud.google.com/logging/docs/) or Redis.
+The Redis option is now deprecated and will be soon phased out.
+
+### Google Logging
+
+unFTP can log to Google Cloud Logging.
+
+Minimal settings are _logname_ (`projects/[PROJECT_ID]/logs/[LOG_ID]`) and [_resource type_](https://cloud.google.com/logging/docs/api/v2/resource-list#resource-types).
+These can be set through the environment variables `UNFTP_GLOG_LOGNAME` and `UNFTP_GLOG_RESOURCE_TYPE` or the below command line arguments:.
+
+
+```
+➜ unftp \
+   --log-google-logname projects/my-gcp-project/logs/my-log-id \
+   --log-google-resource-type k8s_container
+```
+
+Authentication works with [Application Default Credentials (ADC)](https://cloud.google.com/docs/authentication/application-default-credentials).
+
+Refer to the CLI help for additional optional arguments, including configuring extra labels and specifying a log level label.
+
+### Redis
+
+unFTP can send structured logging in JSON format to a [Redis](https://redis.io/) instance.
+With a tool like [Logstash](https://www.elastic.co/logstash/) this can then be processed further.
 
 unFTP will use the [RPUSH](https://redis.io/commands/rpush) command to append logs at the tail of a list.
 
@@ -62,3 +85,4 @@ The format of the JSON messages look like this:
    }
 }
 ```
+
