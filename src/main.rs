@@ -858,15 +858,18 @@ async fn run(arg_matches: ArgMatches) -> Result<(), String> {
     let (root_logger, google_shipper) = logging::create_logger(&arg_matches)?;
     let log = root_logger.new(o!("module" => "main"));
 
-    let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());
-    let http_addr = String::from(arg_matches.value_of(args::HTTP_BIND_ADDRESS).unwrap());
-    let auth_type = String::from(arg_matches.value_of(args::AUTH_TYPE).unwrap());
-    let sbe_type = String::from(arg_matches.value_of(args::STORAGE_BACKEND_TYPE).unwrap());
+    let addr = arg_matches.value_of(args::BIND_ADDRESS).unwrap();
+    let http_addr = arg_matches.value_of(args::HTTP_BIND_ADDRESS).unwrap();
+    let auth_type = arg_matches.value_of(args::AUTH_TYPE).unwrap_or_else(|| {
+        eprintln!("Required option --auth-type is missing. To disable authentication, use: `--auth-type=anonymous` or set the `UNFTP_AUTH_TYPE=anonymous` environment variable.");
+        ::std::process::exit(1)
+    });
+    let sbe_type = arg_matches.value_of(args::STORAGE_BACKEND_TYPE).unwrap();
 
-    let home_dir = String::from(match &*sbe_type {
+    let home_dir = match sbe_type {
         "gcs" => arg_matches.value_of(args::GCS_ROOT).unwrap(),
         _ => arg_matches.value_of(args::ROOT_DIR).unwrap(),
-    });
+    };
 
     info!(log, "Starting {} server.", app::NAME;
     "version" => app::VERSION,
