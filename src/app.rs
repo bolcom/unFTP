@@ -7,7 +7,7 @@ pub const NAME: &str = "unFTP";
 pub const VERSION: &str = env!("BUILD_VERSION");
 
 // The file has been placed here by the build script. See build.rs
-include!(concat!(env!("OUT_DIR"), "/build-info.rs"));
+include!(concat!(env!("OUT_DIR"), "/built.rs"));
 
 lazy_static! {
     static ref LONG_VERSION: String = {

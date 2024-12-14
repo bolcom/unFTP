@@ -193,7 +193,7 @@ impl Builder {
             .build(manager)?;
 
         let mut con = pool.get()?;
-        redis::cmd("PING").query(&mut *con)?;
+        redis::cmd("PING").query::<()>(&mut *con)?;
 
         Ok(Logger {
             redis_key: self.redis_key,
@@ -242,13 +242,13 @@ impl Logger {
         redis::cmd("RPUSH")
             .arg(self.redis_key.as_str())
             .arg(msg)
-            .query(&mut *con)?;
+            .query::<()>(&mut *con)?;
 
         if let Some(t) = self.ttl_seconds {
             redis::cmd("EXPIRE")
                 .arg(self.redis_key.as_str())
                 .arg(t)
-                .query(&mut *con)?
+                .query::<()>(&mut *con)?;
         }
         Ok(())
     }
