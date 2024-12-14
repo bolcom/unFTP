@@ -1,5 +1,10 @@
 # Changelog
 
+## 2024-12-14 unftp v0.14.8
+
+- [#184](https://github.com/bolcom/unFTP/pull/184) Support for Azure blob storage with [OpenDAL](https://github.com/apache/OpenDAL)
+- [#185](https://github.com/bolcom/unFTP/pull/185) Support for shipping logs to [Google Logging](https://cloud.google.com/logging/docs/)
+
 ## 2023-12-24 unftp v0.14.7
 
 - Upgraded to libunftp v0.20.1
