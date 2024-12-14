@@ -45,7 +45,8 @@ impl Builder {
     /// # Example
     ///
     /// ```
-    /// let (drain, _) = logging::Builder::new(
+    /// use googlelog::logger::Builder;
+    /// let (drain, _) = Builder::new(
     ///     "projects/my-gcp-project/logs/my-log-id",
     ///     "k8s_container",
     /// )
@@ -68,18 +69,20 @@ impl Builder {
     /// # Example
     ///
     /// ```
+    /// use serde_json::json;
     /// let resource_labels = json!(
     /// {
     ///     "pod_name": "dummy-value",
     ///     "location": "europe-west1-b",
-    ///     "pod_name": env::var("HOSTNAME").unwrap_or_default(),
+    ///     "pod_name": std::env::var("HOSTNAME").unwrap_or_default(),
     ///     "container_name": "my-app",
     ///     "project_id": "my-gcp-project",
     ///     "cluster_name": "my-gke-cluster",
     ///     "namespace_name": "my-gke-namespace"
     /// });
     ///
-    /// let (drain, _) = logging::Builder::new(
+    /// use googlelog::logger::Builder;
+    /// let (drain, _) = Builder::new(
     ///     "projects/my-gcp-project/logs/my-log-id",
     ///     "k8s_container",
     /// )
@@ -111,6 +114,7 @@ impl Builder {
     /// # Example
     ///
     /// ```
+    /// use serde_json::json;
     /// let default_labels = json!(
     /// {
     ///     "application": "my-application",
@@ -175,23 +179,41 @@ impl Builder {
     /// # Example
     ///
     /// ```
-    /// let (drain, shipper) = logging::Builder::new(
-    ///     "projects/my-gcp-project/logs/my-log-id",
-    ///     "k8s_container",
-    /// )
-    /// .with_resource_labels(resource_labels)
-    /// .unwrap()
-    /// .build_with_async_shipper();
+    /// use tokio::runtime::Runtime;
+    /// use serde_json::json;
     ///
-    /// // Forward messages from the sync channel to the async channel where the
-    /// // shipper sends it to Google Cloud Logging
-    /// let bridge = shipper.yield_bridge();
-    /// tokio::task::spawn_blocking(move || {
-    ///     bridge.run_sync_to_async_bridge();
-    /// });
+    /// let mut rt = Runtime::new().unwrap();
+    /// rt.spawn(async {
+    ///   let resource_labels = json!(
+    ///   {
+    ///       "pod_name": "dummy-value",
+    ///       "location": "europe-west1-b",
+    ///       "pod_name": std::env::var("HOSTNAME").unwrap_or_default(),
+    ///       "container_name": "my-app",
+    ///       "project_id": "my-gcp-project",
+    ///       "cluster_name": "my-gke-cluster",
+    ///       "namespace_name": "my-gke-namespace"
+    ///   });
     ///
-    /// tokio::spawn(async move {
-    ///     shipper.run_log_shipper().await;
+    ///   use googlelog::logger::Builder;
+    ///   let (drain, mut shipper) = Builder::new(
+    ///       "projects/my-gcp-project/logs/my-log-id",
+    ///       "k8s_container",
+    ///   )
+    ///   .with_resource_labels(resource_labels)
+    ///   .unwrap()
+    ///   .build_with_async_shipper();
+    ///
+    ///   // Forward messages from the sync channel to the async channel where the
+    ///   // shipper sends it to Google Cloud Logging
+    ///   let bridge = shipper.yield_bridge();
+    ///   tokio::task::spawn_blocking(move || {
+    ///       bridge.run_sync_to_async_bridge();
+    ///   });
+    ///
+    ///   tokio::spawn(async move {
+    ///       shipper.run_log_shipper().await;
+    ///   });
     /// });
     ///
     /// ```
