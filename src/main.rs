@@ -861,7 +861,7 @@ async fn run(arg_matches: ArgMatches) -> Result<(), String> {
     let addr = arg_matches.value_of(args::BIND_ADDRESS).unwrap();
     let http_addr = arg_matches.value_of(args::HTTP_BIND_ADDRESS).unwrap();
     let auth_type = arg_matches.value_of(args::AUTH_TYPE).unwrap_or_else(|| {
-        eprintln!("Required option --auth-type is missing. To disable authentication, use: `--auth-type anonymous` or set the `UNFTP_AUTH_TYPE=anonymous` environment variable.");
+        eprintln!("Required option --auth-type is missing. To disable authentication, use: `--auth-type=anonymous` or set the `UNFTP_AUTH_TYPE=anonymous` environment variable.");
         ::std::process::exit(1)
     });
     let sbe_type = arg_matches.value_of(args::STORAGE_BACKEND_TYPE).unwrap();
