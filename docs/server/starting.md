@@ -9,11 +9,16 @@ program arguments type the following:
 unftp --help
 ```
 
-To run unFTP with everything set to the defaults:
+To run passwordless unFTP with everything set to the defaults:
 
 ```sh
-unftp
+unftp --auth-type anonymous
 ```
+
+{% info Note %}
+The `--auth-type` switch is required, but will be omitted in many other examples for brevity.
+Choose the appropriate authentication type for your use case—do not use anonymous unless explicitly intended.
+{% end %}
 
 This will start unFTP:
 

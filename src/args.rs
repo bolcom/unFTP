@@ -372,8 +372,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::Command {
                 .help("The type of authorization to use")
                 //.case_insensitive(true)
                 .env("UNFTP_AUTH_TYPE")
-                .takes_value(true)
-                .default_value("anonymous"),
+                .takes_value(true),
         )
         .arg(
             Arg::new(AUTH_PAM_SERVICE)

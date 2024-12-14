@@ -37,7 +37,7 @@ openssl req -new -x509 -days 365 \
 	-key unftp_client_ca.key \
         -subj '/CN=unftp-ca.mysite.com/O=bol.com/C=NL' \
 	-out unftp_client_ca.crt
-````
+```
 
 Create a client side key:
 
