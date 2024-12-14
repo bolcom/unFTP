@@ -77,6 +77,15 @@ or create a Github issue.
 
 You can also follow news and talk to us on [Telegram](https://t.me/unftp) 
 
+## Updating user documentation
+
+Make your edits in docs/
+
+If you want to preview the docs:
+
+- Install Doctave as explained in the README at https://github.com/Doctave/doctave
+- Run make site-preview
+
 ## License
 
 You're free to use, modify and distribute this software under the terms of the Apache-2.0 license.

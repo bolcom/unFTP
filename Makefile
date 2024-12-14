@@ -73,7 +73,7 @@ publish: # Publishes to crates.io
 	cargo publish --verbose --features rest_auth,jsonfile_auth,cloud_storage
 
 .PHONY: site-preview
-site-preview:
+site-preview: # Previews the documentation for Github Pages and Netlify
 	doctave serve
 
 .PHONY: site
