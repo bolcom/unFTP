@@ -23,6 +23,7 @@ pub struct ChoosingVfs {
 #[derive(Debug)]
 #[allow(clippy::large_enum_variant)]
 pub enum InnerVfs {
+    #[allow(dead_code)]
     OpenDAL(unftp_sbe_opendal::OpendalStorage),
     Cloud(unftp_sbe_gcs::CloudStorage),
     File(unftp_sbe_fs::Filesystem),

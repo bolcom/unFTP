@@ -5,6 +5,8 @@
 - [#184](https://github.com/bolcom/unFTP/pull/184) Support for Azure blob storage with [OpenDAL](https://github.com/apache/OpenDAL)
 - [#185](https://github.com/bolcom/unFTP/pull/185) Support for shipping logs to [Google Logging](https://cloud.google.com/logging/docs/)
 - [#196](https://github.com/bolcom/unFTP/pull/196) --auth-type is now mandatory to prevent security risks from omission or typos that could leave the FTP server open
+- Upgraded dependencies
+- Upgraded to Rust 1.83.0
 
 ## 2023-12-24 unftp v0.14.7
 
