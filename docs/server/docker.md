@@ -6,7 +6,6 @@ You can download pre-made docker images from [docker hub](https://hub.docker.com
 
 ```sh
 docker pull bolcom/unftp:v0.14.7-alpine
-docker pull bolcom/unftp:v0.14.7-alpine-istio
 docker pull bolcom/unftp:v0.14.7-scratch
 ```
 

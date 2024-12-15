@@ -40,8 +40,6 @@ We offer 3 different options for building an unFTP docker image:
 - `scratch`: builds the binary in [rust:slim](https://hub.docker.com/_/rust) and deploys in a `FROM scratch` image. The unFTP binary is statically linked using [musl libc](https://www.musl-libc.org/).
 - `alpine` (default): builds in [rust:slim](https://hub.docker.com/_/rust) and deploy in alpine. This image is built with musl instead of a full-blown libc. The unFTP binary is statically linked using [musl libc](https://www.musl-libc.org/).
 - `alpine-debug`: same images as `alpine` but using the debug build of unftp and adds tools like [lftp](https://lftp.yar.ru/) and [CurlFtpFS](http://curlftpfs.sourceforge.net/) while also running as root.
-- `alpine-istio`: same as `alpine` but with [scuttle](https://github.com/redboxllc/scuttle) installed. For use together with [Istio](https://istio.io/).
-- `alpine-istio-debug`: same as alpine-debug but with the additions of `alpine-istio`.  
 
 To build the alpine docker image:
 

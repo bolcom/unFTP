@@ -1,6 +1,8 @@
 # Release Checklist
 
 * Update the Rust version in the Makefile and the Github actions file
+* Update the Rust version in packaging/docker/*.ci
+* Update the alpine version in the packaging/docker/alpine.Dockerfile.ci image
 * Update minor versions dependencies. Install [cargo-edit](https://crates.io/crates/cargo-edit) and run `cargo upgrade`.
   Cargo-edit also covers all the crates in the workspace
 * Update Cargo.toml with the new version number (also check for libunftp version references)
