@@ -7,6 +7,7 @@
 - [#196](https://github.com/bolcom/unFTP/pull/196) --auth-type is now mandatory to prevent security risks from omission or typos that could leave the FTP server open
 - Upgraded dependencies
 - Upgraded to Rust 1.83.0
+- Removed istio (scuttle) image build in favor of using `proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'`
 
 ## 2023-12-24 unftp v0.14.7
 

@@ -1,9 +1,9 @@
-FROM rust:1.70.0-slim AS builder
+FROM rust:1.83.0-slim AS builder
 
-FROM alpine:3.17
+FROM alpine:3.21
 
 # for devel only
-RUN apk add --repository http://dl-cdn.alpinelinux.org/alpine/v3.17/main fuse lftp curl
+RUN apk add --repository http://dl-cdn.alpinelinux.org/alpine/v3.21/main fuse lftp curl
 RUN apk add --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing curlftpfs
 
 # we could also RUN 'apk add ca-certificates', but we prefer to be consistent with the -minimal image

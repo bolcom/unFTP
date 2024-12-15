@@ -363,14 +363,6 @@ jobs:
           push: true
           tags: bolcom/unftp:${{ env.BUILD_VERSION }}-alpine
 
-      - name: Build and push alpine-istio image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./packaging/docker/alpine-istio.Dockerfile.ci
-          push: true
-          tags: bolcom/unftp:${{ env.BUILD_VERSION }}-alpine-istio
-
       - name: Build and push alpine-debug image
         uses: docker/build-push-action@v2
         with:
@@ -378,11 +370,3 @@ jobs:
           file: ./packaging/docker/alpine-debug.Dockerfile.ci
           push: true
           tags: bolcom/unftp:${{ env.BUILD_VERSION }}-alpine-debug
-
-      - name: Build and push Scratch image
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./packaging/docker/alpine-istio-debug.Dockerfile.ci
-          push: true
-          tags: bolcom/unftp:${{ env.BUILD_VERSION }}-alpine-istio-debug
