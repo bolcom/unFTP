@@ -47,7 +47,13 @@ impl UserDetailProvider for HTTPUserDetailProvider {
             .body(Body::empty())
             .map_err(|e| UserDetailError::with_source("error creating request", e))?;
 
-        let client = Client::new();
+        let https = hyper_rustls::HttpsConnectorBuilder::new()
+            .with_native_roots()
+            .https_or_http()
+            .enable_http1()
+            .build();
+
+        let client = Client::builder().build(https);
 
         let resp = client
             .request(req)
