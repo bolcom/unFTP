@@ -45,7 +45,7 @@ impl Builder {
     /// # Example
     ///
     /// ```
-    /// use googlelog::logger::Builder;
+    /// use slog_google::logger::Builder;
     /// let (drain, _) = Builder::new(
     ///     "projects/my-gcp-project/logs/my-log-id",
     ///     "k8s_container",
@@ -81,7 +81,7 @@ impl Builder {
     ///     "namespace_name": "my-gke-namespace"
     /// });
     ///
-    /// use googlelog::logger::Builder;
+    /// use slog_google::logger::Builder;
     /// let (drain, _) = Builder::new(
     ///     "projects/my-gcp-project/logs/my-log-id",
     ///     "k8s_container",
@@ -195,7 +195,7 @@ impl Builder {
     ///       "namespace_name": "my-gke-namespace"
     ///   });
     ///
-    ///   use googlelog::logger::Builder;
+    ///   use slog_google::logger::Builder;
     ///   let (drain, mut shipper) = Builder::new(
     ///       "projects/my-gcp-project/logs/my-log-id",
     ///       "k8s_container",

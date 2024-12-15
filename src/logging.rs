@@ -40,7 +40,7 @@ where
 
 pub fn create_logger(
     arg_matches: &ArgMatches,
-) -> Result<(slog::Logger, Option<googlelog::shipper::Shipper>), String> {
+) -> Result<(slog::Logger, Option<slog_google::shipper::Shipper>), String> {
     let min_log_level = match arg_matches.occurrences_of(VERBOSITY) {
         0 => Level::Warning,
         1 => Level::Info,
@@ -140,7 +140,7 @@ fn load_labels_file(file_path: &str, hostname: &str) -> Result<serde_json::Value
 
 fn google_logger(
     m: &ArgMatches,
-) -> Result<Option<(googlelog::logger::Logger, googlelog::shipper::Shipper)>, String> {
+) -> Result<Option<(slog_google::logger::Logger, slog_google::shipper::Shipper)>, String> {
     match (m.value_of(GLOG_LOGNAME), m.value_of(GLOG_RESOURCE_TYPE)) {
 
         (Some(logname), Some(resource_type)) => {
@@ -150,7 +150,7 @@ fn google_logger(
 
             let (labels_file, level_label) = (m.value_of(GLOG_LABELS_FILE), m.value_of(GLOG_LEVEL_LABEL));
 
-            let mut builder = googlelog::logger::Builder::new(
+            let mut builder = slog_google::logger::Builder::new(
                 logname,
                 resource_type,
             );

@@ -1022,19 +1022,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "googlelog"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "google-logging2",
- "reqwest",
- "serde_json",
- "slog",
- "thiserror 1.0.69",
- "tokio",
-]
-
-[[package]]
 name = "h2"
 version = "0.3.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2994,6 +2981,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "slog-google"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "google-logging2",
+ "reqwest",
+ "serde_json",
+ "slog",
+ "thiserror 1.0.69",
+ "tokio",
+]
+
+[[package]]
 name = "slog-redis"
 version = "0.1.2"
 dependencies = [
@@ -3617,7 +3617,6 @@ dependencies = [
  "console-subscriber",
  "flate2",
  "futures",
- "googlelog",
  "http 0.2.12",
  "hyper 0.14.31",
  "hyper-rustls 0.23.2",
@@ -3630,6 +3629,7 @@ dependencies = [
  "serde_json",
  "slog",
  "slog-async",
+ "slog-google",
  "slog-redis",
  "slog-term",
  "strum",

@@ -1,10 +1,15 @@
 [package]
-name = "googlelog"
+name = "slog-google"
+description = "Google Logging drain for slog-rs"
 version = "0.1.0"
 edition = "2021"
 authors = [
     "Rob klein Gunnewiek <rkleingunnewiek@bol.com>"
 ]
+keywords = ["slog", "logging", "log", "google", "gcp"]
+categories = ["development-tools::debugging"]
+homepage = "https://github.com/bolcom/unFTP/tree/master/crates/googlelog"
+repository = "https://github.com/bolcom/unFTP/tree/master/crates/googlelog"
 
 [features]
 shipper = []
