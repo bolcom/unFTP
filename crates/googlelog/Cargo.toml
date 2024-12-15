@@ -3,6 +3,7 @@ name = "slog-google"
 description = "Google Logging drain for slog-rs"
 version = "0.1.0"
 edition = "2021"
+license = "Apache-2.0"
 authors = [
     "Rob klein Gunnewiek <rkleingunnewiek@bol.com>"
 ]
