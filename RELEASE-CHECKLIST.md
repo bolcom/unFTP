@@ -19,7 +19,7 @@
 * Wait till MR pipelines are OK then run `make publish`
 * Merge the MR via the command line by merging master into the branch and pushing it.
 * Create the release in Github using tag format \[{component}-\]{version} e.g.
-  > v0.14.7
+  > v0.15.0
   or
   > slog-redis-v0.1.2
 * Wait for the Github Actions pipeline to finish. You should see all artifacts in the release page.
