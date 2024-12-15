@@ -285,7 +285,7 @@ jobs:
       #   env:
       #     GITHUB_TOKEN: ${{ github.token }}
       - name: Download
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v2
         with:
           name: ${{ env.file_name }}
           path: ${{ env.file_dir }}
@@ -321,7 +321,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download linux musl
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v2
         with:
           name: unftp_x86_64-unknown-linux-musl
           path: ./x86_64-unknown-linux-musl
