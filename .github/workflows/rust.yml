@@ -129,7 +129,7 @@ jobs:
       - name: Rename
         run: mv target/${{ env.target }}/release/unftp target/${{ env.target }}/release/unftp_${{ env.target }}
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: unftp_${{ env.target }}
           path: target/${{ env.target }}/release/unftp_${{ env.target }}
@@ -160,7 +160,7 @@ jobs:
       - name: Rename
         run: mv target/${{ env.target }}/release/unftp target/${{ env.target }}/release/unftp_${{ env.target }}
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: unftp_${{ env.target }}
           path: target/${{ env.target }}/release/unftp_${{ env.target }}
@@ -190,7 +190,7 @@ jobs:
       - name: Rename
         run: ren "target\${{ env.trget }}\release\unftp.exe" "unftp_${{ env.trget }}.exe"
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: unftp_${{ env.trget }}.exe
           path: target/${{ env.trget }}/release/unftp_${{ env.trget }}.exe
@@ -219,7 +219,7 @@ jobs:
       - name: Rename
         run: mv target/${{ env.target }}/release/unftp target/${{ env.target }}/release/unftp_${{ env.target }}
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: unftp_${{ env.target }}
           path: target/${{ env.target }}/release/unftp_${{ env.target }}
@@ -251,7 +251,7 @@ jobs:
       - name: Rename
         run: mv target/${{ env.target }}/release/unftp target/${{ env.target }}/release/unftp_${{ env.target }}
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: unftp_${{ env.target }}
           path: target/${{ env.target }}/release/unftp_${{ env.target }}
@@ -336,7 +336,7 @@ jobs:
         run: docker save -o docker-image-scratch.tar bolcom/unftp:${{ env.BUILD_VERSION }}-scratch
 
       - name: Upload scratch tar image
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: docker-image-scratch
           path: docker-image-scratch.tar
