@@ -1,5 +1,9 @@
 # Changelog
 
+## 2024-12-14 unftp v0.15.1
+
+- Upgrade libunftp to 0.20.3 solving '425' errors for passive listening ports
+
 ## 2024-12-14 unftp v0.15.0
 
 - Upgraded to new auth and storage backend releases
