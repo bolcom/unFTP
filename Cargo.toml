@@ -1,6 +1,6 @@
 [package]
 name = "unftp"
-version = "0.15.0"
+version = "0.15.1"
 authors = [
     "Agoston Horvath <ahorvath@bol.com>",
     "Dávid Kosztka <dkosztka@bol.com>",
@@ -42,7 +42,7 @@ http = "0.2.12"
 hyper = { version = "0.14.31", features = ["server", "http1"] }
 hyper-rustls = "0.23.2"
 lazy_static = "1.5.0"
-libunftp = "0.20.1"
+libunftp = "0.20.3"
 opendal = { version = "0.47.3", optional = true }
 prometheus = { version = "0.13.4", features = ["process"] }
 serde = { version = "1.0.216", features = ["derive"] }

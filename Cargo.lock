@@ -1680,9 +1680,9 @@ dependencies = [
 
 [[package]]
 name = "libunftp"
-version = "0.20.2"
+version = "0.20.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d3e6d2ebbb89c0006dcb62d77112a6e3697f42870c97f931d2b4892199328d0f"
+checksum = "a84ef003aad507d3646ad9a599996d799e4ec7324e05a2873a0944dfde12e49b"
 dependencies = [
  "async-trait",
  "bitflags 2.6.0",
@@ -3608,7 +3608,7 @@ checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 
 [[package]]
 name = "unftp"
-version = "0.15.0"
+version = "0.15.1"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
