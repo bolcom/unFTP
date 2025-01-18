@@ -13,16 +13,16 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1719261604"
+    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1737229553"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1719261604"
+    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1737229553"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1719261604" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1719261604"
+    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1737229553" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1737229553"
         media="screen" />
 
     <script>
-        var DOCTAVE_TIMESTAMP = "1719261604";
+        var DOCTAVE_TIMESTAMP = "1737229553";
         var BASE_PATH = "/";
         var color = localStorage.getItem('doctave-color')
 
@@ -163,10 +163,23 @@ module: main
  Jan 29 12:54:17.149 WARN FTPS not enabled
 </code></pre>
 <p>If you want DEBUG level then specify <code>-vv</code>.</p>
-<h2 id="log-shipping-via-redis">Log shipping via Redis</h2>
-<p>In a cloud environment it is useful to send logs to a central location for analysis. unFTP can send structured logging 
-in JSON format to a <a href="https://redis.io/">Redis</a> instance. With a tool like <a href="https://www.elastic.co/logstash/">Logstash</a>
-this can then be processed further.</p>
+<h2 id="log-shipping">Log shipping</h2>
+<p>In a cloud environment it is useful to send logs to a central location for analysis.
+UnFTP can send structured logging to <a href="https://cloud.google.com/logging/docs/">Google Logging</a> or Redis.
+The Redis option is now deprecated and will be soon phased out.</p>
+<h3 id="google-logging">Google Logging</h3>
+<p>unFTP can log to Google Cloud Logging.</p>
+<p>Minimal settings are <em>logname</em> (<code>projects/[PROJECT_ID]/logs/[LOG_ID]</code>) and <a href="https://cloud.google.com/logging/docs/api/v2/resource-list#resource-types"><em>resource type</em></a>.
+These can be set through the environment variables <code>UNFTP_GLOG_LOGNAME</code> and <code>UNFTP_GLOG_RESOURCE_TYPE</code> or the below command line arguments:.</p>
+<pre><code>➜ unftp \
+   --log-google-logname projects/my-gcp-project/logs/my-log-id \
+   --log-google-resource-type k8s_container
+</code></pre>
+<p>Authentication works with <a href="https://cloud.google.com/docs/authentication/application-default-credentials">Application Default Credentials (ADC)</a>.</p>
+<p>Refer to the CLI help for additional optional arguments, including configuring extra labels and specifying a log level label.</p>
+<h3 id="redis">Redis</h3>
+<p>unFTP can send structured logging in JSON format to a <a href="https://redis.io/">Redis</a> instance.
+With a tool like <a href="https://www.elastic.co/logstash/">Logstash</a> this can then be processed further.</p>
 <p>unFTP will use the <a href="https://redis.io/commands/rpush">RPUSH</a> command to append logs at the tail of a list.</p>
 <p>Here is an example of configuring unFTP to send logs to a local Redis instance:</p>
 <pre><code class="language-sh">unftp -v \
@@ -196,7 +209,15 @@ this can then be processed further.</p>
                     <ul>
                         
                         <li class='page-nav-level-2'>
-                            <a href='#log-shipping-via-redis'>Log shipping via Redis</a>
+                            <a href='#log-shipping'>Log shipping</a>
+                        </li>
+                        
+                        <li class='page-nav-level-3'>
+                            <a href='#google-logging'>Google Logging</a>
+                        </li>
+                        
+                        <li class='page-nav-level-3'>
+                            <a href='#redis'>Redis</a>
                         </li>
                         
                     </ul>
@@ -218,11 +239,11 @@ this can then be processed further.</p>
             </div>
         </div>
     </div>
-    <script type="text/javascript" src="/assets/katex.js?v=1719261604"></script>
-    <script type="text/javascript" src="/assets/mermaid.js?v=1719261604"></script>
-    <script type="text/javascript" src="/assets/elasticlunr.js?v=1719261604"></script>
-    <script type="text/javascript" src="/assets/prism.js?v=1719261604"></script>
-    <script type="text/javascript" src="/assets/doctave-app.js?v=1719261604"></script>
+    <script type="text/javascript" src="/assets/katex.js?v=1737229553"></script>
+    <script type="text/javascript" src="/assets/mermaid.js?v=1737229553"></script>
+    <script type="text/javascript" src="/assets/elasticlunr.js?v=1737229553"></script>
+    <script type="text/javascript" src="/assets/prism.js?v=1737229553"></script>
+    <script type="text/javascript" src="/assets/doctave-app.js?v=1737229553"></script>
 
     
 </body>

@@ -13,16 +13,16 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1719261604"
+    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1737229553"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1719261604"
+    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1737229553"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1719261604" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1719261604"
+    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1737229553" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1737229553"
         media="screen" />
 
     <script>
-        var DOCTAVE_TIMESTAMP = "1719261604";
+        var DOCTAVE_TIMESTAMP = "1737229553";
         var BASE_PATH = "/";
         var color = localStorage.getItem('doctave-color')
 
@@ -147,9 +147,15 @@
 program arguments type the following:</p>
 <pre><code class="language-sh">unftp --help
 </code></pre>
-<p>To run unFTP with everything set to the defaults:</p>
-<pre><code class="language-sh">unftp
+<p>To run passwordless unFTP with everything set to the defaults:</p>
+<pre><code class="language-sh">unftp --auth-type anonymous
 </code></pre>
+<div class="callout info"><p class="callout-title">Note</p>
+<p>
+The <code>--auth-type</code> switch is required, but will be omitted in many other examples for brevity.
+Choose the appropriate authentication type for your use case—do not use anonymous unless explicitly intended.
+</p>
+</div>
 <p>This will start unFTP:</p>
 <ul>
 <li>with a filesystem back-end rooted at your OS temporary directory.</li>
@@ -190,11 +196,11 @@ by using the <code>--root-dir</code> argument. In addition, lets limit the data 
             </div>
         </div>
     </div>
-    <script type="text/javascript" src="/assets/katex.js?v=1719261604"></script>
-    <script type="text/javascript" src="/assets/mermaid.js?v=1719261604"></script>
-    <script type="text/javascript" src="/assets/elasticlunr.js?v=1719261604"></script>
-    <script type="text/javascript" src="/assets/prism.js?v=1719261604"></script>
-    <script type="text/javascript" src="/assets/doctave-app.js?v=1719261604"></script>
+    <script type="text/javascript" src="/assets/katex.js?v=1737229553"></script>
+    <script type="text/javascript" src="/assets/mermaid.js?v=1737229553"></script>
+    <script type="text/javascript" src="/assets/elasticlunr.js?v=1737229553"></script>
+    <script type="text/javascript" src="/assets/prism.js?v=1737229553"></script>
+    <script type="text/javascript" src="/assets/doctave-app.js?v=1737229553"></script>
 
     
 </body>
