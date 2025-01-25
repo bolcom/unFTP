@@ -3,11 +3,14 @@
 //! Call the request_token method to obtain the token.
 //!
 use http::StatusCode;
-use hyper::client::connect::dns::GaiResolver;
-use hyper::client::HttpConnector;
+use http_body_util::{BodyExt, Either, Empty};
+use hyper::body::Bytes;
 use hyper::http::header;
-use hyper::{Body, Client, Method, Request, Response};
+use hyper::{Method, Request};
 use hyper_rustls::HttpsConnector;
+use hyper_util::client::legacy::connect::dns::GaiResolver;
+use hyper_util::client::legacy::connect::HttpConnector;
+use hyper_util::client::legacy::Client;
 use thiserror::Error;
 
 // See https://github.com/mechiru/gcemeta/blob/master/src/metadata.rs
@@ -48,7 +51,7 @@ pub enum Error {
 // TODO: Cache the token.
 pub(super) async fn request_token(
     service: Option<String>,
-    client: Client<HttpsConnector<HttpConnector<GaiResolver>>>,
+    client: Client<HttpsConnector<HttpConnector<GaiResolver>>, Either<String, Empty<Bytes>>>,
 ) -> Result<TokenResponse, Error> {
     // Does same as curl -s -HMetadata-Flavor:Google http://metadata.google.internal/computeMetadata/v1/instance/service-accounts/default/token
     let suffix = format!(
@@ -64,10 +67,10 @@ pub(super) async fn request_token(
         .header("Metadata-Flavor", "Google")
         .header(header::USER_AGENT, USER_AGENT)
         .method(Method::GET)
-        .body(Body::empty())
+        .body(Either::Right(Empty::<Bytes>::new()))
         .map_err(|e| Error::Request("error building request".to_owned(), Box::new(e)))?;
 
-    let response: Response<Body> = client
+    let response = client
         .request(request)
         .await
         .map_err(|e| Error::Request("error sending request".to_owned(), Box::new(e)))?;
@@ -78,9 +81,10 @@ pub(super) async fn request_token(
         code => return Err(Error::UnexpectedHttpResult(code)),
     }
 
-    let body_bytes = hyper::body::to_bytes(response.into_body())
+    let body_bytes = BodyExt::collect(response.into_body())
         .await
-        .map_err(|e| Error::Request("error getting response body".to_owned(), Box::new(e)))?;
+        .map_err(|e| Error::Request("error getting response body".to_owned(), Box::new(e)))?
+        .to_bytes();
 
     let unmarshall_result: serde_json::Result<TokenResponse> =
         serde_json::from_slice(body_bytes.to_vec().as_slice());
