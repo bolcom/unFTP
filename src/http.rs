@@ -1,15 +1,19 @@
 //! Contains code pertaining to unFTPs HTTP service it exposes, including prometheus metrics.
 use crate::{app, metrics};
 
-use hyper::{
-    server::conn::AddrStream,
-    service::{make_service_fn, service_fn},
-    Body, Method, Request, Response, StatusCode,
-};
+use http_body_util::combinators::UnsyncBoxBody;
+use http_body_util::{Empty, Full};
+use hyper::body::{Bytes, Incoming};
+use hyper::service::service_fn;
+use hyper::{Method, Request, Response, StatusCode};
 use slog::*;
+use std::convert::Infallible;
 use std::net::{IpAddr, Ipv4Addr};
 use std::{net::SocketAddr, result::Result};
-use tokio::io::{AsyncBufReadExt, AsyncWriteExt};
+use tokio::{
+    io::{AsyncBufReadExt, AsyncWriteExt},
+    net::TcpListener,
+};
 
 const PATH_HOME: &str = "/";
 const PATH_METRICS: &str = "/metrics";
@@ -28,22 +32,12 @@ pub async fn start(
         .parse()
         .map_err(|e| format!("unable to parse HTTP address {}: {}", bind_addr, e))?;
 
-    let make_svc = make_service_fn(|_socket: &AddrStream| {
-        async move {
-            // service_fn converts our function into a `Service`
-            Ok::<_, hyper::Error>(service_fn(move |req: Request<Body>| async move {
-                let handler = HttpHandler { ftp_addr };
-                handler.router(req).await
-            }))
-        }
-    });
-
-    let http_server = hyper::Server::bind(&http_addr)
-        .serve(make_svc)
-        .with_graceful_shutdown(async {
-            shutdown.recv().await.ok();
-            info!(log, "Shutting down HTTP server");
-        });
+    let listener = TcpListener::bind(http_addr)
+        .await
+        .map_err(|e| format!("unable to parse HTTP address {}: {}", bind_addr, e))?;
+    let http_server =
+        hyper_util::server::conn::auto::Builder::new(hyper_util::rt::TokioExecutor::new());
+    let graceful = hyper_util::server::graceful::GracefulShutdown::new();
 
     info!(log, "Starting HTTP service."; "address" => &http_addr);
     info!(log, "Exposing {} service home.", app::NAME; "path" => PATH_HOME);
@@ -51,8 +45,41 @@ pub async fn start(
     info!(log, "Exposing readiness endpoint."; "path" => PATH_READINESS);
     info!(log, "Exposing liveness endpoint."; "path" => PATH_HEALTH);
 
-    if let Err(e) = http_server.await {
-        error!(log, "HTTP server error: {}", e)
+    loop {
+        tokio::select! {
+            conn = listener.accept() => {
+                let (stream, peer_addr) = match conn {
+                    Ok(conn) => conn,
+                    Err(e) => {
+                        error!(log, "Accept error: {}", e);
+                        continue;
+                    }
+                };
+                info!(log, "Incoming connection accepted: {}", peer_addr);
+
+                let stream = hyper_util::rt::TokioIo::new(stream);
+
+                let conn = http_server.serve_connection_with_upgrades(stream, service_fn(move |req: Request<Incoming>| async move {
+                    let handler = HttpHandler { ftp_addr };
+                    handler.router(req).await
+                }));
+
+                let conn = graceful.watch(conn.into_owned());
+
+                let log_clone = log.clone();
+                tokio::spawn(async move {
+                    if let Err(err) = conn.await {
+                        error!(log_clone, "connection error: {}", err);
+                    }
+                    debug!(log_clone, "connection dropped: {}", peer_addr);
+                });
+            },
+            _ = shutdown.recv() => {
+                drop(listener);
+                info!(log, "Shutting down HTTP server");
+                break;
+            }
+        }
     }
 
     info!(log, "HTTP shutdown OK");
@@ -65,45 +92,46 @@ struct HttpHandler {
 }
 
 impl HttpHandler {
-    async fn router(&self, req: Request<Body>) -> Result<Response<Body>, hyper::Error> {
-        let mut response: Response<Body> = Response::new(Body::empty());
-        match (req.method(), req.uri().path()) {
-            (&Method::GET, PATH_HOME) | (&Method::GET, "/index.html") => {
-                *response.body_mut() = self.service_home();
-            }
-            (&Method::GET, PATH_METRICS) => {
-                *response.body_mut() = Body::from(metrics::gather());
-            }
-            (&Method::GET, PATH_HEALTH) => {
-                self.health(&mut response).await;
-            }
-            (&Method::GET, PATH_READINESS) => {
-                *response.status_mut() = StatusCode::OK;
-            }
-            _ => {
-                *response.status_mut() = StatusCode::NOT_FOUND;
-            }
-        }
+    async fn router(
+        &self,
+        req: Request<Incoming>,
+    ) -> Result<Response<UnsyncBoxBody<Bytes, Infallible>>, http::Error> {
+        let (parts, _) = req.into_parts();
 
-        Ok(response)
+        let response = match (parts.method, parts.uri.path()) {
+            (Method::GET, PATH_HOME) | (Method::GET, "/index.html") => Ok(Response::new(
+                UnsyncBoxBody::new(Full::new(self.service_home())),
+            )),
+            (Method::GET, PATH_METRICS) => Ok(Response::new(UnsyncBoxBody::new(Full::new(
+                metrics::gather().into(),
+            )))),
+            (Method::GET, PATH_HEALTH) => self.health().await,
+            (Method::GET, PATH_READINESS) => Response::builder()
+                .status(StatusCode::OK)
+                .body(UnsyncBoxBody::new(Empty::<Bytes>::new())),
+            _ => Response::builder()
+                .status(StatusCode::NOT_FOUND)
+                .body(UnsyncBoxBody::new(Empty::<Bytes>::new())),
+        };
+
+        response
     }
 
-    fn service_home(&self) -> Body {
+    fn service_home(&self) -> Bytes {
         let index_html = include_str!(concat!(env!("PROJ_WEB_DIR"), "/index.html"));
-        Body::from(index_html.replace("{{ .AppVersion }}", app::VERSION))
+        Bytes::from(index_html.replace("{{ .AppVersion }}", app::VERSION))
     }
 
-    async fn health(&self, response: &mut Response<Body>) {
+    async fn health(&self) -> Result<Response<UnsyncBoxBody<Bytes, Infallible>>, http::Error> {
         match self.ftp_probe().await {
-            Ok(_) => {
-                *response.body_mut() = Body::from("<html>OK!</html>");
-                *response.status_mut() = StatusCode::OK;
-            }
-            Err(_e) => {
-                // TODO: Log error
-                *response.body_mut() = Body::from("<html>Service unavailable!</html>");
-                *response.status_mut() = StatusCode::SERVICE_UNAVAILABLE;
-            }
+            Ok(_) => Response::builder()
+                .status(StatusCode::OK)
+                .body(UnsyncBoxBody::new(Full::<Bytes>::from("<html>OK!</html>"))),
+            Err(_e) => Response::builder()
+                .status(StatusCode::SERVICE_UNAVAILABLE)
+                .body(UnsyncBoxBody::new(Full::<Bytes>::from(
+                    "<html>Service unavailable!</html>",
+                ))),
         }
     }
 
