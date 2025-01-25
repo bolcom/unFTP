@@ -3,10 +3,14 @@ use crate::infra::workload_identity;
 use async_trait::async_trait;
 use base64::Engine;
 use http::{header, Method, Request, StatusCode, Uri};
-use hyper::client::connect::dns::GaiResolver;
-use hyper::client::HttpConnector;
-use hyper::{Body, Client, Response};
+use http_body_util::{Either, Empty};
+use hyper::body::Bytes;
+use hyper::body::Incoming;
+use hyper::Response;
 use hyper_rustls::{HttpsConnector, HttpsConnectorBuilder};
+use hyper_util::client::legacy::connect::HttpConnector;
+use hyper_util::client::legacy::Client;
+use hyper_util::rt::TokioExecutor;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -24,7 +28,7 @@ pub struct PubsubEventDispatcher {
     api_base_url: String,
     project: String,
     topic: String,
-    client: Client<HttpsConnector<HttpConnector>>,
+    client: Client<HttpsConnector<HttpConnector>, Either<String, Empty<Bytes>>>,
 }
 
 const DEFAULT_SERVICE_ENDPOINT: &str = "https://pubsub.googleapis.com";
@@ -52,14 +56,15 @@ impl PubsubEventDispatcher {
     where
         Str: Into<String>,
     {
-        let client: Client<HttpsConnector<HttpConnector<GaiResolver>>, Body> = Client::builder()
-            .build(
-                HttpsConnectorBuilder::new()
-                    .with_native_roots()
-                    .https_or_http()
-                    .enable_http1()
-                    .build(),
-            );
+        let https = HttpsConnectorBuilder::new()
+            .with_native_roots()
+            .expect("no native root CA certificates found")
+            .https_or_http()
+            .enable_http1()
+            .build();
+
+        let client = Client::builder(TokioExecutor::new()).build(https);
+
         PubsubEventDispatcher {
             log,
             api_base_url: api_base.into(),
@@ -110,7 +115,7 @@ impl PubsubEventDispatcher {
         // FIXME: When testing locally there won't be a token, we might want to handle this better.
         let token = self.get_token().await.unwrap_or_else(|_| "".to_owned());
 
-        let request: Request<Body> = Request::builder()
+        let request: Request<Either<String, Empty<Bytes>>> = Request::builder()
             .uri(
                 Uri::from_maybe_shared(format!(
                     "{}/v1/projects/{}/topics/{}:publish",
@@ -120,10 +125,10 @@ impl PubsubEventDispatcher {
             )
             .header(header::AUTHORIZATION, format!("Bearer {}", token))
             .method(Method::POST)
-            .body(body_string.into())
+            .body(Either::Left(body_string))
             .map_err(|e| format!("error with publish request: {}", e))?;
 
-        let response: Response<Body> = self.client.request(request).await.unwrap();
+        let response: Response<Incoming> = self.client.request(request).await.unwrap();
         if response.status() != StatusCode::OK {
             Err(format!(
                 "bad HTTP status code received: {}",
@@ -162,13 +167,16 @@ struct PubSubMsg {
 
 #[cfg(test)]
 mod tests {
+    use base64::engine::general_purpose;
+    use base64::Engine as _;
+
     use crate::infra::pubsub::{PubSubMsg, PubSubRequest};
     use base64::Engine;
     use std::collections::HashMap;
 
     #[test]
     fn pubub_request_serializes_correctly() {
-        let payload = base64::engine::general_purpose::STANDARD.encode("123");
+        let payload = general_purpose::STANDARD.encode(b"123");
         let r = PubSubRequest {
             messages: vec![PubSubMsg {
                 data: payload,
