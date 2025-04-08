@@ -19,7 +19,7 @@ shipper = []
 google-logging2 = "5.0.5"
 serde_json = "1.0.133"
 chrono = "0.4.39"
-tokio = { version = "1.42.0", features = ["macros", "time", "rt-multi-thread"] }
+tokio = { version = "1.43.1", features = ["macros", "time", "rt-multi-thread"] }
 slog = "2.7.0"
 thiserror = "1.0.69"
 reqwest = { version = "0.12.9", default-features = false, features = ["rustls-tls", "json"] }
