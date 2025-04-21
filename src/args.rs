@@ -3,12 +3,19 @@ use clap::{Arg, ArgEnum, Command};
 use std::str::FromStr;
 use strum_macros::{Display, EnumString};
 
+#[cfg(feature = "auth_jsonfile")]
 pub const AUTH_JSON_PATH: &str = "auth-json-path";
+#[cfg(feature = "auth_pam")]
 pub const AUTH_PAM_SERVICE: &str = "auth-pam-service";
+#[cfg(feature = "auth_rest")]
 pub const AUTH_REST_BODY: &str = "auth-rest-body";
+#[cfg(feature = "auth_rest")]
 pub const AUTH_REST_METHOD: &str = "auth-rest-method";
+#[cfg(feature = "auth_rest")]
 pub const AUTH_REST_REGEX: &str = "auth-rest-regex";
+#[cfg(feature = "auth_rest")]
 pub const AUTH_REST_SELECTOR: &str = "auth-rest-selector";
+#[cfg(feature = "auth_rest")]
 pub const AUTH_REST_URL: &str = "auth-rest-url";
 pub const AUTH_TYPE: &str = "auth-type";
 pub const BIND_ADDRESS: &str = "bind-address";
@@ -22,19 +29,31 @@ pub const FTPS_KEY_FILE: &str = "ftps-key-file";
 pub const FTPS_REQUIRED_ON_CONTROL_CHANNEL: &str = "ftps-required-on-control-channel";
 pub const FTPS_REQUIRED_ON_DATA_CHANNEL: &str = "ftps-required-on-data-channel";
 pub const FTPS_TRUST_STORE: &str = "ftps-trust-store";
+#[cfg(feature = "sbe_gcs")]
 pub const GCS_BASE_URL: &str = "sbe-gcs-base-url";
+#[cfg(feature = "sbe_gcs")]
 pub const GCS_BUCKET: &str = "sbe-gcs-bucket";
+#[cfg(feature = "sbe_gcs")]
 pub const GCS_KEY_FILE: &str = "sbe-gcs-key-file";
+#[cfg(feature = "sbe_gcs")]
 pub const GCS_ROOT: &str = "sbe-gcs-root";
+#[cfg(feature = "sbe_gcs")]
 pub const GCS_SERVICE_ACCOUNT: &str = "sbe-gcs-service-account";
 #[cfg(feature = "sbe_iso")]
 pub const ISO_FILE: &str = "sbe-iso-file";
+#[cfg(feature = "sbe_azblob")]
 pub const AZBLOB_ROOT: &str = "sbe-opendal-azblob-root";
+#[cfg(feature = "sbe_azblob")]
 pub const AZBLOB_CONTAINER: &str = "sbe-opendal-azblob-container";
+#[cfg(feature = "sbe_azblob")]
 pub const AZBLOB_ENDPOINT: &str = "sbe-opendal-azblob-endpoint";
+#[cfg(feature = "sbe_azblob")]
 pub const AZBLOB_ACCOUNT_NAME: &str = "sbe-opendal-azblob-account-name";
+#[cfg(feature = "sbe_azblob")]
 pub const AZBLOB_ACCOUNT_KEY: &str = "sbe-opendal-azblob-account-key";
+#[cfg(feature = "sbe_azblob")]
 pub const AZBLOB_SAS_TOKEN: &str = "sbe-opendal-azblob-sas-token";
+#[cfg(feature = "sbe_azblob")]
 pub const AZBLOB_BATCH_MAX_OPERATIONS: &str = "sbe-opendal-azblob-batch-max-operations";
 pub const HTTP_BIND_ADDRESS: &str = "bind-address-http";
 pub const IDLE_SESSION_TIMEOUT: &str = "idle-session-timeout";
@@ -63,8 +82,11 @@ pub const GLOG_LABELS_FILE: &str = "log-google-labels-file";
 #[strum(serialize_all = "lowercase")]
 pub enum AuthType {
     Anonymous,
+    #[cfg(feature = "auth_pam")]
     Pam,
+    #[cfg(feature = "auth_rest")]
     Rest,
+    #[cfg(feature = "auth_jsonfile")]
     Json,
 }
 
@@ -72,7 +94,9 @@ pub enum AuthType {
 #[allow(non_camel_case_types)]
 pub enum StorageBackendType {
     filesystem,
+    #[cfg(feature = "sbe_gcs")]
     gcs,
+    #[cfg(feature = "sbe_azblob")]
     azblob,
     #[cfg(feature = "sbe_iso")]
     iso,
@@ -362,170 +386,27 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command {
         .arg(
             Arg::new(AUTH_TYPE)
                 .long("auth-type")
-                .value_name("NAME")
-                .help("The type of authorization to use")
+                .value_name("TYPE")
+                .help("The type of authorization back-end to use. \
+                         Possible values could by 'anonymous', 'pam', 'json' or 'rest', but it depends \
+                         on whether unFTP was compiled to include that particular feature.")
                 //.case_insensitive(true)
                 .env("UNFTP_AUTH_TYPE")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new(AUTH_PAM_SERVICE)
-                .long("auth-pam-service")
-                .value_name("NAME")
-                .help("The name of the PAM service")
-                .env("UNFTP_AUTH_PAM_SERVICE")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new(AUTH_REST_URL)
-                .long("auth-rest-url")
-                .value_name("URL")
-                .help("Define REST endpoint. {USER}, {PASS} and/or {IP} are replaced by provided credentials and source IP respectively.")
-                .env("UNFTP_AUTH_REST_URL")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new(AUTH_REST_METHOD)
-                .long("auth-rest-method")
-                .value_name("URL")
-                .help("HTTP method to access REST endpoint")
-                .env("UNFTP_AUTH_REST_METHOD")
-                .default_value("GET")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new(AUTH_REST_BODY)
-                .long("auth-rest-body")
-                .value_name("TEMPLATE")
-                .help("If HTTP method contains body, it can be specified here. {USER}, {PASS} and/or {IP}\
-                are replaced by provided credentials and source IP respectively.")
-                .env("UNFTP_AUTH_REST_BODY")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new(AUTH_REST_SELECTOR)
-                .long("auth-rest-selector")
-                .value_name("SELECTOR")
-                .help("Define JSON pointer to fetch from REST response body (RFC6901)")
-                .env("UNFTP_AUTH_REST_SELECTOR")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new(AUTH_REST_REGEX)
-                .long("auth-rest-regex")
-                .value_name("REGEX")
-                .help("Regular expression to try match against value extracted via selector")
-                .env("UNFTP_AUTH_REST_REGEX")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new(AUTH_JSON_PATH)
-                .long("auth-json-path")
-                .value_name("PATH")
-                .help("The path to the json authentication file")
-                .env("UNFTP_AUTH_JSON_PATH")
-                .takes_value(true),
+                .takes_value(true)
+                .default_value("anonymous"),
         )
         .arg(
             Arg::new(STORAGE_BACKEND_TYPE)
                 .long("sbe-type")
                 .value_name("TYPE")
-                .help("Sets the storage backend type.")
+                .help("Sets the storage backend type. \
+                          Possible values could by 'filesystem', 'gcs', 'azblob' or 'iso', but it depends \
+                          on whether unFTP was compiled to include that particular feature.")
                 .env("UNFTP_SBE_TYPE")
                 .takes_value(true)
                 .default_value("filesystem"),
         )
-        .arg(
-            Arg::new(GCS_BASE_URL)
-                .long("sbe-gcs-base-url")
-                .value_name("URL")
-                .help("The base url of Google Cloud Storage API")
-                .env("UNFTP_SBE_GCS_BASE_URL")
-                .default_value("https://www.googleapis.com")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new(GCS_BUCKET)
-                .long("sbe-gcs-bucket")
-                .value_name("BUCKET")
-                .help("The bucket to use for the Google Cloud Storage backend")
-                .env("UNFTP_SBE_GCS_BUCKET")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new(GCS_KEY_FILE)
-                .long("sbe-gcs-key-file")
-                .value_name("KEY_FILE")
-                .help("The JSON file that contains the service account key for access to Google Cloud Storage.")
-                .env("UNFTP_SBE_GCS_KEY_FILE")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new(GCS_ROOT)
-                .long("sbe-gcs-root")
-                .value_name("PATH")
-                .help("The root path in the bucket where unFTP will look for and store files.")
-                .env("UNFTP_SBE_GCS_ROOT")
-                .default_value("")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new(GCS_SERVICE_ACCOUNT)
-                .long("sbe-gcs-service-account")
-                .value_name("SERVICE_ACCOUNT_NAME")
-                .help("The name of the service account to use when authenticating using GKE workload identity.")
-                .env("UNFTP_SBE_GCS_SERVICE_ACCOUNT")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::new(AZBLOB_ROOT)
-            .long("sbe-opendal-azblob-root")
-            .help("Root of this backend. All operations will happen under this root.")
-            .env("UNFTP_SBE_OPENDAL_AZBLOB_ROOT")
-            .takes_value(true))
-        .arg(
-            Arg::new(AZBLOB_CONTAINER)
-            .long("sbe-opendal-azblob-container")
-            .help("Container name of this backend.")
-            .env("UNFTP_SBE_OPENDAL_AZBLOB_CONTAINER")
-            .takes_value(true)
-        )
-        .arg(
-            Arg::new(AZBLOB_ENDPOINT)
-            .long("sbe-opendal-azblob-endpoint")
-            .help("Endpoint of this backend. Endpoint must be full uri.")
-            .env("UNFTP_SBE_OPENDAL_AZBLOB_ENDPOINT")
-            .takes_value(true)
-        )
-        .arg(
-            Arg::new(AZBLOB_ACCOUNT_NAME)
-            .long("sbe-opendal-azblob-account-name")
-            .help("Set account_name of this backend. If account_name is set, we will take user's input first. If not, we will try to load it from environment.")
-            .env("UNFTP_SBE_OPENDAL_AZBLOB_ACCOUNT_NAME")
-            .takes_value(true)
-        )
-        .arg(
-            Arg::new(AZBLOB_ACCOUNT_KEY)
-            .long("sbe-opendal-azblob-account-key")
-            .help("Set account_key of this backend. If account_name is set, we will take user's input first. If not, we will try to load it from environment.")
-            .env("UNFTP_SBE_OPENDAL_AZBLOB_ACCOUNT_KEY")
-            .takes_value(true)
-        )
-        .arg(
-            Arg::new(AZBLOB_SAS_TOKEN)
-            .long("sbe-opendal-azblob-sas-token")
-            .help("Set sas_token of this backend. If account_name is set, we will take user's input first. If not, we will try to load it from environment. See https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview for more info.")
-            .env("UNFTP_SBE_OPENDAL_AZBLOB_SAS_TOKEN")
-            .takes_value(true)
-        )
-        .arg(
-            Arg::new(AZBLOB_BATCH_MAX_OPERATIONS)
-            .long("sbe-opendal-azblob-batch-max-operations")
-            .help("Set maximum batch operations of this backend.")
-            .env("UNFTP_SBE_OPENDAL_AZBLOB_BATCH_MAX_OPERATIONS")
-            .takes_value(true)
-        )
-        .arg(
+      .arg(
             Arg::new(IDLE_SESSION_TIMEOUT)
                 .long("idle-session-timeout")
                 .value_name("TIMEOUT_SECONDS")
@@ -636,18 +517,216 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command {
             .default_value(tmp_dir),
     );
 
+    #[cfg(feature = "sbe_gcs")]
+    {
+        cmd = sbe_gcs_commands(cmd);
+    }
+
+    #[cfg(feature = "sbe_azblob")]
+    {
+        cmd = sbe_azblob_commands(cmd);
+    }
+
     #[cfg(feature = "sbe_iso")]
     {
-        cmd = cmd.arg(
-            Arg::new(ISO_FILE)
-                .long("sbe-iso-file")
-                .value_name("FILE")
-                .help("When the storage backend type is 'iso', this sets the path to the ISO file to serve.")
-                .env("UNFTP_ISO_FILE")
-                .takes_value(true)
-                .requires(STORAGE_BACKEND_TYPE),
-        );
+        cmd = sbe_iso_commands(cmd);
+    }
+
+    #[cfg(feature = "auth_pam")]
+    {
+        cmd = auth_pam_commands(cmd);
+    }
+
+    #[cfg(feature = "auth_jsonfile")]
+    {
+        cmd = auth_jsonfile_commands(cmd);
+    }
+
+    #[cfg(feature = "auth_rest")]
+    {
+        cmd = auth_rest_commands(cmd);
     }
 
     cmd
+}
+
+#[cfg(feature = "sbe_iso")]
+fn sbe_iso_commands(cmd: Command) -> Command {
+    cmd.arg(
+        Arg::new(ISO_FILE)
+            .long("sbe-iso-file")
+            .value_name("FILE")
+            .help("When the storage backend type is 'iso', this sets the path to the ISO file to serve.")
+            .env("UNFTP_ISO_FILE")
+            .takes_value(true)
+            .requires(STORAGE_BACKEND_TYPE),
+    )
+}
+
+#[cfg(feature = "sbe_gcs")]
+fn sbe_gcs_commands(cmd: Command) -> Command {
+    cmd.arg(
+        Arg::new(GCS_BASE_URL)
+            .long("sbe-gcs-base-url")
+            .value_name("URL")
+            .help("The base url of Google Cloud Storage API")
+            .env("UNFTP_SBE_GCS_BASE_URL")
+            .default_value("https://www.googleapis.com")
+            .takes_value(true),
+    )
+        .arg(
+            Arg::new(GCS_BUCKET)
+                .long("sbe-gcs-bucket")
+                .value_name("BUCKET")
+                .help("The bucket to use for the Google Cloud Storage backend")
+                .env("UNFTP_SBE_GCS_BUCKET")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::new(GCS_KEY_FILE)
+                .long("sbe-gcs-key-file")
+                .value_name("KEY_FILE")
+                .help("The JSON file that contains the service account key for access to Google Cloud Storage.")
+                .env("UNFTP_SBE_GCS_KEY_FILE")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::new(GCS_ROOT)
+                .long("sbe-gcs-root")
+                .value_name("PATH")
+                .help("The root path in the bucket where unFTP will look for and store files.")
+                .env("UNFTP_SBE_GCS_ROOT")
+                .default_value("")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::new(GCS_SERVICE_ACCOUNT)
+                .long("sbe-gcs-service-account")
+                .value_name("SERVICE_ACCOUNT_NAME")
+                .help("The name of the service account to use when authenticating using GKE workload identity.")
+                .env("UNFTP_SBE_GCS_SERVICE_ACCOUNT")
+                .takes_value(true),
+        )
+}
+
+#[cfg(feature = "sbe_azblob")]
+fn sbe_azblob_commands(cmd: Command) -> Command {
+    cmd.arg(
+          Arg::new(AZBLOB_ROOT)
+            .long("sbe-opendal-azblob-root")
+            .help("Root of this backend. All operations will happen under this root.")
+            .env("UNFTP_SBE_OPENDAL_AZBLOB_ROOT")
+            .takes_value(true))
+        .arg(
+            Arg::new(AZBLOB_CONTAINER)
+                .long("sbe-opendal-azblob-container")
+                .help("Container name of this backend.")
+                .env("UNFTP_SBE_OPENDAL_AZBLOB_CONTAINER")
+                .takes_value(true)
+        )
+        .arg(
+            Arg::new(AZBLOB_ENDPOINT)
+                .long("sbe-opendal-azblob-endpoint")
+                .help("Endpoint of this backend. Endpoint must be full uri.")
+                .env("UNFTP_SBE_OPENDAL_AZBLOB_ENDPOINT")
+                .takes_value(true)
+        )
+        .arg(
+            Arg::new(AZBLOB_ACCOUNT_NAME)
+                .long("sbe-opendal-azblob-account-name")
+                .help("Set account_name of this backend. If account_name is set, we will take user's input first. If not, we will try to load it from environment.")
+                .env("UNFTP_SBE_OPENDAL_AZBLOB_ACCOUNT_NAME")
+                .takes_value(true)
+        )
+        .arg(
+            Arg::new(AZBLOB_ACCOUNT_KEY)
+                .long("sbe-opendal-azblob-account-key")
+                .help("Set account_key of this backend. If account_name is set, we will take user's input first. If not, we will try to load it from environment.")
+                .env("UNFTP_SBE_OPENDAL_AZBLOB_ACCOUNT_KEY")
+                .takes_value(true)
+        )
+        .arg(
+            Arg::new(AZBLOB_SAS_TOKEN)
+                .long("sbe-opendal-azblob-sas-token")
+                .help("Set sas_token of this backend. If account_name is set, we will take user's input first. If not, we will try to load it from environment. See https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview for more info.")
+                .env("UNFTP_SBE_OPENDAL_AZBLOB_SAS_TOKEN")
+                .takes_value(true)
+        )
+        .arg(
+            Arg::new(AZBLOB_BATCH_MAX_OPERATIONS)
+                .long("sbe-opendal-azblob-batch-max-operations")
+                .help("Set maximum batch operations of this backend.")
+                .env("UNFTP_SBE_OPENDAL_AZBLOB_BATCH_MAX_OPERATIONS")
+                .takes_value(true)
+        )
+}
+
+#[cfg(feature = "auth_pam")]
+fn auth_pam_commands(cmd: Command) -> Command {
+    cmd.arg(
+        Arg::new(AUTH_PAM_SERVICE)
+            .long("auth-pam-service")
+            .value_name("NAME")
+            .help("The name of the PAM service")
+            .env("UNFTP_AUTH_PAM_SERVICE")
+            .takes_value(true),
+    )
+}
+
+#[cfg(feature = "auth_jsonfile")]
+fn auth_jsonfile_commands(cmd: Command) -> Command {
+    cmd.arg(
+        Arg::new(AUTH_JSON_PATH)
+            .long("auth-json-path")
+            .value_name("PATH")
+            .help("The path to the json authentication file")
+            .env("UNFTP_AUTH_JSON_PATH")
+            .takes_value(true),
+    )
+}
+
+#[cfg(feature = "auth_rest")]
+fn auth_rest_commands(cmd: Command) -> Command {
+    cmd.arg(
+        Arg::new(AUTH_REST_URL)
+            .long("auth-rest-url")
+            .value_name("URL")
+            .help("Define REST endpoint. {USER}, {PASS} and/or {IP} are replaced by provided credentials and source IP respectively.")
+            .env("UNFTP_AUTH_REST_URL")
+            .takes_value(true),
+    )
+        .arg(
+            Arg::new(AUTH_REST_METHOD)
+                .long("auth-rest-method")
+                .value_name("URL")
+                .help("HTTP method to access REST endpoint")
+                .env("UNFTP_AUTH_REST_METHOD")
+                .default_value("GET")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::new(AUTH_REST_BODY)
+                .long("auth-rest-body")
+                .value_name("TEMPLATE")
+                .help("If HTTP method contains body, it can be specified here. {USER}, {PASS} and/or {IP}\
+                are replaced by provided credentials and source IP respectively.")
+                .env("UNFTP_AUTH_REST_BODY")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::new(AUTH_REST_SELECTOR)
+                .long("auth-rest-selector")
+                .value_name("SELECTOR")
+                .help("Define JSON pointer to fetch from REST response body (RFC6901)")
+                .env("UNFTP_AUTH_REST_SELECTOR")
+                .takes_value(true),
+        )
+        .arg(
+            Arg::new(AUTH_REST_REGEX)
+                .long("auth-rest-regex")
+                .value_name("REGEX")
+                .help("Regular expression to try match against value extracted via selector")
+                .env("UNFTP_AUTH_REST_REGEX")
+                .takes_value(true),
+        )
 }
