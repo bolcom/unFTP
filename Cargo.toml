@@ -67,30 +67,37 @@ url = "2.5.4"
 unftp-auth-pam = { version = "0.2.5", optional = true }
 
 [features]
-default = ["rest_auth", "cloud_storage", "jsonfile_auth", "opendal"]
+default = ["auth_rest", "sbe_gcs", "auth_jsonfile", "sbe_opendal"]
 tokio_console = ["dep:console-subscriber", "tokio/tracing"]
 
 ## Storage back-end extentions
-cloud_storage = ["dep:unftp-sbe-gcs"]
-opendal = ["dep:unftp-sbe-opendal", "dep:opendal"]
-azblob = ["opendal/services-azblob"]
+sbe_gcs = ["dep:unftp-sbe-gcs"]
+sbe_opendal = ["dep:unftp-sbe-opendal", "dep:opendal"]
+sbe_azblob = ["sbe_opendal", "opendal/services-azblob"]
 sbe_iso = ["dep:unftp-sbe-iso"]
 
 ## Auth back-end extentions
-pam_auth = ["dep:unftp-auth-pam"]
-rest_auth = ["dep:unftp-auth-rest"]
-jsonfile_auth = ["dep:unftp-auth-jsonfile"]
+auth_pam = ["dep:unftp-auth-pam"]
+auth_rest = ["dep:unftp-auth-rest"]
+auth_jsonfile = ["dep:unftp-auth-jsonfile"]
 
-all_extentions = ["pam_auth", "rest_auth", "jsonfile_auth", "cloud_storage", "opendal", "sbe_iso"]
+# With this we link dynamically to libc and pam. Used to build our target x86_64-unknown-linux-gnu
+gnu = ["auth_pam", "auth_rest", "auth_jsonfile", "sbe_gcs", "sbe_opendal"]
 
-# With this we link dynamically to libc and pam
-gnu = ["pam_auth", "rest_auth", "jsonfile_auth", "cloud_storage", "opendal"]
-
-# All features able to link statically
-musl = ["rest_auth", "cloud_storage", "jsonfile_auth", "azblob"]
+# All features able to link statically. Used to build our target x86_64-unknown-linux-musl
+musl = ["auth_rest", "sbe_gcs", "auth_jsonfile", "sbe_azblob"]
 
 # Features used in our docker builds
 docker = ["musl"]
+
+# Backward-compatible aliases (will be removed at some point)
+all_extentions = ["pam_auth", "rest_auth", "jsonfile_auth", "cloud_storage", "opendal", "sbe_iso"]
+cloud_storage = ["sbe_gcs"]
+opendal = ["sbe_opendal"]
+azblob = ["sbe_azblob"]
+pam_auth = ["auth_pam"]
+rest_auth = ["auth_rest"]
+jsonfile_auth = ["auth_jsonfile"]
 
 [dev-dependencies]
 pretty_assertions = "1.4.1"

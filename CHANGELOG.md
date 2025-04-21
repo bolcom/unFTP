@@ -5,6 +5,14 @@
 - Upgraded dependencies
 - Compile against Rust 1.86.0
 - [#210](https://github.com/bolcom/unFTP/pull/210) Added new `iso` storage back-end gated behind the `sbe_iso` feature.
+- [#211](https://github.com/bolcom/unFTP/pull/211) Cleaned up the unFTP features:
+    - Feature `cloud_storage` is now called `sbe_gcs`
+    - Feature `opendal` is now called `sbe_opendal`
+    - Feature `azblob` is now called `sbe_azblob`
+    - Feature `pam_auth` is now called `auth_pam`
+    - Feature `rest_auth` is now `auth_rest`
+    - Feature `jsonfile_auth` is now `auth_jsonfile`
+    - Fixed the issue where some of these features were not fully behind `cfg` conditionals.
 
 ## 2024-12-14 unftp v0.15.1
 

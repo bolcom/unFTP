@@ -45,13 +45,13 @@ use std::{
     process,
     process::Command,
     result::Result,
-    str::FromStr,
     sync::Arc,
     time::Duration,
 };
 
-#[cfg(feature = "pam_auth")]
+#[cfg(feature = "auth_pam")]
 use unftp_auth_pam as pam;
+#[cfg(feature = "sbe_gcs")]
 use unftp_sbe_gcs::options::AuthMethod;
 use unftp_sbe_restrict::RestrictingVfs;
 use unftp_sbe_rooter::RooterVfs;
@@ -106,36 +106,52 @@ fn make_auth(
 
     let mut auth: LookupAuthenticator = match auth_type_variant {
         AuthType::Anonymous => make_anon_auth(),
+        #[cfg(feature = "auth_pam")]
         AuthType::Pam => make_pam_auth(m),
+        #[cfg(feature = "auth_rest")]
         AuthType::Rest => make_rest_auth(m),
+        #[cfg(feature = "auth_jsonfile")]
         AuthType::Json => make_json_auth(m),
     }?;
 
-    if auth_type_variant != AuthType::Pam && m.is_present(args::AUTH_PAM_SERVICE) {
-        return Err(format!(
-            "parameter {} set while auth_type is set to {}",
-            args::AUTH_PAM_SERVICE,
-            auth_type_variant
-        ));
-    } else if auth_type_variant != AuthType::Json && m.is_present(args::AUTH_JSON_PATH) {
-        return Err(format!(
-            "parameter {} set while auth_type is set to {}",
-            args::AUTH_JSON_PATH,
-            auth_type_variant
-        ));
-    } else if auth_type_variant != AuthType::Rest
-        && [
-            args::AUTH_REST_URL,
-            args::AUTH_REST_REGEX,
-            args::AUTH_REST_SELECTOR,
-        ]
-        .iter()
-        .any(|&arg| m.is_present(arg))
+    #[cfg(feature = "auth_pam")]
     {
-        return Err(format!(
-            "REST auth parameter(s) set while auth_type is set to {}",
-            auth_type_variant
-        ));
+        if auth_type_variant != AuthType::Pam && m.is_present(args::AUTH_PAM_SERVICE) {
+            return Err(format!(
+                "parameter {} set while auth_type is set to {}",
+                args::AUTH_PAM_SERVICE,
+                auth_type_variant
+            ));
+        }
+    }
+
+    #[cfg(feature = "auth_jsonfile")]
+    {
+        if auth_type_variant != AuthType::Json && m.is_present(args::AUTH_JSON_PATH) {
+            return Err(format!(
+                "parameter {} set while auth_type is set to {}",
+                args::AUTH_JSON_PATH,
+                auth_type_variant
+            ));
+        }
+    }
+
+    #[cfg(feature = "auth_rest")]
+    {
+        if auth_type_variant != AuthType::Rest
+            && [
+                args::AUTH_REST_URL,
+                args::AUTH_REST_REGEX,
+                args::AUTH_REST_SELECTOR,
+            ]
+            .iter()
+            .any(|&arg| m.is_present(arg))
+        {
+            return Err(format!(
+                "REST auth parameter(s) set while auth_type is set to {}",
+                auth_type_variant
+            ));
+        }
     }
 
     auth.set_usr_detail(
@@ -166,106 +182,77 @@ fn make_anon_auth() -> Result<LookupAuthenticator, String> {
     Ok(LookupAuthenticator::new(auth_spi::AnonymousAuthenticator))
 }
 
+#[cfg(feature = "auth_pam")]
 fn make_pam_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
-    #[cfg(not(feature = "pam_auth"))]
-    {
-        let _ = m;
-        Err(String::from(
-            "the pam authentication module was disabled at build time",
-        ))
+    if let Some(service) = m.value_of(args::AUTH_PAM_SERVICE) {
+        let pam_auth = pam::PamAuthenticator::new(service);
+        return Ok(LookupAuthenticator::new(pam_auth));
     }
-
-    #[cfg(feature = "pam_auth")]
-    {
-        if let Some(service) = m.value_of(args::AUTH_PAM_SERVICE) {
-            let pam_auth = pam::PamAuthenticator::new(service);
-            return Ok(LookupAuthenticator::new(pam_auth));
-        }
-        Err(format!(
-            "--{} is required when using pam auth",
-            args::AUTH_PAM_SERVICE
-        ))
-    }
+    Err(format!(
+        "--{} is required when using pam auth",
+        args::AUTH_PAM_SERVICE
+    ))
 }
 
+#[cfg(feature = "auth_rest")]
 fn make_rest_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
-    #[cfg(not(feature = "rest_auth"))]
-    {
-        let _ = m;
-        Err(format!(
-            "the rest authentication module was disabled at build time"
-        ))
-    }
-
-    #[cfg(feature = "rest_auth")]
-    {
-        match (
-            m.value_of(args::AUTH_REST_URL),
-            m.value_of(args::AUTH_REST_REGEX),
-            m.value_of(args::AUTH_REST_SELECTOR),
-            m.value_of(args::AUTH_REST_METHOD),
-        ) {
-            (Some(url), Some(regex), Some(selector), Some(method)) => {
-                if method.to_uppercase() != "GET" && m.value_of(args::AUTH_REST_BODY).is_none() {
-                    return Err(
-                        "REST authenticator error: no body provided for rest request".to_string(),
-                    );
-                }
-
-                let body = String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or(""));
-                let mut builder = unftp_auth_rest::Builder::new()
-                    .with_url(String::from(url))
-                    .with_method(
-                        hyper::Method::from_str(method)
-                            .map_err(|e| format!("error creating REST auth: {}", e))?,
-                    )
-                    .with_body(String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or("")))
-                    .with_selector(String::from(selector))
-                    .with_regex(String::from(regex));
-
-                if url.contains("{USER}") || body.contains("{USER}") {
-                    builder = builder.with_username_placeholder("{USER}".to_string());
-                }
-
-                if url.contains("{PASS}") || body.contains("{PASS}") {
-                    builder = builder.with_password_placeholder("{PASS}".to_string());
-                }
-
-                if url.contains("{IP}") || body.contains("{IP}") {
-                    builder = builder.with_source_ip_placeholder("{IP}".to_string());
-                }
-
-                let authenticator: unftp_auth_rest::RestAuthenticator = match builder.build() {
-                    Ok(res) => res,
-                    Err(e) => return Err(format!("Unable to create RestAuthenticator: {}", e)),
-                };
-
-                Ok(LookupAuthenticator::new(authenticator))
+    use std::str::FromStr;
+    match (
+        m.value_of(args::AUTH_REST_URL),
+        m.value_of(args::AUTH_REST_REGEX),
+        m.value_of(args::AUTH_REST_SELECTOR),
+        m.value_of(args::AUTH_REST_METHOD),
+    ) {
+        (Some(url), Some(regex), Some(selector), Some(method)) => {
+            if method.to_uppercase() != "GET" && m.value_of(args::AUTH_REST_BODY).is_none() {
+                return Err(
+                    "REST authenticator error: no body provided for rest request".to_string(),
+                );
             }
-            _ => Err("for auth type rest please specify all auth-rest-* options".to_string()),
+
+            let body = String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or(""));
+            let mut builder = unftp_auth_rest::Builder::new()
+                .with_url(String::from(url))
+                .with_method(
+                    hyper::Method::from_str(method)
+                        .map_err(|e| format!("error creating REST auth: {}", e))?,
+                )
+                .with_body(String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or("")))
+                .with_selector(String::from(selector))
+                .with_regex(String::from(regex));
+
+            if url.contains("{USER}") || body.contains("{USER}") {
+                builder = builder.with_username_placeholder("{USER}".to_string());
+            }
+
+            if url.contains("{PASS}") || body.contains("{PASS}") {
+                builder = builder.with_password_placeholder("{PASS}".to_string());
+            }
+
+            if url.contains("{IP}") || body.contains("{IP}") {
+                builder = builder.with_source_ip_placeholder("{IP}".to_string());
+            }
+
+            let authenticator: unftp_auth_rest::RestAuthenticator = match builder.build() {
+                Ok(res) => res,
+                Err(e) => return Err(format!("Unable to create RestAuthenticator: {}", e)),
+            };
+
+            Ok(LookupAuthenticator::new(authenticator))
         }
+        _ => Err("for auth type rest please specify all auth-rest-* options".to_string()),
     }
 }
 
+#[cfg(feature = "auth_jsonfile")]
 fn make_json_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
-    #[cfg(not(feature = "jsonfile_auth"))]
-    {
-        let _ = m;
-        Err(format!(
-            "the jsonfile authentication module was disabled at build time"
-        ))
-    }
+    let path = m.value_of(args::AUTH_JSON_PATH).ok_or_else(|| {
+        "please provide the json credentials file by specifying auth-json-path".to_string()
+    })?;
 
-    #[cfg(feature = "jsonfile_auth")]
-    {
-        let path = m.value_of(args::AUTH_JSON_PATH).ok_or_else(|| {
-            "please provide the json credentials file by specifying auth-json-path".to_string()
-        })?;
-
-        let authenticator = unftp_auth_jsonfile::JsonFileAuthenticator::from_file(path)
-            .map_err(|e| e.to_string())?;
-        Ok(LookupAuthenticator::new(authenticator))
-    }
+    let authenticator =
+        unftp_auth_jsonfile::JsonFileAuthenticator::from_file(path).map_err(|e| e.to_string())?;
+    Ok(LookupAuthenticator::new(authenticator))
 }
 
 type VfsProducer = Box<
@@ -290,6 +277,7 @@ fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> VfsProducer {
 }
 
 // Creates the GCS storage back-end
+#[cfg(feature = "sbe_gcs")]
 fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer, String> {
     let bucket: String = m
         .value_of(args::GCS_BUCKET)
@@ -359,7 +347,7 @@ fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer
     }))
 }
 
-#[cfg(feature = "azblob")]
+#[cfg(feature = "sbe_azblob")]
 pub fn azblob_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer, String> {
     let mut b = opendal::services::Azblob::default();
     if let Some(val) = m.value_of(args::AZBLOB_ROOT) {
@@ -437,8 +425,9 @@ fn start_ftp(
 
     match m.value_of(args::STORAGE_BACKEND_TYPE) {
         None | Some("filesystem") => svc(fs_storage_backend(root_log, m)),
+        #[cfg(feature = "sbe_gcs")]
         Some("gcs") => svc(gcs_storage_backend(root_log, m)?),
-        #[cfg(feature = "azblob")]
+        #[cfg(feature = "sbe_azblob")]
         Some("azblob") => svc(azblob_storage_backend(root_log, m)?),
         #[cfg(feature = "sbe_iso")]
         Some("iso") => svc(iso_storage_backend(root_log, m)?),
@@ -894,6 +883,7 @@ async fn run(arg_matches: ArgMatches) -> Result<(), String> {
     let sbe_type = arg_matches.value_of(args::STORAGE_BACKEND_TYPE).unwrap();
 
     let home_dir = match sbe_type {
+        #[cfg(feature = "sbe_gcs")]
         "gcs" => arg_matches.value_of(args::GCS_ROOT).unwrap(),
         _ => arg_matches.value_of(args::ROOT_DIR).unwrap(),
     };
