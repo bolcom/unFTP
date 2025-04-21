@@ -12,7 +12,7 @@ name: build
 # Update the RUST_VERSION here and in the Makefile when we upgrade
 env:
   CARGO_TERM_COLOR: always
-  RUST_VERSION: 1.83.0
+  RUST_VERSION: 1.86.0
 
 on:
   push:
@@ -78,6 +78,8 @@ jobs:
           override: true
           default: true
           components: clippy
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y libfuse-dev
       - uses: actions-rs/cargo@v1
         with:
           command: clippy
@@ -97,7 +99,7 @@ jobs:
           default: true
           components: clippy
       - name: Install build dependencies
-        run: sudo apt-get update && sudo apt-get install -y libpam-dev
+        run: sudo apt-get update && sudo apt-get install -y libpam-dev libfuse-dev
       - name: Run tests
         run: cargo test --verbose  --workspace --all --all-features
       - name: Build Docs

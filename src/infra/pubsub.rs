@@ -163,11 +163,12 @@ struct PubSubMsg {
 #[cfg(test)]
 mod tests {
     use crate::infra::pubsub::{PubSubMsg, PubSubRequest};
+    use base64::Engine;
     use std::collections::HashMap;
 
     #[test]
     fn pubub_request_serializes_correctly() {
-        let payload = base64::encode("123");
+        let payload = base64::engine::general_purpose::STANDARD.encode("123");
         let r = PubSubRequest {
             messages: vec![PubSubMsg {
                 data: payload,
