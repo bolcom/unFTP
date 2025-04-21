@@ -27,6 +27,8 @@ pub const GCS_BUCKET: &str = "sbe-gcs-bucket";
 pub const GCS_KEY_FILE: &str = "sbe-gcs-key-file";
 pub const GCS_ROOT: &str = "sbe-gcs-root";
 pub const GCS_SERVICE_ACCOUNT: &str = "sbe-gcs-service-account";
+#[cfg(feature = "sbe_iso")]
+pub const ISO_FILE: &str = "sbe-iso-file";
 pub const AZBLOB_ROOT: &str = "sbe-opendal-azblob-root";
 pub const AZBLOB_CONTAINER: &str = "sbe-opendal-azblob-container";
 pub const AZBLOB_ENDPOINT: &str = "sbe-opendal-azblob-endpoint";
@@ -72,6 +74,8 @@ pub enum StorageBackendType {
     filesystem,
     gcs,
     azblob,
+    #[cfg(feature = "sbe_iso")]
+    iso,
 }
 
 #[derive(ArgEnum, Clone, Debug)]
@@ -162,8 +166,8 @@ impl FromStr for LogLevelType {
     }
 }
 
-pub(crate) fn clap_app(tmp_dir: &str) -> clap::Command {
-    Command::new(app::NAME)
+pub(crate) fn clap_app(tmp_dir: &str) -> Command {
+    let mut cmd = Command::new(app::NAME)
         .version(app::VERSION)
         .long_version(app::long_version())
         .about("An FTP server for when you need to FTP but don't want to")
@@ -191,16 +195,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::Command {
                 .env("UNFTP_BIND_ADDRESS")
                 .takes_value(true)
                 .default_value("0.0.0.0:2121"),
-        )
-        .arg(
-            Arg::new(ROOT_DIR)
-                .long("root-dir")
-                .value_name("PATH")
-                .help("When the storage backend type is 'filesystem' this sets the path where \
-                          files are stored.")
-                .env("UNFTP_ROOT_DIR")
-                .takes_value(true)
-                .default_value(tmp_dir),
         )
         .arg(
             Arg::new(FAILED_LOGINS_POLICY)
@@ -435,8 +429,8 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::Command {
         .arg(
             Arg::new(STORAGE_BACKEND_TYPE)
                 .long("sbe-type")
-                .value_name("NAME")
-                .help("The type of storage backend to use.")
+                .value_name("TYPE")
+                .help("Sets the storage backend type.")
                 .env("UNFTP_SBE_TYPE")
                 .takes_value(true)
                 .default_value("filesystem"),
@@ -627,5 +621,33 @@ pub(crate) fn clap_app(tmp_dir: &str) -> clap::Command {
                 .help("Default labels for 'labels' and 'resource.labels' to add to all Google log entries. See https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry")
                 .env("UNFTP_GLOG_LABELS_FILE")
                 .takes_value(true),
-        )
+        );
+
+    cmd = cmd.arg(
+        Arg::new(ROOT_DIR)
+            .long("root-dir")
+            .value_name("PATH")
+            .help(
+                "When the storage backend type is 'filesystem' this sets the path where \
+                          files are stored.",
+            )
+            .env("UNFTP_ROOT_DIR")
+            .takes_value(true)
+            .default_value(tmp_dir),
+    );
+
+    #[cfg(feature = "sbe_iso")]
+    {
+        cmd = cmd.arg(
+            Arg::new(ISO_FILE)
+                .long("sbe-iso-file")
+                .value_name("FILE")
+                .help("When the storage backend type is 'iso', this sets the path to the ISO file to serve.")
+                .env("UNFTP_ISO_FILE")
+                .takes_value(true)
+                .requires(STORAGE_BACKEND_TYPE),
+        );
+    }
+
+    cmd
 }

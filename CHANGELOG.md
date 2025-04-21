@@ -1,5 +1,11 @@
 # Changelog
 
+## Next release
+
+- Upgraded dependencies
+- Compile against Rust 1.86.0
+- [#210](https://github.com/bolcom/unFTP/pull/210) Added new `iso` storage back-end gated behind the `sbe_iso` feature.
+
 ## 2024-12-14 unftp v0.15.1
 
 - Upgrade libunftp to 0.20.3 solving '425' errors for passive listening ports
@@ -9,11 +15,15 @@
 - Upgraded to new auth and storage backend releases
 - Upgraded dependencies including all crates from https://github.com/bolcom/libunftp
 - Upgraded to Rust 1.83.0
-- [#196](https://github.com/bolcom/unFTP/pull/196) *Breaking* --auth-type is now mandatory to prevent security risks from omission or typos that could leave the FTP server open
-- [#184](https://github.com/bolcom/unFTP/pull/184) Support for Azure blob storage with [OpenDAL](https://github.com/apache/OpenDAL)
-- [#185](https://github.com/bolcom/unFTP/pull/185) Support for shipping logs to [Google Logging](https://cloud.google.com/logging/docs/)
+- [#196](https://github.com/bolcom/unFTP/pull/196) *Breaking* --auth-type is now mandatory to prevent security risks
+  from omission or typos that could leave the FTP server open
+- [#184](https://github.com/bolcom/unFTP/pull/184) Support for Azure blob storage
+  with [OpenDAL](https://github.com/apache/OpenDAL)
+- [#185](https://github.com/bolcom/unFTP/pull/185) Support for shipping logs
+  to [Google Logging](https://cloud.google.com/logging/docs/)
 - [#191](https://github.com/bolcom/unFTP/pull/191) Allow https for user detail
-- [#199](https://github.com/bolcom/unFTP/pull/199) Removed istio (scuttle) image build in favor of using `proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'`
+- [#199](https://github.com/bolcom/unFTP/pull/199) Removed istio (scuttle) image build in favor of using
+  `proxy.istio.io/config: '{ "holdApplicationUntilProxyStarts": true }'`
 
 ## 2023-12-24 unftp v0.14.7
 

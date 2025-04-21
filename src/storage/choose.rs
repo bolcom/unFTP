@@ -27,6 +27,8 @@ pub enum InnerVfs {
     OpenDAL(unftp_sbe_opendal::OpendalStorage),
     Cloud(unftp_sbe_gcs::CloudStorage),
     File(unftp_sbe_fs::Filesystem),
+    #[cfg(feature = "sbe_iso")]
+    Iso(unftp_sbe_iso::Storage),
 }
 
 #[derive(Debug)]
@@ -34,6 +36,8 @@ pub enum SbeMeta {
     OpenDAL(unftp_sbe_opendal::OpendalMetadata),
     Cloud(unftp_sbe_gcs::object_metadata::ObjectMetadata),
     File(unftp_sbe_fs::Meta),
+    #[cfg(feature = "sbe_iso")]
+    Iso(unftp_sbe_iso::IsoMeta),
 }
 
 impl libunftp::storage::Metadata for SbeMeta {
@@ -42,6 +46,8 @@ impl libunftp::storage::Metadata for SbeMeta {
             SbeMeta::OpenDAL(m) => m.len(),
             SbeMeta::Cloud(m) => m.len(),
             SbeMeta::File(m) => m.len(),
+            #[cfg(feature = "sbe_iso")]
+            SbeMeta::Iso(m) => m.len(),
         }
     }
 
@@ -50,6 +56,8 @@ impl libunftp::storage::Metadata for SbeMeta {
             SbeMeta::OpenDAL(m) => m.is_dir(),
             SbeMeta::Cloud(m) => m.is_dir(),
             SbeMeta::File(m) => m.is_dir(),
+            #[cfg(feature = "sbe_iso")]
+            SbeMeta::Iso(m) => m.is_dir(),
         }
     }
 
@@ -58,6 +66,8 @@ impl libunftp::storage::Metadata for SbeMeta {
             SbeMeta::OpenDAL(m) => m.is_file(),
             SbeMeta::Cloud(m) => m.is_file(),
             SbeMeta::File(m) => m.is_file(),
+            #[cfg(feature = "sbe_iso")]
+            SbeMeta::Iso(m) => m.is_file(),
         }
     }
 
@@ -66,6 +76,8 @@ impl libunftp::storage::Metadata for SbeMeta {
             SbeMeta::OpenDAL(m) => m.is_symlink(),
             SbeMeta::Cloud(m) => m.is_symlink(),
             SbeMeta::File(m) => m.is_symlink(),
+            #[cfg(feature = "sbe_iso")]
+            SbeMeta::Iso(m) => m.is_symlink(),
         }
     }
 
@@ -74,6 +86,8 @@ impl libunftp::storage::Metadata for SbeMeta {
             SbeMeta::OpenDAL(m) => m.modified(),
             SbeMeta::Cloud(m) => m.modified(),
             SbeMeta::File(m) => m.modified(),
+            #[cfg(feature = "sbe_iso")]
+            SbeMeta::Iso(m) => m.modified(),
         }
     }
 
@@ -82,6 +96,8 @@ impl libunftp::storage::Metadata for SbeMeta {
             SbeMeta::OpenDAL(m) => m.gid(),
             SbeMeta::Cloud(m) => m.gid(),
             SbeMeta::File(m) => m.gid(),
+            #[cfg(feature = "sbe_iso")]
+            SbeMeta::Iso(m) => m.gid(),
         }
     }
 
@@ -90,6 +106,8 @@ impl libunftp::storage::Metadata for SbeMeta {
             SbeMeta::OpenDAL(m) => m.uid(),
             SbeMeta::Cloud(m) => m.uid(),
             SbeMeta::File(m) => m.uid(),
+            #[cfg(feature = "sbe_iso")]
+            SbeMeta::Iso(m) => m.uid(),
         }
     }
 }
@@ -103,6 +121,8 @@ impl StorageBackend<User> for ChoosingVfs {
             InnerVfs::OpenDAL(i) => StorageBackend::<User>::name(i),
             InnerVfs::Cloud(i) => StorageBackend::<User>::name(i),
             InnerVfs::File(i) => StorageBackend::<User>::name(i),
+            #[cfg(feature = "sbe_iso")]
+            InnerVfs::Iso(i) => StorageBackend::<User>::name(i),
         }
     }
 
@@ -111,6 +131,8 @@ impl StorageBackend<User> for ChoosingVfs {
             InnerVfs::OpenDAL(i) => StorageBackend::<User>::supported_features(i),
             InnerVfs::Cloud(i) => StorageBackend::<User>::supported_features(i),
             InnerVfs::File(i) => StorageBackend::<User>::supported_features(i),
+            #[cfg(feature = "sbe_iso")]
+            InnerVfs::Iso(i) => StorageBackend::<User>::supported_features(i),
         }
     }
 
@@ -123,6 +145,8 @@ impl StorageBackend<User> for ChoosingVfs {
             InnerVfs::OpenDAL(i) => i.metadata(user, path).await.map(SbeMeta::OpenDAL),
             InnerVfs::Cloud(i) => i.metadata(user, path).await.map(SbeMeta::Cloud),
             InnerVfs::File(i) => i.metadata(user, path).await.map(SbeMeta::File),
+            #[cfg(feature = "sbe_iso")]
+            InnerVfs::Iso(i) => i.metadata(user, path).await.map(SbeMeta::Iso),
         }
     }
 
@@ -159,6 +183,15 @@ impl StorageBackend<User> for ChoosingVfs {
                     })
                     .collect()
             }),
+            #[cfg(feature = "sbe_iso")]
+            InnerVfs::Iso(i) => i.list(user, path).await.map(|v| {
+                v.into_iter()
+                    .map(|fi| Fileinfo {
+                        path: fi.path,
+                        metadata: SbeMeta::Iso(fi.metadata),
+                    })
+                    .collect()
+            }),
         }
     }
 
@@ -171,6 +204,8 @@ impl StorageBackend<User> for ChoosingVfs {
             InnerVfs::OpenDAL(i) => i.list_fmt(user, path).await,
             InnerVfs::Cloud(i) => i.list_fmt(user, path).await,
             InnerVfs::File(i) => i.list_fmt(user, path).await,
+            #[cfg(feature = "sbe_iso")]
+            InnerVfs::Iso(i) => i.list_fmt(user, path).await,
         }
     }
 
@@ -183,6 +218,8 @@ impl StorageBackend<User> for ChoosingVfs {
             InnerVfs::OpenDAL(i) => i.nlst(user, path).await,
             InnerVfs::Cloud(i) => i.nlst(user, path).await,
             InnerVfs::File(i) => i.nlst(user, path).await,
+            #[cfg(feature = "sbe_iso")]
+            InnerVfs::Iso(i) => i.nlst(user, path).await,
         }
     }
 
@@ -201,6 +238,8 @@ impl StorageBackend<User> for ChoosingVfs {
             InnerVfs::OpenDAL(i) => i.get_into(user, path, start_pos, output).await,
             InnerVfs::Cloud(i) => i.get_into(user, path, start_pos, output).await,
             InnerVfs::File(i) => i.get_into(user, path, start_pos, output).await,
+            #[cfg(feature = "sbe_iso")]
+            InnerVfs::Iso(i) => i.get_into(user, path, start_pos, output).await,
         }
     }
 
@@ -214,6 +253,8 @@ impl StorageBackend<User> for ChoosingVfs {
             InnerVfs::OpenDAL(i) => i.get(user, path, start_pos).await,
             InnerVfs::Cloud(i) => i.get(user, path, start_pos).await,
             InnerVfs::File(i) => i.get(user, path, start_pos).await,
+            #[cfg(feature = "sbe_iso")]
+            InnerVfs::Iso(i) => i.get(user, path, start_pos).await,
         }
     }
 
@@ -243,6 +284,8 @@ impl StorageBackend<User> for ChoosingVfs {
             InnerVfs::OpenDAL(i) => i.put(user, input, path, start_pos).await,
             InnerVfs::Cloud(i) => i.put(user, input, path, start_pos).await,
             InnerVfs::File(i) => i.put(user, input, path, start_pos).await,
+            #[cfg(feature = "sbe_iso")]
+            InnerVfs::Iso(i) => i.put(user, input, path, start_pos).await,
         }
     }
 
@@ -255,6 +298,8 @@ impl StorageBackend<User> for ChoosingVfs {
             InnerVfs::OpenDAL(i) => i.del(user, path).await,
             InnerVfs::Cloud(i) => i.del(user, path).await,
             InnerVfs::File(i) => i.del(user, path).await,
+            #[cfg(feature = "sbe_iso")]
+            InnerVfs::Iso(i) => i.del(user, path).await,
         }
     }
 
@@ -267,6 +312,8 @@ impl StorageBackend<User> for ChoosingVfs {
             InnerVfs::OpenDAL(i) => i.mkd(user, path).await,
             InnerVfs::Cloud(i) => i.mkd(user, path).await,
             InnerVfs::File(i) => i.mkd(user, path).await,
+            #[cfg(feature = "sbe_iso")]
+            InnerVfs::Iso(i) => i.mkd(user, path).await,
         }
     }
 
@@ -280,6 +327,8 @@ impl StorageBackend<User> for ChoosingVfs {
             InnerVfs::OpenDAL(i) => i.rename(user, from, to).await,
             InnerVfs::Cloud(i) => i.rename(user, from, to).await,
             InnerVfs::File(i) => i.rename(user, from, to).await,
+            #[cfg(feature = "sbe_iso")]
+            InnerVfs::Iso(i) => i.rename(user, from, to).await,
         }
     }
 
@@ -292,6 +341,8 @@ impl StorageBackend<User> for ChoosingVfs {
             InnerVfs::OpenDAL(i) => i.rmd(user, path).await,
             InnerVfs::Cloud(i) => i.rmd(user, path).await,
             InnerVfs::File(i) => i.rmd(user, path).await,
+            #[cfg(feature = "sbe_iso")]
+            InnerVfs::Iso(i) => i.rmd(user, path).await,
         }
     }
 
@@ -304,6 +355,8 @@ impl StorageBackend<User> for ChoosingVfs {
             InnerVfs::OpenDAL(i) => i.cwd(user, path).await,
             InnerVfs::Cloud(i) => i.cwd(user, path).await,
             InnerVfs::File(i) => i.cwd(user, path).await,
+            #[cfg(feature = "sbe_iso")]
+            InnerVfs::Iso(i) => i.cwd(user, path).await,
         }
     }
 }

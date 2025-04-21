@@ -100,7 +100,7 @@ fn make_auth(
     let auth_type_variant = match input_auth_type.parse::<AuthType>() {
         Ok(auth_type_variant) => auth_type_variant,
         Err(strum::ParseError::VariantNotFound) => {
-            return Err(format!("unknown auth type: {}", input_auth_type))
+            return Err(format!("unknown auth type: {}", input_auth_type));
         }
     };
 
@@ -155,7 +155,7 @@ fn make_auth(
                     "please specify either '{}' or '{}' but not both",
                     args::USR_JSON_PATH,
                     args::USR_HTTP_URL
-                ))
+                ));
             }
         },
     );
@@ -401,6 +401,26 @@ pub fn azblob_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsP
     }))
 }
 
+#[cfg(feature = "sbe_iso")]
+pub fn iso_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer, String> {
+    let iso_file = m.value_of(args::ISO_FILE).ok_or_else(|| {
+        format!(
+            "parameter {} is required when storage backend type is 'iso'",
+            args::ISO_FILE
+        )
+    })?;
+
+    let iso_storage = unftp_sbe_iso::Storage::new(iso_file);
+
+    let sub_log = Arc::new(log.new(o!("module" => "storage")));
+    Ok(Box::new(move || {
+        RooterVfs::new(RestrictingVfs::new(storage::ChoosingVfs {
+            inner: storage::InnerVfs::Iso(iso_storage.clone()),
+            log: sub_log.clone(),
+        }))
+    }))
+}
+
 // starts the FTP server as a Tokio task.
 fn start_ftp(
     log: &Logger,
@@ -420,6 +440,8 @@ fn start_ftp(
         Some("gcs") => svc(gcs_storage_backend(root_log, m)?),
         #[cfg(feature = "azblob")]
         Some("azblob") => svc(azblob_storage_backend(root_log, m)?),
+        #[cfg(feature = "sbe_iso")]
+        Some("iso") => svc(iso_storage_backend(root_log, m)?),
         Some(x) => Err(format!("unknown storage back-end type {}", x)),
     }
 }
@@ -629,7 +651,12 @@ where
                 )
             }
             args::FailedLoginsPolicyType::combination => {
-                info!(log, "Using failed logins policy to block by username and IP after {} attempts and expires after {} seconds", max_attempts, expires_after);
+                info!(
+                    log,
+                    "Using failed logins policy to block by username and IP after {} attempts and expires after {} seconds",
+                    max_attempts,
+                    expires_after
+                );
                 FailedLoginsPolicy::new(
                     max_attempts,
                     Duration::from_secs(expires_after.into()),
