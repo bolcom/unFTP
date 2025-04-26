@@ -18,6 +18,7 @@ use crate::infra::userdetail_http::HTTPUserDetailProvider;
 use crate::{
     app::libunftp_version, args::FtpsClientAuthType, auth::DefaultUserProvider, notify::FTPListener,
 };
+use ::http::Method;
 use args::AuthType;
 use auth::LookupAuthenticator;
 use base64::{engine, Engine};
@@ -48,7 +49,6 @@ use std::{
     sync::Arc,
     time::Duration,
 };
-
 #[cfg(feature = "auth_pam")]
 use unftp_auth_pam as pam;
 #[cfg(feature = "sbe_gcs")]
@@ -214,7 +214,7 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
             let mut builder = unftp_auth_rest::Builder::new()
                 .with_url(String::from(url))
                 .with_method(
-                    hyper::Method::from_str(method)
+                    Method::from_str(method)
                         .map_err(|e| format!("error creating REST auth: {}", e))?,
                 )
                 .with_body(String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or("")))
@@ -270,7 +270,7 @@ fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> VfsProducer {
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
     Box::new(move || {
         RooterVfs::new(RestrictingVfs::new(storage::ChoosingVfs {
-            inner: storage::InnerVfs::File(unftp_sbe_fs::Filesystem::new(p.clone())),
+            inner: storage::InnerVfs::File(unftp_sbe_fs::Filesystem::new(p.clone()).unwrap()),
             log: sub_log.clone(),
         }))
     })
@@ -561,7 +561,7 @@ where
 
     let mut server = ServerBuilder::with_authenticator(storage_backend, authenticator)
         .greeting("Welcome to unFTP")
-        .passive_ports(start_port..end_port)
+        .passive_ports(start_port..=end_port)
         .idle_session_timeout(idle_timeout)
         .logger(root_log.new(o!("lib" => "libunftp")))
         .passive_host(passive_host)
