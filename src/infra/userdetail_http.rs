@@ -5,7 +5,10 @@ use crate::domain::user::{User, UserDetailError, UserDetailProvider};
 use crate::infra::usrdetail_json::JsonUserProvider;
 use async_trait::async_trait;
 use http::{Method, Request};
-use hyper::{Body, Client};
+use http_body_util::{BodyExt, Empty};
+use hyper::body::Bytes;
+use hyper_util::client::legacy::Client;
+use hyper_util::rt::TokioExecutor;
 use url::form_urlencoded;
 
 /// A libunftp [`UserDetail`](libunftp::auth::UserDetail) provider that obtains user detail
@@ -44,25 +47,27 @@ impl UserDetailProvider for HTTPUserDetailProvider {
             .method(Method::GET)
             .header("Content-type", "application/json")
             .uri(format!("{}{}", self.url, username))
-            .body(Body::empty())
+            .body(Empty::<Bytes>::new())
             .map_err(|e| UserDetailError::with_source("error creating request", e))?;
 
         let https = hyper_rustls::HttpsConnectorBuilder::new()
             .with_native_roots()
+            .expect("no native root CA certificates found")
             .https_or_http()
             .enable_http1()
             .build();
 
-        let client = Client::builder().build(https);
+        let client = Client::builder(TokioExecutor::new()).build(https);
 
         let resp = client
             .request(req)
             .await
             .map_err(|e| UserDetailError::with_source("error doing HTTP request", e))?;
 
-        let body_bytes = hyper::body::to_bytes(resp.into_body())
+        let body_bytes = BodyExt::collect(resp.into_body())
             .await
-            .map_err(|e| UserDetailError::with_source("error parsing body", e))?;
+            .map_err(|e| UserDetailError::with_source("error parsing body", e))?
+            .to_bytes();
 
         let json_str = std::str::from_utf8(body_bytes.as_ref())
             .map_err(|e| UserDetailError::with_source("body is not a valid UTF string", e))?;

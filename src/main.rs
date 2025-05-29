@@ -18,6 +18,7 @@ use crate::infra::userdetail_http::HTTPUserDetailProvider;
 use crate::{
     app::libunftp_version, args::FtpsClientAuthType, auth::DefaultUserProvider, notify::FTPListener,
 };
+use ::http::Method;
 use args::AuthType;
 use auth::LookupAuthenticator;
 use base64::{engine, Engine};
@@ -48,7 +49,6 @@ use std::{
     sync::Arc,
     time::Duration,
 };
-
 #[cfg(feature = "auth_pam")]
 use unftp_auth_pam as pam;
 #[cfg(feature = "sbe_gcs")]
@@ -214,7 +214,7 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
             let mut builder = unftp_auth_rest::Builder::new()
                 .with_url(String::from(url))
                 .with_method(
-                    hyper::Method::from_str(method)
+                    Method::from_str(method)
                         .map_err(|e| format!("error creating REST auth: {}", e))?,
                 )
                 .with_body(String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or("")))
@@ -270,7 +270,7 @@ fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> VfsProducer {
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
     Box::new(move || {
         RooterVfs::new(RestrictingVfs::new(storage::ChoosingVfs {
-            inner: storage::InnerVfs::File(unftp_sbe_fs::Filesystem::new(p.clone())),
+            inner: storage::InnerVfs::File(unftp_sbe_fs::Filesystem::new(p.clone()).unwrap()),
             log: sub_log.clone(),
         }))
     })
@@ -351,29 +351,28 @@ fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer
 pub fn azblob_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer, String> {
     let mut b = opendal::services::Azblob::default();
     if let Some(val) = m.value_of(args::AZBLOB_ROOT) {
-        b.root(val);
+        b = b.root(val);
     }
     if let Some(val) = m.value_of(args::AZBLOB_CONTAINER) {
-        b.container(val);
+        b = b.container(val);
     }
     if let Some(val) = m.value_of(args::AZBLOB_ENDPOINT) {
-        b.endpoint(val);
+        b = b.endpoint(val);
     }
     if let Some(val) = m.value_of(args::AZBLOB_ACCOUNT_NAME) {
-        b.account_name(val);
+        b = b.account_name(val);
     }
     if let Some(val) = m.value_of(args::AZBLOB_ACCOUNT_KEY) {
-        b.account_key(val);
+        b = b.account_key(val);
     }
     if let Some(val) = m.value_of(args::AZBLOB_SAS_TOKEN) {
-        b.sas_token(val);
+        b = b.sas_token(val);
     }
     if let Some(val) = m.value_of(args::AZBLOB_BATCH_MAX_OPERATIONS) {
-        b.batch_max_operations(
-            val.parse::<usize>().map_err(|e| {
+        b =
+            b.batch_max_operations(val.parse::<usize>().map_err(|e| {
                 format!("could not parse AZBLOB_BATCH_MAX_OPERATIONS to usize: {e}")
-            })?,
-        );
+            })?);
     }
     let op = opendal::Operator::new(b)
         .map_err(|e| format!("could not build Azblob: {e}"))?
@@ -561,7 +560,7 @@ where
 
     let mut server = ServerBuilder::with_authenticator(storage_backend, authenticator)
         .greeting("Welcome to unFTP")
-        .passive_ports(start_port..end_port)
+        .passive_ports(start_port..=end_port)
         .idle_session_timeout(idle_timeout)
         .logger(root_log.new(o!("lib" => "libunftp")))
         .passive_host(passive_host)
@@ -944,6 +943,8 @@ fn get_host_name() -> String {
 
 #[tokio::main]
 async fn main() {
+    let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
+
     #[cfg(feature = "tokio_console")]
     {
         console_subscriber::ConsoleLayer::builder()
