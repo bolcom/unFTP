@@ -38,7 +38,6 @@ clap = { version = "3.2.25", features = ["derive", "env"] }
 console-subscriber = { version = "0.4.1", optional = true }
 flate2 = "1.0.35"
 
-futures = "0.3.31"
 http = "1.2.0"
 hyper = { version = "1.6.0", features = ["server", "http1"] }
 http-body-util = "0.1.2"
@@ -46,7 +45,7 @@ hyper-util = { version = "0.1.10", features = ["tokio"] }
 hyper-rustls = "0.27.5"
 lazy_static = "1.5.0"
 libunftp = "0.21.0"
-opendal = { version = "0.53.2", optional = true }
+opendal = { version = "0.53.3", optional = true }
 prometheus = { version = "0.13.4", features = ["process"] }
 serde = { version = "1.0.217", features = ["derive"] }
 serde_json = "1.0.137"
@@ -103,9 +102,6 @@ azblob = ["sbe_azblob"]
 pam_auth = ["auth_pam"]
 rest_auth = ["auth_rest"]
 jsonfile_auth = ["auth_jsonfile"]
-
-[dev-dependencies]
-pretty_assertions = "1.4.1"
 
 [build-dependencies]
 built = { version = "0.7.5", features = ["cargo-lock", "git2", "chrono", "semver"] }

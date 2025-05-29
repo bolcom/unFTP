@@ -351,29 +351,28 @@ fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer
 pub fn azblob_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer, String> {
     let mut b = opendal::services::Azblob::default();
     if let Some(val) = m.value_of(args::AZBLOB_ROOT) {
-        b.root(val);
+        b = b.root(val);
     }
     if let Some(val) = m.value_of(args::AZBLOB_CONTAINER) {
-        b.container(val);
+        b = b.container(val);
     }
     if let Some(val) = m.value_of(args::AZBLOB_ENDPOINT) {
-        b.endpoint(val);
+        b = b.endpoint(val);
     }
     if let Some(val) = m.value_of(args::AZBLOB_ACCOUNT_NAME) {
-        b.account_name(val);
+        b = b.account_name(val);
     }
     if let Some(val) = m.value_of(args::AZBLOB_ACCOUNT_KEY) {
-        b.account_key(val);
+        b = b.account_key(val);
     }
     if let Some(val) = m.value_of(args::AZBLOB_SAS_TOKEN) {
-        b.sas_token(val);
+        b = b.sas_token(val);
     }
     if let Some(val) = m.value_of(args::AZBLOB_BATCH_MAX_OPERATIONS) {
-        b.batch_max_operations(
-            val.parse::<usize>().map_err(|e| {
+        b =
+            b.batch_max_operations(val.parse::<usize>().map_err(|e| {
                 format!("could not parse AZBLOB_BATCH_MAX_OPERATIONS to usize: {e}")
-            })?,
-        );
+            })?);
     }
     let op = opendal::Operator::new(b)
         .map_err(|e| format!("could not build Azblob: {e}"))?
