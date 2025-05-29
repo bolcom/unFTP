@@ -168,7 +168,6 @@ struct PubSubMsg {
 #[cfg(test)]
 mod tests {
     use base64::engine::general_purpose;
-    use base64::Engine as _;
 
     use crate::infra::pubsub::{PubSubMsg, PubSubRequest};
     use base64::Engine;
