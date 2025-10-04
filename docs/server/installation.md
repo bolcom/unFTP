@@ -42,6 +42,26 @@ curl -L https://github.com/bolcom/unFTP/releases/download/v0.15.1/unftp_aarch64-
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
+### To install using package repositories
+
+#### AUR
+
+```sh
+yay -S unftp
+```
+
+#### FreeBSD Ports
+
+```sh
+pkg install ftp/unftp
+```
+
+#### Nixpkgs
+
+```sh
+nix-shell -p uradvd
+```
+
 ## From Source
 
 You'll need [Rust](https://rust-lang.org) 1.67.1 (including `cargo`) or higher to build unFTP. Then:
