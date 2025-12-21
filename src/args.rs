@@ -190,7 +190,7 @@ impl FromStr for LogLevelType {
     }
 }
 
-pub(crate) fn clap_app(tmp_dir: &str) -> Command {
+pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
     let mut cmd = Command::new(app::NAME)
         .version(app::VERSION)
         .long_version(app::long_version())

@@ -1,7 +1,6 @@
 //! Contains definitions pertaining to FTP User Detail
 use async_trait::async_trait;
 use libunftp::auth::UserDetail;
-use slog::error;
 use std::{
     fmt::{Debug, Display, Formatter},
     path::PathBuf,

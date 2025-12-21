@@ -3,7 +3,7 @@
 ## Next release
 
 - Upgraded dependencies
-- Compile against Rust 1.86.0
+- Compile against Rust 1.92.0
 - [#210](https://github.com/bolcom/unFTP/pull/210) Added new `iso` storage back-end gated behind the `sbe_iso` feature.
 - [#211](https://github.com/bolcom/unFTP/pull/211) Cleaned up the unFTP features:
     - Feature `cloud_storage` is now called `sbe_gcs`

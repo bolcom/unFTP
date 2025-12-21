@@ -144,12 +144,8 @@ impl PubsubEventDispatcher {
 impl EventDispatcher<FTPEvent> for PubsubEventDispatcher {
     async fn dispatch(&self, event: FTPEvent) {
         let r = self.publish(event).await;
-        if r.is_err() {
-            slog::error!(
-                self.log,
-                "Could not dispatch event to pub/sub: {}",
-                r.unwrap_err()
-            );
+        if let Err(e) = r {
+            slog::error!(self.log, "Could not dispatch event to pub/sub: {}", e);
         }
     }
 }
