@@ -105,6 +105,63 @@ jobs:
       - name: Build Docs
         run: cargo doc --all-features --workspace --no-deps
 
+  test-hack-each-feature:
+    name: Test Each Feature
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+      - name: Install rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+          default: true
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y libpam-dev libfuse-dev
+      - name: Install cargo-hack
+        run: cargo install cargo-hack --locked
+      - name: Run tests with each feature
+        run: cargo hack test --each-feature
+
+  test-hack-all-features:
+    name: Test All Features
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+      - name: Install rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+          default: true
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y libpam-dev libfuse-dev
+      - name: Install cargo-hack
+        run: cargo install cargo-hack --locked
+      - name: Run tests with all features
+        run: cargo hack test --all-features
+
+  test-hack-no-default-features:
+    name: Test No Default Features
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+      - name: Install rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+          default: true
+      - name: Install build dependencies
+        run: sudo apt-get update && sudo apt-get install -y libpam-dev libfuse-dev
+      - name: Install cargo-hack
+        run: cargo install cargo-hack --locked
+      - name: Run tests with no default features
+        run: cargo hack test --no-default-features
+
   build-linux-gnu:
     runs-on: ubuntu-latest
     name: Build for Linux (GNU)

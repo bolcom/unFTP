@@ -10,8 +10,7 @@ When you need to FTP, but don't want to.
 
 ![logo](logo.png)
 
-[**Website**](https://unftp.rs) | [**Docs**](https://unftp.rs/server) | [**libunftp
-**](https://github.com/bolcom/libunftp)
+[**Website**](https://unftp.rs) | [**Docs**](https://unftp.rs/server) | [**libunftp**(https://github.com/bolcom/libunftp)
 
 unFTP is an FTP(S) server written in [Rust](https://www.rust-lang.org) and built on top
 of [libunftp](https://github.com/bolcom/libunftp) and the [Tokio](https://tokio.rs) asynchronous run-time. It is **un**
@@ -102,7 +101,7 @@ The binary called `unftp_x86_64-unknown-linux-gnu` that we provide via the unFTP
 |-----------------|--------------------------------------------------------------------------------------------------------------------------|
 | `auth_jsonfile` | Enables authentication from a local JSON file via [`unftp-auth-jsonfile`](https://crates.io/crates/unftp-auth-jsonfile). |
 | `auth_pam`      | Enables authentication via PAM using [`unftp-auth-pam`](https://crates.io/crates/unftp-auth-pam).                        |
-| `auth_rest`     | Enables REST-based authentication using [`unftp-auth-rest`](https://crates.io/crates/unftp-auth-rest).                   |
+| `auth_rest`     | Enables HTTP-based authentication using [`unftp-auth-rest`](https://crates.io/crates/unftp-auth-rest).                   |
 
 ## Getting help and staying informed
 
