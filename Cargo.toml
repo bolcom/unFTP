@@ -2,13 +2,13 @@
 name = "unftp"
 version = "0.15.1"
 authors = [
-    "Agoston Horvath <ahorvath@bol.com>",
-    "Dávid Kosztka <dkosztka@bol.com>",
-    "Hannes de Jager <hdejager@bol.com>",
-    "Koen Wilde <koen@chillheid.nl>",
-    "Maarten Dirkse <mdirkse@bol.com>",
-    "Steven Meunier <smeunier@bol.com>",
-    "Rob klein Gunnewiek <rkleingunnewiek@bol.com>"
+  "Agoston Horvath <ahorvath@bol.com>",
+  "Dávid Kosztka <dkosztka@bol.com>",
+  "Hannes de Jager <hdejager@bol.com>",
+  "Koen Wilde <koen@chillheid.nl>",
+  "Maarten Dirkse <mdirkse@bol.com>",
+  "Steven Meunier <smeunier@bol.com>",
+  "Rob klein Gunnewiek <rkleingunnewiek@bol.com>",
 ]
 edition = "2021"
 description = "When you need to FTP, but don't want to. An async, cloud orientated FTP(S) server built on libunftp"
@@ -49,7 +49,10 @@ opendal = { version = "0.53.3", optional = true }
 prometheus = { version = "0.14.0", features = ["process"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.146"
-slog = { version = "2.8.2", features = ["max_level_trace", "release_max_level_info"] }
+slog = { version = "2.8.2", features = [
+  "max_level_trace",
+  "release_max_level_info",
+] }
 slog-async = "2.8.0"
 slog-term = "2.9.2"
 strum = { version = "0.26.3", features = ["derive"] }
@@ -95,7 +98,14 @@ musl = ["auth_rest", "sbe_gcs", "auth_jsonfile", "sbe_azblob"]
 docker = ["musl"]
 
 # Backward-compatible aliases (will be removed at some point)
-all_extentions = ["pam_auth", "rest_auth", "jsonfile_auth", "cloud_storage", "opendal", "sbe_iso"]
+all_extentions = [
+  "pam_auth",
+  "rest_auth",
+  "jsonfile_auth",
+  "cloud_storage",
+  "opendal",
+  "sbe_iso",
+]
 cloud_storage = ["sbe_gcs"]
 opendal = ["sbe_opendal"]
 azblob = ["sbe_azblob"]
@@ -104,7 +114,12 @@ rest_auth = ["auth_rest"]
 jsonfile_auth = ["auth_jsonfile"]
 
 [build-dependencies]
-built = { version = "0.7.7", features = ["cargo-lock", "git2", "chrono", "semver"] }
+built = { version = "0.7.7", features = [
+  "cargo-lock",
+  "git2",
+  "chrono",
+  "semver",
+] }
 
 [profile.release]
 debug = false
@@ -118,9 +133,21 @@ arch = ["x86_64"]
 features = ["all_extentions"]
 section = "net"
 assets = [
-    ["target/x86_64-unknown-linux-gnu/release/unftp", "usr/bin/", "755"],
-    ["LICENSE", "usr/share/doc/unftp/", "644"],
-    ["README.md", "usr/share/doc/unftp/README", "644"],
+  [
+    "target/x86_64-unknown-linux-gnu/release/unftp",
+    "usr/bin/",
+    "755",
+  ],
+  [
+    "LICENSE",
+    "usr/share/doc/unftp/",
+    "644",
+  ],
+  [
+    "README.md",
+    "usr/share/doc/unftp/README",
+    "644",
+  ],
 ]
 extended-description = """\
 unFTP (unftp) is a FTP(S) server written in Rust and built on top of libunftp and the Tokio asynchronous run-time. It is
