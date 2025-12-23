@@ -1,8 +1,14 @@
 # Changelog
 
-## Next release
+## 2025-12-23 unftp v0.15.2
 
-- Upgraded dependencies
+- Upgrade to [libunftp 0.21.1](https://github.com/bolcom/libunftp/releases/tag/libunftp-0.21.1)
+  - New commands: MLST
+  - New command: MLSD
+  - New command: EPSV
+  - Fix: Make passive port range inclusive
+  - Implement 550 error code for RNFR command
+- Upgraded other dependencies
 - Compile against Rust 1.92.0
 - [#210](https://github.com/bolcom/unFTP/pull/210) Added new `iso` storage back-end gated behind the `sbe_iso` feature.
 - [#211](https://github.com/bolcom/unFTP/pull/211) Cleaned up the unFTP features:
