@@ -2,6 +2,7 @@
 title: Enabling TLS
 ---
 
+This page covers how to enable FTPS (FTP over TLS) in unFTP, including generating certificates, configuring TLS on control and data channels, and setting up mutual TLS (mTLS) with client certificates.
 
 Start by generating a self signed certificate
 
@@ -99,3 +100,5 @@ curl -v \
   --tlsv1.2 \
   ftp://localhost:2121/  
 ```
+
+Now that we've covered FTPS/TLS configuration, you may want to explore [cloud storage options](/server/cloud-storage) or configure [authentication methods](/server/jsonconfig).

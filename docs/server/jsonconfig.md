@@ -2,6 +2,8 @@
 title: Per User Config
 ---
 
+This page explains how to configure per-user settings in unFTP using JSON files, including authentication credentials, user permissions, home directories, and client certificate requirements.
+
 ## Authentication setup
 
 Create a credentials file (e.g. credentials.json):
@@ -138,3 +140,5 @@ When running unFTP as a container in a [Kubernetes](https://kubernetes.io/) Pod 
 In such a setup you may have your JSON credentials file mapped into your pod via a [ConfigMap](https://kubernetes.io/docs/concepts/configuration/configmap/) or a [Secret](https://kubernetes.io/docs/concepts/configuration/secret/).
 The size of these resources is limited.
 By compressing the file you can grow to a larger number of users before you technically require an external database solution.
+
+Now that we've covered JSON-based user configuration, you may want to explore [REST authentication](/server/rest) or [user configuration over HTTP](/server/http-usr) for more dynamic setups.

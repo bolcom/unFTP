@@ -2,6 +2,8 @@
 title: User config over HTTP
 ---
 
+This page explains how to serve user configuration over HTTP instead of using local JSON files, allowing for dynamic user management without restarting the server.
+
 In the "Per User Config" section we showed how to create configuration unique for each user.
 This
 configuration was stored in a JSON file. This same JSON file can be consumed by unFTP over HTTP.
@@ -161,3 +163,5 @@ You should see the file `hello-bob.txt` being listed and the output of the littl
 ```
 Requested URL:  /users/bob
 ```
+
+Now that we've covered user configuration over HTTP, you may want to explore [Pub/Sub event notifications](/server/pubsub) or configure [anti-brute force protection](/server/anti-brute).

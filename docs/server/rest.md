@@ -2,6 +2,8 @@
 title: REST auth
 ---
 
+This page explains how to configure unFTP to authenticate users via HTTP REST API calls, allowing you to integrate with your own authentication service.
+
 There are multiple ways to externalize authentication, rather than [local JSON authentication](/server/jsonconfig).
 This page explains how to use the REST authenticator.
 With the REST method, you provide your own HTTP endpoint.
@@ -40,4 +42,6 @@ The REST authenticator uses the `/status` JSON pointer, and matches it to `"succ
 Aside from the placeholders `{USER}` and `{PASS}` you can use `{IP}`.
 That will add the source IP address of the connected client.
 That is in case if you want to perform client-IP whitelisting, next to regular username and password.
+
+Now that we've covered REST authentication, you may want to explore [user configuration over HTTP](/server/http-usr) or return to [JSON-based configuration](/server/jsonconfig).
 

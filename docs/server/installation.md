@@ -2,6 +2,8 @@
 title: Installation
 ---
 
+This page covers the various ways to install unFTP, including precompiled binaries, package repositories, building from source, and Docker images.
+
 ## Binaries
 
 [Precompiled binaries for unFTP are available](https://github.com/bolcom/unFTP/releases) for Linux and macOS. On Linux
@@ -77,3 +79,5 @@ merely creates the binary there, it won't start it as a service at the moment.
 ## Docker Images
 
 See [the Docker section](/server/docker)
+
+Now that we've covered installation, let's proceed to [starting unFTP](/server/starting).

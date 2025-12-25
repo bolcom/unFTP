@@ -2,6 +2,8 @@
 title: Logging
 ---
 
+This page covers how to configure logging in unFTP, including log levels, structured logging, and shipping logs to external services like Google Cloud Logging or Redis.
+
 By default unFTP will output logs to STD OUT and it will output only Error and Warning messages.
 
 ```
@@ -85,4 +87,6 @@ The format of the JSON messages look like this:
    }
 }
 ```
+
+Now that we've covered logging, you may want to set up [monitoring with Prometheus](/server/monitoring) or configure [cloud storage backends](/server/cloud-storage).
 

@@ -2,6 +2,8 @@
 title: Cloud Storage
 ---
 
+This page explains how to configure unFTP to use cloud storage backends, including Google Cloud Storage (GCS) and Azure Blob Storage, instead of traditional filesystem storage.
+
 You can run unFTP with a traditional file system back-end on a bare metal or virtual machine but if you're building your 
 solutions in the cloud it would make sense to store your files in blob storage. unFTP comes with integration to [Google 
 Cloud Storage (GCS)](https://cloud.google.com/storage) and [Azure Blob Storage](https://azure.microsoft.com/en-us/products/storage/blobs).
@@ -76,4 +78,6 @@ unftp \
   --sbe-opendal-azblob-account-name=mystorageaccount \
   --sbe-opendal-azblob-sas-token="?sv=2021-06-08&ss=bfqt&srt=sco&sp=rwdlacupx&se=..."
 ```
+
+Now that we've covered cloud storage backends, you may want to configure [authentication](/server/jsonconfig) or set up [logging](/server/logging) for your cloud deployment.
 
