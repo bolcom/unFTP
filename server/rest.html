@@ -13,16 +13,16 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766695876"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766695876"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766694715" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766695876" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766695876"
         media="screen" />
 
     <script>
-        var DOCTAVE_TIMESTAMP = "1766694715";
+        var DOCTAVE_TIMESTAMP = "1766695876";
         var BASE_PATH = "/";
         var color = localStorage.getItem('doctave-color')
 
@@ -146,7 +146,8 @@
 
             </div>
             <div class='doctave-content'>
-                <p>There are multiple ways to externalize authentication, rather than <a href="/server/jsonconfig">local JSON authentication</a>.
+                <p>This page explains how to configure unFTP to authenticate users via HTTP REST API calls, allowing you to integrate with your own authentication service.</p>
+<p>There are multiple ways to externalize authentication, rather than <a href="/server/jsonconfig">local JSON authentication</a>.
 This page explains how to use the REST authenticator.
 With the REST method, you provide your own HTTP endpoint.
 You can use any method like GET or POST, and you can customize unFTP to support your API.</p>
@@ -172,6 +173,7 @@ It will replace the placeholders <code>{USER}</code>, and <code>{PASS}</code> wi
 <p>Aside from the placeholders <code>{USER}</code> and <code>{PASS}</code> you can use <code>{IP}</code>.
 That will add the source IP address of the connected client.
 That is in case if you want to perform client-IP whitelisting, next to regular username and password.</p>
+<p>Now that we've covered REST authentication, you may want to explore <a href="/server/http-usr">user configuration over HTTP</a> or return to <a href="/server/jsonconfig">JSON-based configuration</a>.</p>
 
             </div>
             <div class='sidebar-right'>
@@ -202,11 +204,11 @@ That is in case if you want to perform client-IP whitelisting, next to regular u
             </div>
         </div>
     </div>
-    <script type="text/javascript" src="/assets/katex.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/mermaid.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/prism.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/doctave-app.js?v=1766694715"></script>
+    <script type="text/javascript" src="/assets/katex.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/mermaid.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/prism.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/doctave-app.js?v=1766695876"></script>
 
     
 </body>

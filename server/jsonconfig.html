@@ -13,16 +13,16 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766695876"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766695876"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766694715" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766695876" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766695876"
         media="screen" />
 
     <script>
-        var DOCTAVE_TIMESTAMP = "1766694715";
+        var DOCTAVE_TIMESTAMP = "1766695876";
         var BASE_PATH = "/";
         var color = localStorage.getItem('doctave-color')
 
@@ -146,7 +146,8 @@
 
             </div>
             <div class='doctave-content'>
-                <h2 id="authentication-setup">Authentication setup</h2>
+                <p>This page explains how to configure per-user settings in unFTP using JSON files, including authentication credentials, user permissions, home directories, and client certificate requirements.</p>
+<h2 id="authentication-setup">Authentication setup</h2>
 <p>Create a credentials file (e.g. credentials.json):</p>
 <pre><code class="language-json">[
   {
@@ -256,6 +257,7 @@ When running unFTP as a container in a <a href="https://kubernetes.io/">Kubernet
 In such a setup you may have your JSON credentials file mapped into your pod via a <a href="https://kubernetes.io/docs/concepts/configuration/configmap/">ConfigMap</a> or a <a href="https://kubernetes.io/docs/concepts/configuration/secret/">Secret</a>.
 The size of these resources is limited.
 By compressing the file you can grow to a larger number of users before you technically require an external database solution.</p>
+<p>Now that we've covered JSON-based user configuration, you may want to explore <a href="/server/rest">REST authentication</a> or <a href="/server/http-usr">user configuration over HTTP</a> for more dynamic setups.</p>
 
             </div>
             <div class='sidebar-right'>
@@ -298,11 +300,11 @@ By compressing the file you can grow to a larger number of users before you tech
             </div>
         </div>
     </div>
-    <script type="text/javascript" src="/assets/katex.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/mermaid.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/prism.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/doctave-app.js?v=1766694715"></script>
+    <script type="text/javascript" src="/assets/katex.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/mermaid.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/prism.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/doctave-app.js?v=1766695876"></script>
 
     
 </body>

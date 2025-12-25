@@ -13,16 +13,16 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766695876"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766695876"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766694715" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766695876" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766695876"
         media="screen" />
 
     <script>
-        var DOCTAVE_TIMESTAMP = "1766694715";
+        var DOCTAVE_TIMESTAMP = "1766695876";
         var BASE_PATH = "/";
         var color = localStorage.getItem('doctave-color')
 
@@ -146,7 +146,8 @@
 
             </div>
             <div class='doctave-content'>
-                <p>You can use <a href="https://github.com/tokio-rs/console">tokio-console</a> to analyze async tasks running in unFTP. To do this you
+                <p>This page explains how to enable and configure tokio-console for debugging and analyzing async tasks in unFTP, including compilation requirements and bind address configuration.</p>
+<p>You can use <a href="https://github.com/tokio-rs/console">tokio-console</a> to analyze async tasks running in unFTP. To do this you
 need to compile a build or run with the <code>tokio_console</code> feature enabled while also enabling the <code>tokio_unstable cfg</code>.</p>
 <p>For example:</p>
 <pre><code class="language-sh">RUSTFLAGS="--cfg tokio_unstable" cargo build --features tokio_console
@@ -158,6 +159,7 @@ need to compile a build or run with the <code>tokio_console</code> feature enabl
 <pre><code class="language-shell">RUSTFLAGS="--cfg tokio_unstable" cargo run --features tokio_console -- --bind-address-tokio-console 127.0.0.1:6670 --auth-type=anonymous
 </code></pre>
 <p>This allows multiple unFTP servers to run simultaneously on the same host, each with their own tokio-console instance.</p>
+<p>Now that we've covered tokio-console debugging, you may want to configure <a href="/server/logging">logging</a> or set up <a href="/server/monitoring">monitoring with Prometheus</a> for production deployments.</p>
 
             </div>
             <div class='sidebar-right'>
@@ -184,11 +186,11 @@ need to compile a build or run with the <code>tokio_console</code> feature enabl
             </div>
         </div>
     </div>
-    <script type="text/javascript" src="/assets/katex.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/mermaid.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/prism.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/doctave-app.js?v=1766694715"></script>
+    <script type="text/javascript" src="/assets/katex.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/mermaid.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/prism.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/doctave-app.js?v=1766695876"></script>
 
     
 </body>

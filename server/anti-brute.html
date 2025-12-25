@@ -13,16 +13,16 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766695876"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766695876"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766694715" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766695876" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766695876"
         media="screen" />
 
     <script>
-        var DOCTAVE_TIMESTAMP = "1766694715";
+        var DOCTAVE_TIMESTAMP = "1766695876";
         var BASE_PATH = "/";
         var color = localStorage.getItem('doctave-color')
 
@@ -146,7 +146,8 @@
 
             </div>
             <div class='doctave-content'>
-                <p>To protect your FTP server against <a href="https://en.wikipedia.org/wiki/Brute-force_attack">password guessing attacks</a>, you can enable a "Failed logins policy".
+                <p>This page explains how to protect your unFTP server against brute-force password guessing attacks by configuring failed login policies that temporarily block suspicious login attempts.</p>
+<p>To protect your FTP server against <a href="https://en.wikipedia.org/wiki/Brute-force_attack">password guessing attacks</a>, you can enable a "Failed logins policy".
 This temporarily blocks the account if too many failed logins occur.</p>
 <p>You can start up unFTP with the default failed logins policy:</p>
 <pre><code class="language-sh">unftp --failed-logins-policy
@@ -178,6 +179,7 @@ You can adjust this behavior by blocking based on source IP or username instead.
   --failed-max-attempts 5 \
   --failed-expire-after 1800
 </code></pre>
+<p>Now that we've covered anti-brute force protection, you may want to configure <a href="/server/proxy-protocol">proxy protocol support</a> or set up <a href="/server/ftps">FTPS/TLS encryption</a> for additional security.</p>
 
             </div>
             <div class='sidebar-right'>
@@ -216,11 +218,11 @@ You can adjust this behavior by blocking based on source IP or username instead.
             </div>
         </div>
     </div>
-    <script type="text/javascript" src="/assets/katex.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/mermaid.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/prism.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/doctave-app.js?v=1766694715"></script>
+    <script type="text/javascript" src="/assets/katex.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/mermaid.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/prism.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/doctave-app.js?v=1766695876"></script>
 
     
 </body>

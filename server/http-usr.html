@@ -13,16 +13,16 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766695876"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766695876"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766694715" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766695876" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766695876"
         media="screen" />
 
     <script>
-        var DOCTAVE_TIMESTAMP = "1766694715";
+        var DOCTAVE_TIMESTAMP = "1766695876";
         var BASE_PATH = "/";
         var color = localStorage.getItem('doctave-color')
 
@@ -146,7 +146,8 @@
 
             </div>
             <div class='doctave-content'>
-                <p>In the "Per User Config" section we showed how to create configuration unique for each user.
+                <p>This page explains how to serve user configuration over HTTP instead of using local JSON files, allowing for dynamic user management without restarting the server.</p>
+<p>In the "Per User Config" section we showed how to create configuration unique for each user.
 This
 configuration was stored in a JSON file. This same JSON file can be consumed by unFTP over HTTP.</p>
 <p>Start be defining the user configuration:</p>
@@ -269,6 +270,7 @@ touch alice/hello-alice.txt
 <p>You should see the file <code>hello-bob.txt</code> being listed and the output of the little Go webserver should be:</p>
 <pre><code>Requested URL:  /users/bob
 </code></pre>
+<p>Now that we've covered user configuration over HTTP, you may want to explore <a href="/server/pubsub">Pub/Sub event notifications</a> or configure <a href="/server/anti-brute">anti-brute force protection</a>.</p>
 
             </div>
             <div class='sidebar-right'>
@@ -295,11 +297,11 @@ touch alice/hello-alice.txt
             </div>
         </div>
     </div>
-    <script type="text/javascript" src="/assets/katex.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/mermaid.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/prism.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/doctave-app.js?v=1766694715"></script>
+    <script type="text/javascript" src="/assets/katex.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/mermaid.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/prism.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/doctave-app.js?v=1766695876"></script>
 
     
 </body>

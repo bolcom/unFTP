@@ -13,16 +13,16 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766695876"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766695876"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766694715" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766695876" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766695876"
         media="screen" />
 
     <script>
-        var DOCTAVE_TIMESTAMP = "1766694715";
+        var DOCTAVE_TIMESTAMP = "1766695876";
         var BASE_PATH = "/";
         var color = localStorage.getItem('doctave-color')
 
@@ -146,7 +146,8 @@
 
             </div>
             <div class='doctave-content'>
-                <p>For systems working alongside unFTP it might be useful to know of FTP related events happening. For this unFTP supports
+                <p>This page explains how to configure unFTP to publish FTP events to Google Pub/Sub, including the message format and event types that are published.</p>
+<p>For systems working alongside unFTP it might be useful to know of FTP related events happening. For this unFTP supports
 integration with <a href="https://cloud.google.com/pubsub">Google Pub/Sub</a>.</p>
 <h1 id="enabling-the-pub/sub-integration">Enabling the Pub/Sub integration</h1>
 <p>You can enable the unFTP Pub/Sub notifier by specifying the <code>--ntf-pubsub-project</code> and <code>--ntf-pubsub-topic</code> arguments.</p>
@@ -284,6 +285,7 @@ only specifies an <code>eventType</code> attribute:</p>
   "sequence_number": 5
 }
 </code></pre>
+<p>Now that we've covered Pub/Sub event notifications, you may want to configure <a href="/server/anti-brute">anti-brute force protection</a> or set up <a href="/server/proxy-protocol">proxy protocol support</a>.</p>
 
             </div>
             <div class='sidebar-right'>
@@ -330,11 +332,11 @@ only specifies an <code>eventType</code> attribute:</p>
             </div>
         </div>
     </div>
-    <script type="text/javascript" src="/assets/katex.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/mermaid.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/prism.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/doctave-app.js?v=1766694715"></script>
+    <script type="text/javascript" src="/assets/katex.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/mermaid.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/prism.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/doctave-app.js?v=1766695876"></script>
 
     
 </body>

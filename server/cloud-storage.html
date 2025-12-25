@@ -13,16 +13,16 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766695876"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766695876"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766694715" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766694715"
+    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766695876" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766695876"
         media="screen" />
 
     <script>
-        var DOCTAVE_TIMESTAMP = "1766694715";
+        var DOCTAVE_TIMESTAMP = "1766695876";
         var BASE_PATH = "/";
         var color = localStorage.getItem('doctave-color')
 
@@ -146,7 +146,8 @@
 
             </div>
             <div class='doctave-content'>
-                <p>You can run unFTP with a traditional file system back-end on a bare metal or virtual machine but if you're building your 
+                <p>This page explains how to configure unFTP to use cloud storage backends, including Google Cloud Storage (GCS) and Azure Blob Storage, instead of traditional filesystem storage.</p>
+<p>You can run unFTP with a traditional file system back-end on a bare metal or virtual machine but if you're building your 
 solutions in the cloud it would make sense to store your files in blob storage. unFTP comes with integration to <a href="https://cloud.google.com/storage">Google 
 Cloud Storage (GCS)</a> and <a href="https://azure.microsoft.com/en-us/products/storage/blobs">Azure Blob Storage</a>.</p>
 <h1 id="using-the-gcs-back-end">Using the GCS Back-end</h1>
@@ -201,6 +202,7 @@ the <code>--sbe-gcs-key-file</code> argument.</p>
   --sbe-opendal-azblob-account-name=mystorageaccount \
   --sbe-opendal-azblob-sas-token="?sv=2021-06-08&amp;ss=bfqt&amp;srt=sco&amp;sp=rwdlacupx&amp;se=..."
 </code></pre>
+<p>Now that we've covered cloud storage backends, you may want to configure <a href="/server/jsonconfig">authentication</a> or set up <a href="/server/logging">logging</a> for your cloud deployment.</p>
 
             </div>
             <div class='sidebar-right'>
@@ -251,11 +253,11 @@ the <code>--sbe-gcs-key-file</code> argument.</p>
             </div>
         </div>
     </div>
-    <script type="text/javascript" src="/assets/katex.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/mermaid.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/prism.js?v=1766694715"></script>
-    <script type="text/javascript" src="/assets/doctave-app.js?v=1766694715"></script>
+    <script type="text/javascript" src="/assets/katex.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/mermaid.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/prism.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/doctave-app.js?v=1766695876"></script>
 
     
 </body>
