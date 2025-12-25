@@ -98,7 +98,7 @@ Make your edits in docs/
 If you want to preview the docs:
 
 - Install Doctave as explained in the README at https://github.com/Doctave/doctave
-- Run make site-preview
+- Run `make site-preview`
 
 ## License
 

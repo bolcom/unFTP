@@ -79,10 +79,21 @@ site-preview: # Previews the documentation for Github Pages and Netlify
 .PHONY: site
 site: # Publishes to the documentation to Netlify
 	doctave build --release
-	@current_branch=$$(git branch --show-current); \
-	git checkout netlify 2>/dev/null || git checkout -b netlify; \
-	find . -mindepth 1 -maxdepth 1 ! -name '.git' ! -name 'site' -exec rm -rf {} + 2>/dev/null || true; \
-	cp -r site/* .; \
+	@if [ ! -d "site" ]; then \
+		echo "Error: site directory not found after build"; \
+		exit 1; \
+	fi; \
+	current_branch=$$(git branch --show-current); \
+	site_tar=$$(mktemp -t site-XXXXXX.tar.gz); \
+	tar -czf $$site_tar -C site .; \
+	if git show-ref --verify --quiet refs/heads/netlify; then \
+		git checkout netlify; \
+	else \
+		git checkout -b netlify; \
+	fi; \
+	find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} + 2>/dev/null || true; \
+	tar -xzf $$site_tar; \
+	rm -f $$site_tar; \
 	git add -A; \
 	git commit -m "Update documentation site" || true; \
 	git push origin netlify; \
