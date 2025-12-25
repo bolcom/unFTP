@@ -14,7 +14,7 @@ navigation:
       - path: docs/server/logging.md
       - path: docs/server/monitoring.md
       - path: docs/server/ftps.md
-      - path: docs/server/gcs.md
+      - path: docs/server/cloud-storage.md
       - path: docs/server/jsonconfig.md
       - path: docs/server/rest.md
       - path: docs/server/http-usr.md
