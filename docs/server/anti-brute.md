@@ -2,6 +2,8 @@
 title: Anti password guessing
 ---
 
+This page explains how to protect your unFTP server against brute-force password guessing attacks by configuring failed login policies that temporarily block suspicious login attempts.
+
 To protect your FTP server against [password guessing attacks](https://en.wikipedia.org/wiki/Brute-force_attack), you can enable a "Failed logins policy".
 This temporarily blocks the account if too many failed logins occur.
 
@@ -59,3 +61,5 @@ unftp \
   --failed-max-attempts 5 \
   --failed-expire-after 1800
 ```
+
+Now that we've covered anti-brute force protection, you may want to configure [proxy protocol support](/server/proxy-protocol) or set up [FTPS/TLS encryption](/server/ftps) for additional security.

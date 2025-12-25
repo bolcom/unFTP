@@ -2,6 +2,8 @@
 title: unFTP Up
 ---
 
+This page explains how to start unFTP with basic configuration, including command-line arguments, environment variables, and default settings.
+
 Arguments can be given to unFTP either via the command line or via environment variables. To show a list of available
 program arguments type the following:
 
@@ -36,3 +38,5 @@ unftp \
   --bind-address=0.0.0.0:2121 \
   --passive-ports=50000-51000
 ```
+
+Now that we've covered starting unFTP, you may want to configure [authentication](/server/jsonconfig), [logging](/server/logging), or [cloud storage](/server/cloud-storage).

@@ -2,6 +2,8 @@
 title: Pub/Sub
 ---
 
+This page explains how to configure unFTP to publish FTP events to Google Pub/Sub, including the message format and event types that are published.
+
 For systems working alongside unFTP it might be useful to know of FTP related events happening. For this unFTP supports
 integration with [Google Pub/Sub](https://cloud.google.com/pubsub).
 
@@ -177,3 +179,5 @@ All of them are of type JSON object. Examples of their format are shown below.
   "sequence_number": 5
 }
 ```
+
+Now that we've covered Pub/Sub event notifications, you may want to configure [anti-brute force protection](/server/anti-brute) or set up [proxy protocol support](/server/proxy-protocol).
