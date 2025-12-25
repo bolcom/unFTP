@@ -10,11 +10,10 @@ When you need to FTP, but don't want to.
 
 ![logo](logo.png)
 
-[**Website**](https://unftp.rs) | [**Docs**](https://unftp.rs/server) | [**libunftp**(https://github.com/bolcom/libunftp)
+[**Website**](https://unftp.rs) | [**Docs**](https://unftp.rs/server) | [**libunftp**](https://github.com/bolcom/libunftp)
 
 unFTP is an FTP(S) server written in [Rust](https://www.rust-lang.org) and built on top
-of [libunftp](https://github.com/bolcom/libunftp) and the [Tokio](https://tokio.rs) asynchronous run-time. It is **un**
-like your normal FTP server in that it provides:
+of [libunftp](https://github.com/bolcom/libunftp) and the [Tokio](https://tokio.rs) asynchronous run-time. It is **un**like your normal FTP server in that it provides:
 
 - Configurable Authentication (e.g. Anonymous, [PAM](https://en.wikipedia.org/wiki/Linux_PAM), a JSON file or HTTP).
 - Configurable storage back-ends (e.g. [GCS](https://cloud.google.com/storage/) or filesystem)
@@ -75,7 +74,13 @@ or:
 RUSTFLAGS="--cfg tokio_unstable" cargo run --features tokio_console -- -vv --auth-type=anonymous
 ```
 
-unFTP will listen on default port 6669 for connections from tokio-console.
+By default, unFTP will listen on `127.0.0.1:6669` for connections from tokio-console. You can customize this using the `--bind-address-tokio-console` flag:
+
+```shell
+RUSTFLAGS="--cfg tokio_unstable" cargo run --features tokio_console -- --bind-address-tokio-console 127.0.0.1:6670 --auth-type=anonymous
+```
+
+This allows multiple unFTP servers to run simultaneously on the same host, each with their own tokio-console instance.
 
 ## Selective compiling
 
