@@ -945,18 +945,34 @@ fn get_host_name() -> String {
 async fn main() {
     let _ = rustls::crypto::aws_lc_rs::default_provider().install_default();
 
-    #[cfg(feature = "tokio_console")]
-    {
-        console_subscriber::ConsoleLayer::builder()
-            // set the address the server is bound to
-            .server_addr(([127, 0, 0, 1], 6669))
-            // ... other configurations ...
-            .init();
-    }
-
     let tmp_dir = env::temp_dir();
     let tmp_dir = tmp_dir.as_path().to_str().unwrap();
     let arg_matches = args::clap_app(tmp_dir).get_matches();
+
+    #[cfg(feature = "tokio_console")]
+    {
+        let console_addr: SocketAddr = arg_matches
+            .value_of(args::TOKIO_CONSOLE_BIND_ADDRESS)
+            .unwrap()
+            .parse()
+            .map_err(|e| format!("could not parse tokio-console address: {}", e))
+            .unwrap();
+
+        // Convert SocketAddr to the format expected by console_subscriber
+        let (ip, port) = match console_addr {
+            SocketAddr::V4(addr) => (addr.ip().octets(), addr.port()),
+            SocketAddr::V6(_) => {
+                eprintln!("Error: tokio-console only supports IPv4 addresses");
+                process::exit(1);
+            }
+        };
+
+        console_subscriber::ConsoleLayer::builder()
+            // set the address the server is bound to
+            .server_addr((ip, port))
+            // ... other configurations ...
+            .init();
+    }
     if let Err(e) = run(arg_matches).await {
         eprintln!("\nError: {}", e);
         process::exit(1);

@@ -77,6 +77,8 @@ pub const GLOG_LOGNAME: &str = "log-google-logname";
 pub const GLOG_LEVEL_LABEL: &str = "log-google-level-label";
 pub const GLOG_RESOURCE_TYPE: &str = "log-google-resource-type";
 pub const GLOG_LABELS_FILE: &str = "log-google-labels-file";
+#[cfg(feature = "tokio_console")]
+pub const TOKIO_CONSOLE_BIND_ADDRESS: &str = "bind-address-tokio-console";
 
 #[derive(Debug, EnumString, Display, PartialEq)]
 #[strum(serialize_all = "lowercase")]
@@ -545,6 +547,19 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
     #[cfg(feature = "auth_rest")]
     {
         cmd = auth_rest_commands(cmd);
+    }
+
+    #[cfg(feature = "tokio_console")]
+    {
+        cmd = cmd.arg(
+            Arg::new(TOKIO_CONSOLE_BIND_ADDRESS)
+                .long("bind-address-tokio-console")
+                .value_name("HOST_PORT")
+                .help("Sets the host and port to bind to for tokio-console. Allows multiple unFTP servers to run simultaneously on the same host.")
+                .env("UNFTP_BIND_ADDRESS_TOKIO_CONSOLE")
+                .takes_value(true)
+                .default_value("127.0.0.1:6669"),
+        );
     }
 
     cmd
