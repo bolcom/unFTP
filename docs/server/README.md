@@ -2,12 +2,14 @@
 title: The Server
 ---
 
+# unFTP - The FTPS Server Application
+
 [![Crate Version](https://img.shields.io/crates/v/unftp.svg)](https://crates.io/crates/unftp)
-[![Build Status](https://travis-ci.org/bolcom/unFTP.svg)](https://travis-ci.org/bolcom/unFTP) 
 [![Docker Pulls](https://img.shields.io/docker/pulls/bolcom/unftp.svg?maxAge=2592000?style=plastic)](https://hub.docker.com/r/bolcom/unftp/)
 [![Follow on Telegram](https://img.shields.io/badge/follow%20on-Telegram-brightgreen.svg)](https://t.me/unftp)
 
-# unFTP - The FTPS Server Application
+[![Packaging status](https://repology.org/badge/vertical-allrepos/unftp.svg?exclude_unsupported=1)](https://repology.org/project/unftp/versions)
+
 
 unFTP is a FTP(S) server written in [Rust](https://www.rust-lang.org) and built on top of [libunftp](https://github.com/bolcom/libunftp) and the [Tokio](https://tokio.rs) asynchronous run-time. It is **un**like your normal FTP server in that it provides:
 
