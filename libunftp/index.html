@@ -13,16 +13,16 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766695876"
+    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766697338"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766695876"
+    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766697338"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766695876" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766695876"
+    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766697338" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766697338"
         media="screen" />
 
     <script>
-        var DOCTAVE_TIMESTAMP = "1766695876";
+        var DOCTAVE_TIMESTAMP = "1766697338";
         var BASE_PATH = "/";
         var color = localStorage.getItem('doctave-color')
 
@@ -148,42 +148,47 @@
             <div class='doctave-content'>
                 <p><a href="https://crates.io/crates/libunftp"><img src="https://img.shields.io/crates/v/libunftp.svg" alt="Crate Version"></a>
 <a href="https://docs.rs/libunftp"><img src="https://docs.rs/libunftp/badge.svg" alt="API Docs"></a>
-<a href="https://travis-ci.org/bolcom/libunftp"><img src="https://travis-ci.org/bolcom/libunftp.svg" alt="Build Status"></a>
-<a href="https://crates.io/crates/libunftp"><img src="https://img.shields.io/crates/l/libunftp.svg" alt="Crate License"></a>
 <a href="https://t.me/unftp"><img src="https://img.shields.io/badge/Follow%20on-Telegram-brightgreen.svg" alt="Follow on Telegram"></a></p>
 <h1 id="libunftp---the-ftps-library">libunftp - The FTPS library</h1>
 <p><strong>libunftp</strong> is a <a href="https://www.rust-lang.org/">Rust</a> <a href="https://crates.io/crates/libunftp">crate</a> that you can use to
 build your own FTPS server with. You can extend it with your own storage back-ends or authentication back-ends.</p>
 <p>It runs on top of the <a href="https://tokio.rs">Tokio</a> asynchronous run-time and tries to make use of Async IO as much as
 possible.</p>
-<p>Feature highlights:</p>
+<h2 id="feature-highlights">Feature highlights</h2>
 <ul>
-<li>39 Supported FTP commands and growing</li>
+<li>41 Supported FTP commands (see commands directory) and growing</li>
 <li>Ability to implement own storage back-ends</li>
 <li>Ability to implement own authentication back-ends</li>
 <li>Explicit FTPS (TLS)</li>
 <li>Mutual TLS (Client certificates)</li>
 <li>TLS session resumption</li>
-<li>Prometheus integration</li>
+<li>Prometheus integration (enabled by default, can be disabled)</li>
 <li>Structured Logging</li>
-<li><a href="https://www.haproxy.com/blog/haproxy/proxy-protocol/">Proxy Protocol</a> support</li>
+<li><a href="https://www.haproxy.com/blog/haproxy/proxy-protocol/">Proxy Protocol</a> support (enabled by default, can be disabled)</li>
 <li>Automatic session timeouts</li>
 <li>Per user IP allow lists</li>
+<li>Configurable cryptographic providers (ring or aws-lc-rs)</li>
 </ul>
-<p>Known storage back-ends:</p>
-<ul>
-<li><a href="https://crates.io/crates/unftp-sbe-fs">unftp-sbe-fs</a> - Stores files on the local filesystem</li>
-<li><a href="https://crates.io/crates/unftp-sbe-gcs">unftp-sbe-gcs</a> - Stores files in Google Cloud Storage</li>
-<li><a href="https://crates.io/crates/unftp-sbe-rooter">unftp-sbe-rooter</a> - Wraps another storage back-end in order to root a user to a specific home directory.</li>
-<li><a href="https://crates.io/crates/unftp-sbe-rooter">unftp-sbe-restrict</a> - Wraps another storage back-end in order to restrict the FTP operations a user can do i.e. provide authorization.</li>
-<li><a href="https://crates.io/crates/unftp-sbe-opendal">unftp-sbe-opendal</a> - Access ANY storage back-end using OpenDAL.</li>
-</ul>
-<p>Known authentication back-ends:</p>
-<ul>
-<li><a href="https://crates.io/crates/unftp-auth-jsonfile">unftp-auth-jsonfile</a> - Authenticates against JSON text.</li>
-<li><a href="https://crates.io/crates/unftp-auth-pam">unftp-auth-pam</a> - Authenticates via <a href="https://en.wikipedia.org/wiki/Linux_PAM">PAM</a>.</li>
-<li><a href="https://crates.io/crates/unftp-auth-rest">unftp-auth-rest</a> - Consumes an HTTP API to authenticate.</li>
-</ul>
+<h2 id="known-storage-back-ends">Known Storage back-ends</h2>
+<table><thead><tr><th>Crate</th><th>Description</th></tr></thead><tbody>
+<tr><td><a href="https://crates.io/crates/unftp-sbe-fatfs">unftp-sbe-fatfs</a></td><td>Provides read-only access to FAT filesystem images</td></tr>
+<tr><td><a href="https://crates.io/crates/unftp-sbe-fs">unftp-sbe-fs</a></td><td>Stores files on the local filesystem</td></tr>
+<tr><td><a href="https://crates.io/crates/unftp-sbe-gcs">unftp-sbe-gcs</a></td><td>Stores files in Google Cloud Storage</td></tr>
+<tr><td><a href="https://crates.io/crates/unftp-sbe-iso">unftp-sbe-iso</a></td><td>Provides FTP access to ISO 9660 files</td></tr>
+<tr><td><a href="https://crates.io/crates/unftp-sbe-opendal">unftp-sbe-opendal</a></td><td>Provides access to various storage services through Apache OpenDAL (supports S3, Azure Blob Storage, and more)</td></tr>
+<tr><td><a href="https://crates.io/crates/unftp-sbe-restrict">unftp-sbe-restrict</a></td><td>Wraps another storage back-end in order to restrict the FTP operations a user can do i.e. provide authorization</td></tr>
+<tr><td><a href="https://crates.io/crates/unftp-sbe-rooter">unftp-sbe-rooter</a></td><td>Wraps another storage back-end in order to root a user to a specific home directory</td></tr>
+<tr><td><a href="https://crates.io/crates/unftp-sbe-webdav">unftp-sbe-webdav</a></td><td>A WebDAV storage back-end providing translation between FTP &amp; WebDAV</td></tr>
+</tbody></table>
+<p>See the <a href="https://crates.io/search?q=unftp-sbe">full list of storage back-ends on crates.io</a> or the <a href="https://github.com/bolcom/libunftp/blob/master/CONTRIBUTING.md#developing-your-own-authentication-or-storage-back-end-implementation">Contribution Guide</a> and <a href="https://docs.rs/libunftp">API Documentation</a> if you want to create your own.</p>
+<h2 id="known-authentication-back-ends">Known Authentication back-ends</h2>
+<table><thead><tr><th>Crate</th><th>Description</th></tr></thead><tbody>
+<tr><td><a href="https://crates.io/crates/unftp-auth-jsonfile">unftp-auth-jsonfile</a></td><td>Authenticates against JSON text</td></tr>
+<tr><td><a href="https://crates.io/crates/unftp-auth-pam">unftp-auth-pam</a></td><td>Authenticates via PAM</td></tr>
+<tr><td><a href="https://crates.io/crates/unftp-auth-rest">unftp-auth-rest</a></td><td>Consumes an HTTP API to authenticate</td></tr>
+</tbody></table>
+<p>See the <a href="https://crates.io/search?q=unftp-auth">full list of authentication back-ends on crates.io</a> or the <a href="https://github.com/bolcom/libunftp/blob/master/CONTRIBUTING.md#developing-your-own-authentication-or-storage-back-end-implementation">Contribution Guide</a> and <a href="https://docs.rs/libunftp">API Documentation</a> if you want to create your own.</p>
+<h2 id="additional-resources">Additional resources</h2>
 <p>See the <a href="https://github.com/bolcom/libunftp">github page</a> or the <a href="https://docs.rs/libunftp">API Documentation</a> for more details.</p>
 
             </div>
@@ -194,6 +199,22 @@ possible.</p>
                         
                         <li class='page-nav-level-1'>
                             <a href='#libunftp---the-ftps-library'>libunftp - The FTPS library</a>
+                        </li>
+                        
+                        <li class='page-nav-level-2'>
+                            <a href='#feature-highlights'>Feature highlights</a>
+                        </li>
+                        
+                        <li class='page-nav-level-2'>
+                            <a href='#known-storage-back-ends'>Known Storage back-ends</a>
+                        </li>
+                        
+                        <li class='page-nav-level-2'>
+                            <a href='#known-authentication-back-ends'>Known Authentication back-ends</a>
+                        </li>
+                        
+                        <li class='page-nav-level-2'>
+                            <a href='#additional-resources'>Additional resources</a>
                         </li>
                         
                     </ul>
@@ -215,11 +236,11 @@ possible.</p>
             </div>
         </div>
     </div>
-    <script type="text/javascript" src="/assets/katex.js?v=1766695876"></script>
-    <script type="text/javascript" src="/assets/mermaid.js?v=1766695876"></script>
-    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766695876"></script>
-    <script type="text/javascript" src="/assets/prism.js?v=1766695876"></script>
-    <script type="text/javascript" src="/assets/doctave-app.js?v=1766695876"></script>
+    <script type="text/javascript" src="/assets/katex.js?v=1766697338"></script>
+    <script type="text/javascript" src="/assets/mermaid.js?v=1766697338"></script>
+    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766697338"></script>
+    <script type="text/javascript" src="/assets/prism.js?v=1766697338"></script>
+    <script type="text/javascript" src="/assets/doctave-app.js?v=1766697338"></script>
 
     
 </body>
