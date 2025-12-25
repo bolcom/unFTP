@@ -77,14 +77,16 @@ site-preview: # Previews the documentation for Github Pages and Netlify
 	doctave serve
 
 .PHONY: site
-site: # Publishes to the documentation to Github Pages and Netlify
-	sed -i '' 's|base_path: /|base_path: /unFTP|g' doctave.yaml
-	doctave build --release	
-	gh-pages -d site -b gh-pages
-	rm -rf site
-	sed -i '' 's|base_path: /unFTP|base_path: /|g' doctave.yaml
+site: # Publishes to the documentation to Netlify
 	doctave build --release
-	gh-pages -d site -b netlify
+	@current_branch=$$(git branch --show-current); \
+	git checkout netlify 2>/dev/null || git checkout -b netlify; \
+	find . -mindepth 1 -maxdepth 1 ! -name '.git' ! -name 'site' -exec rm -rf {} + 2>/dev/null || true; \
+	cp -r site/* .; \
+	git add -A; \
+	git commit -m "Update documentation site" || true; \
+	git push origin netlify; \
+	git checkout $$current_branch; \
 	rm -rf site
 
 .PHONY: clean
