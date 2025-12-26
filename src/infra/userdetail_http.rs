@@ -1,14 +1,15 @@
 //! A libunftp [`UserDetail`](libunftp::auth::UserDetail) provider that obtains user detail
 //! over HTTP.
 
-use crate::domain::user::{User, UserDetailError, UserDetailProvider};
-use crate::infra::usrdetail_json::JsonUserProvider;
+use crate::domain::user::User;
+use crate::infra::userdetail_json::JsonUserProvider;
 use async_trait::async_trait;
 use http::{Method, Request};
 use http_body_util::{BodyExt, Empty};
 use hyper::body::Bytes;
 use hyper_util::client::legacy::Client;
 use hyper_util::rt::TokioExecutor;
+use libunftp::auth::{Principal, UserDetailError, UserDetailProvider};
 use url::form_urlencoded;
 
 /// A libunftp [`UserDetail`](libunftp::auth::UserDetail) provider that obtains user detail
@@ -41,12 +42,15 @@ impl Default for HTTPUserDetailProvider {
 
 #[async_trait]
 impl UserDetailProvider for HTTPUserDetailProvider {
-    async fn provide_user_detail(&self, username: &str) -> Result<User, UserDetailError> {
-        let _url_suffix: String = form_urlencoded::byte_serialize(username.as_bytes()).collect();
+    type User = User;
+
+    async fn provide_user_detail(&self, principal: &Principal) -> Result<User, UserDetailError> {
+        let _url_suffix: String =
+            form_urlencoded::byte_serialize(principal.username.as_bytes()).collect();
         let req = Request::builder()
             .method(Method::GET)
             .header("Content-type", "application/json")
-            .uri(format!("{}{}", self.url, username))
+            .uri(format!("{}{}", self.url, principal.username))
             .body(Empty::<Bytes>::new())
             .map_err(|e| UserDetailError::with_source("error creating request", e))?;
 
@@ -75,6 +79,6 @@ impl UserDetailProvider for HTTPUserDetailProvider {
         let json_usr_provider =
             JsonUserProvider::from_json(json_str).map_err(UserDetailError::Generic)?;
 
-        json_usr_provider.provide_user_detail(username).await
+        json_usr_provider.provide_user_detail(principal).await
     }
 }

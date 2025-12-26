@@ -43,8 +43,9 @@ http-body-util = "0.1.3"
 hyper-util = { version = "0.1.19", features = ["full"] }
 hyper-rustls = "0.27.7"
 lazy_static = "1.5.0"
-libunftp = "0.21.1"
-opendal = { version = "0.53.3", optional = true }
+libunftp = "0.22.0"
+#opendal = { version = "0.53.3", optional = true }
+opendal = { git = "https://github.com/apache/opendal.git", rev = "8658906606a83b5847325ed12190e5b40cfd0a31", optional = true }
 prometheus = { version = "0.14.0", features = ["process"] }
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.146"
@@ -58,19 +59,20 @@ strum = { version = "0.26.3", features = ["derive"] }
 strum_macros = "0.26.4"
 thiserror = "2.0.17"
 tokio = { version = "1.48.0", features = ["full"] }
-unftp-sbe-fs = "0.3.0"
-unftp-sbe-rooter = "0.2.2"
-unftp-sbe-restrict = "0.1.3"
-unftp-sbe-gcs = { version = "0.2.8", optional = true }
-unftp-sbe-opendal = { version = "0.2.1", optional = true }
-unftp-sbe-iso = { version = "0.1.2", optional = true }
-unftp-auth-rest = { version = "0.2.8", optional = true }
-unftp-auth-jsonfile = { version = "0.3.6", optional = true }
+unftp-sbe-fs = "0.3.1"
+unftp-sbe-rooter = "0.2.3"
+unftp-sbe-restrict = "0.1.4"
+unftp-sbe-gcs = { version = "0.2.9", optional = true }
+#unftp-sbe-opendal = { version = "0.4.0", optional = true }
+unftp-sbe-opendal = { git = "https://github.com/apache/opendal.git", rev = "8658906606a83b5847325ed12190e5b40cfd0a31", subdir="integrations/unftp-sbe", optional = true }
+unftp-sbe-iso = { version = "0.1.3", optional = true }
+unftp-auth-jsonfile = { version = "0.3.7", optional = true }
+unftp-auth-rest = { version = "0.2.9", optional = true }
 url = "2.5.7"
 rustls = "0.23.35"
 
 [target.'cfg(unix)'.dependencies]
-unftp-auth-pam = { version = "0.2.7", optional = true }
+unftp-auth-pam = { version = "0.2.8", optional = true }
 
 [features]
 default = ["auth_rest", "sbe_gcs", "auth_jsonfile", "sbe_opendal"]

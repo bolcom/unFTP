@@ -1,5 +1,6 @@
-use crate::domain::user::{User, UserDetailError, UserDetailProvider};
+use crate::domain::user::User;
 use async_trait::async_trait;
+use libunftp::auth::{Principal, UserDetailError, UserDetailProvider};
 use serde::Deserialize;
 use std::path::PathBuf;
 use unftp_sbe_restrict::VfsOperations;
@@ -31,12 +32,14 @@ impl JsonUserProvider {
 
 #[async_trait]
 impl UserDetailProvider for JsonUserProvider {
-    async fn provide_user_detail(&self, username: &str) -> Result<User, UserDetailError> {
+    type User = User;
+
+    async fn provide_user_detail(&self, principal: &Principal) -> Result<User, UserDetailError> {
         self.users
             .iter()
-            .find(|u| u.username == username)
+            .find(|u| u.username == principal.username)
             .ok_or(UserDetailError::UserNotFound {
-                username: String::from(username),
+                username: principal.username.clone(),
             })
             .map(|u| {
                 let u = u.clone();
