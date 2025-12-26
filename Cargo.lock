@@ -1660,8 +1660,6 @@ dependencies = [
 [[package]]
 name = "libunftp"
 version = "0.21.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c1f9ed49785660e10f00fe518e0b384360b8666828f1251bd5339d4910584aa"
 dependencies = [
  "async-trait",
  "bitflags 2.10.0",
@@ -3634,8 +3632,6 @@ dependencies = [
 [[package]]
 name = "unftp-auth-jsonfile"
 version = "0.3.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4a03fbcf826990e923562e42e1205056801ae4ee68aaa132f9a999b2209f21e8"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -3656,8 +3652,6 @@ dependencies = [
 [[package]]
 name = "unftp-auth-pam"
 version = "0.2.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4794d8fd0604f70c04ea49dddf65fe545d5e801b0826c4088b084344b13cf862"
 dependencies = [
  "async-trait",
  "libunftp",
@@ -3669,8 +3663,6 @@ dependencies = [
 [[package]]
 name = "unftp-auth-rest"
 version = "0.2.8"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "991b5405e58d3c9ba3b3d0e3cdf20766a7380983ccca6340e9c04694829fb03a"
 dependencies = [
  "async-trait",
  "http-body-util",

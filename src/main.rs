@@ -5,7 +5,6 @@ extern crate clap;
 
 mod app;
 mod args;
-mod auth;
 mod domain;
 mod http;
 mod infra;
@@ -14,19 +13,22 @@ mod metrics;
 mod notify;
 mod storage;
 
-use crate::infra::userdetail_http::HTTPUserDetailProvider;
 use crate::{
-    app::libunftp_version, args::FtpsClientAuthType, auth::DefaultUserProvider, notify::FTPListener,
+    app::libunftp_version,
+    args::FtpsClientAuthType,
+    infra::{userdetail_default::DefaultUserProvider, userdetail_http::HTTPUserDetailProvider},
+    notify::FTPListener,
 };
 use ::http::Method;
 use args::AuthType;
-use auth::LookupAuthenticator;
 use base64::{engine, Engine};
 use clap::ArgMatches;
-use domain::events::{EventDispatcher, FTPEvent, FTPEventPayload};
-use domain::user;
+use domain::{
+    events::{EventDispatcher, FTPEvent, FTPEventPayload},
+    user,
+};
 use flate2::read::GzDecoder;
-use infra::usrdetail_json::JsonUserProvider;
+use infra::userdetail_json::JsonUserProvider;
 use libunftp::{
     auth as auth_spi,
     notification::{DataListener, PresenceListener},
@@ -38,9 +40,9 @@ use libunftp::{
     ServerBuilder,
 };
 use slog::*;
-use std::io::{Read, Seek};
 use std::{
     env, fs,
+    io::{Read, Seek},
     net::{IpAddr, Ipv4Addr, SocketAddr, ToSocketAddrs},
     path::PathBuf,
     process,
@@ -94,7 +96,7 @@ fn load_user_file(
 
 fn make_auth(
     m: &clap::ArgMatches,
-) -> Result<Arc<dyn auth_spi::Authenticator<user::User> + Send + Sync + 'static>, String> {
+) -> Result<Arc<dyn auth_spi::Authenticator + Send + Sync + 'static>, String> {
     let default_auth_type = AuthType::Anonymous.to_string();
     let input_auth_type = m.value_of(args::AUTH_TYPE).unwrap_or(&default_auth_type);
     let auth_type_variant = match input_auth_type.parse::<AuthType>() {
@@ -103,16 +105,6 @@ fn make_auth(
             return Err(format!("unknown auth type: {}", input_auth_type));
         }
     };
-
-    let mut auth: LookupAuthenticator = match auth_type_variant {
-        AuthType::Anonymous => make_anon_auth(),
-        #[cfg(feature = "auth_pam")]
-        AuthType::Pam => make_pam_auth(m),
-        #[cfg(feature = "auth_rest")]
-        AuthType::Rest => make_rest_auth(m),
-        #[cfg(feature = "auth_jsonfile")]
-        AuthType::Json => make_json_auth(m),
-    }?;
 
     #[cfg(feature = "auth_pam")]
     {
@@ -154,39 +146,30 @@ fn make_auth(
         }
     }
 
-    auth.set_usr_detail(
-        match (
-            m.value_of(args::USR_JSON_PATH),
-            m.value_of(args::USR_HTTP_URL),
-        ) {
-            (Some(path), None) => {
-                let json: String = load_user_file(path)
-                    .map_err(|e| format!("could not load user file '{}': {}", path, e))?;
-                Box::new(JsonUserProvider::from_json(json.as_str())?)
-            }
-            (None, Some(url)) => Box::new(HTTPUserDetailProvider::new(url)),
-            (None, None) => Box::new(DefaultUserProvider {}),
-            _ => {
-                return Err(format!(
-                    "please specify either '{}' or '{}' but not both",
-                    args::USR_JSON_PATH,
-                    args::USR_HTTP_URL
-                ));
-            }
-        },
-    );
-    Ok(Arc::new(auth))
+    let auth: Arc<dyn auth_spi::Authenticator + Send + Sync + 'static> = match auth_type_variant {
+        AuthType::Anonymous => make_anon_auth()?,
+        #[cfg(feature = "auth_pam")]
+        AuthType::Pam => make_pam_auth(m)?,
+        #[cfg(feature = "auth_rest")]
+        AuthType::Rest => make_rest_auth(m)?,
+        #[cfg(feature = "auth_jsonfile")]
+        AuthType::Json => make_json_auth(m)?,
+    };
+
+    Ok(auth)
 }
 
-fn make_anon_auth() -> Result<LookupAuthenticator, String> {
-    Ok(LookupAuthenticator::new(auth_spi::AnonymousAuthenticator))
+fn make_anon_auth() -> Result<Arc<dyn auth_spi::Authenticator + Send + Sync + 'static>, String> {
+    Ok(Arc::new(auth_spi::AnonymousAuthenticator))
 }
 
 #[cfg(feature = "auth_pam")]
-fn make_pam_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
+fn make_pam_auth(
+    m: &clap::ArgMatches,
+) -> Result<Arc<dyn auth_spi::Authenticator + Send + Sync + 'static>, String> {
     if let Some(service) = m.value_of(args::AUTH_PAM_SERVICE) {
         let pam_auth = pam::PamAuthenticator::new(service);
-        return Ok(LookupAuthenticator::new(pam_auth));
+        return Ok(Arc::new(pam_auth));
     }
     Err(format!(
         "--{} is required when using pam auth",
@@ -195,7 +178,9 @@ fn make_pam_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
 }
 
 #[cfg(feature = "auth_rest")]
-fn make_rest_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
+fn make_rest_auth(
+    m: &clap::ArgMatches,
+) -> Result<Arc<dyn auth_spi::Authenticator + Send + Sync + 'static>, String> {
     use std::str::FromStr;
     match (
         m.value_of(args::AUTH_REST_URL),
@@ -238,21 +223,45 @@ fn make_rest_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
                 Err(e) => return Err(format!("Unable to create RestAuthenticator: {}", e)),
             };
 
-            Ok(LookupAuthenticator::new(authenticator))
+            Ok(Arc::new(authenticator))
         }
         _ => Err("for auth type rest please specify all auth-rest-* options".to_string()),
     }
 }
 
 #[cfg(feature = "auth_jsonfile")]
-fn make_json_auth(m: &clap::ArgMatches) -> Result<LookupAuthenticator, String> {
+fn make_json_auth(
+    m: &clap::ArgMatches,
+) -> Result<Arc<dyn auth_spi::Authenticator + Send + Sync + 'static>, String> {
     let path = m.value_of(args::AUTH_JSON_PATH).ok_or_else(|| {
         "please provide the json credentials file by specifying auth-json-path".to_string()
     })?;
 
     let authenticator =
         unftp_auth_jsonfile::JsonFileAuthenticator::from_file(path).map_err(|e| e.to_string())?;
-    Ok(LookupAuthenticator::new(authenticator))
+    Ok(Arc::new(authenticator))
+}
+
+fn make_user_detail_provider(
+    m: &clap::ArgMatches,
+) -> Result<Arc<dyn libunftp::auth::UserDetailProvider<User = user::User> + Send + Sync>, String> {
+    match (
+        m.value_of(args::USR_JSON_PATH),
+        m.value_of(args::USR_HTTP_URL),
+    ) {
+        (Some(path), None) => {
+            let json: String = load_user_file(path)
+                .map_err(|e| format!("could not load user file '{}': {}", path, e))?;
+            Ok(Arc::new(JsonUserProvider::from_json(json.as_str())?))
+        }
+        (None, Some(url)) => Ok(Arc::new(HTTPUserDetailProvider::new(url))),
+        (None, None) => Ok(Arc::new(DefaultUserProvider {})),
+        _ => Err(format!(
+            "please specify either '{}' or '{}' but not both",
+            args::USR_JSON_PATH,
+            args::USR_HTTP_URL
+        )),
+    }
 }
 
 type VfsProducer = Box<
@@ -549,6 +558,7 @@ where
         .to_owned();
 
     let authenticator = make_auth(arg_matches)?;
+    let user_detail_provider = make_user_detail_provider(arg_matches)?;
 
     let l = log.clone();
 
@@ -558,21 +568,23 @@ where
         hostname: hostname.clone(),
     });
 
-    let mut server = ServerBuilder::with_authenticator(storage_backend, authenticator)
-        .greeting("Welcome to unFTP")
-        .passive_ports(start_port..=end_port)
-        .idle_session_timeout(idle_timeout)
-        .logger(root_log.new(o!("lib" => "libunftp")))
-        .passive_host(passive_host)
-        .sitemd5(md5_setting)
-        .notify_data(listener.clone() as Arc<dyn DataListener>)
-        .notify_presence(listener as Arc<dyn PresenceListener>)
-        .shutdown_indicator(async move {
-            shutdown.recv().await.ok();
-            info!(l, "Shutting down FTP server");
-            libunftp::options::Shutdown::new().grace_period(Duration::from_secs(11))
-        })
-        .metrics();
+    let mut server =
+        ServerBuilder::with_user_detail_provider(storage_backend, user_detail_provider)
+            .authenticator(authenticator)
+            .greeting("Welcome to unFTP")
+            .passive_ports(start_port..=end_port)
+            .idle_session_timeout(idle_timeout)
+            .logger(root_log.new(o!("lib" => "libunftp")))
+            .passive_host(passive_host)
+            .sitemd5(md5_setting)
+            .notify_data(listener.clone() as Arc<dyn DataListener>)
+            .notify_presence(listener as Arc<dyn PresenceListener>)
+            .shutdown_indicator(async move {
+                shutdown.recv().await.ok();
+                info!(l, "Shutting down FTP server");
+                libunftp::options::Shutdown::new().grace_period(Duration::from_secs(11))
+            })
+            .metrics();
 
     // Setup proxy protocol mode.
     if let Some(port) = arg_matches.value_of(args::PROXY_EXTERNAL_CONTROL_PORT) {

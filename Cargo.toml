@@ -43,7 +43,7 @@ http-body-util = "0.1.3"
 hyper-util = { version = "0.1.19", features = ["full"] }
 hyper-rustls = "0.27.7"
 lazy_static = "1.5.0"
-libunftp = "0.21.1"
+libunftp = { path = "../libunftp" }
 opendal = { version = "0.53.3", optional = true }
 prometheus = { version = "0.14.0", features = ["process"] }
 serde = { version = "1.0.228", features = ["derive"] }
@@ -64,13 +64,13 @@ unftp-sbe-restrict = "0.1.3"
 unftp-sbe-gcs = { version = "0.2.8", optional = true }
 unftp-sbe-opendal = { version = "0.2.1", optional = true }
 unftp-sbe-iso = { version = "0.1.2", optional = true }
-unftp-auth-rest = { version = "0.2.8", optional = true }
-unftp-auth-jsonfile = { version = "0.3.6", optional = true }
+unftp-auth-jsonfile = { path = "../libunftp/crates/unftp-auth-jsonfile", optional = true  }
+unftp-auth-rest = { path = "../libunftp/crates/unftp-auth-rest", optional = true  }
 url = "2.5.7"
 rustls = "0.23.35"
 
 [target.'cfg(unix)'.dependencies]
-unftp-auth-pam = { version = "0.2.7", optional = true }
+unftp-auth-pam = { path = "../libunftp/crates/unftp-auth-pam", optional = true }
 
 [features]
 default = ["auth_rest", "sbe_gcs", "auth_jsonfile", "sbe_opendal"]
@@ -111,6 +111,12 @@ azblob = ["sbe_azblob"]
 pam_auth = ["auth_pam"]
 rest_auth = ["auth_rest"]
 jsonfile_auth = ["auth_jsonfile"]
+
+[patch.crates-io]
+libunftp = { path = "../libunftp" }
+unftp-auth-jsonfile = { path = "../libunftp/crates/unftp-auth-jsonfile" }
+unftp-auth-pam = { path = "../libunftp/crates/unftp-auth-pam" }
+unftp-auth-rest = { path = "../libunftp/crates/unftp-auth-rest" }
 
 [build-dependencies]
 built = { version = "0.7.7", features = [
