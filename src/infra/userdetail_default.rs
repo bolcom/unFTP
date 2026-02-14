@@ -1,6 +1,6 @@
 use crate::domain::user::User;
 use async_trait::async_trait;
-use libunftp::auth::{Principal, UserDetailError, UserDetailProvider};
+use unftp_core::auth::{Principal, UserDetailError, UserDetailProvider};
 
 /// A default [`UserDetailProvider`] that creates a [`User`] with default settings.
 #[derive(Debug)]

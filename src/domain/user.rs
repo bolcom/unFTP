@@ -1,9 +1,9 @@
 //! Contains definitions pertaining to FTP User Detail
-use libunftp::auth::UserDetail;
 use std::{
     fmt::{Debug, Display, Formatter},
     path::PathBuf,
 };
+use unftp_core::auth::UserDetail;
 use unftp_sbe_restrict::{UserWithPermissions, VfsOperations};
 use unftp_sbe_rooter::UserWithRoot;
 

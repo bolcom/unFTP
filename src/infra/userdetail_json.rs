@@ -1,8 +1,8 @@
 use crate::domain::user::User;
 use async_trait::async_trait;
-use libunftp::auth::{Principal, UserDetailError, UserDetailProvider};
 use serde::Deserialize;
 use std::path::PathBuf;
+use unftp_core::auth::{Principal, UserDetailError, UserDetailProvider};
 use unftp_sbe_restrict::VfsOperations;
 
 /// A [`UserDetailProvider`] that gets user details from a JSON file.

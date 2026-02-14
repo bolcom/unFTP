@@ -1739,9 +1739,9 @@ dependencies = [
 
 [[package]]
 name = "libunftp"
-version = "0.22.0"
+version = "0.23.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3186f219c64999ae9a2900c78ebfaf4a6b4acc3b2bbf5afe5e027e5ca5978593"
+checksum = "c9f8ff371890db2cf65a0758dba9a79f9cd965de369f6dbdc6581a22780af45e"
 dependencies = [
  "async-trait",
  "bitflags 2.10.0",
@@ -1752,8 +1752,6 @@ dependencies = [
  "futures-util",
  "getrandom 0.3.4",
  "lazy_static",
- "libc",
- "md-5",
  "moka",
  "nix",
  "prometheus",
@@ -1767,8 +1765,8 @@ dependencies = [
  "tokio-util",
  "tracing",
  "tracing-attributes",
+ "unftp-core",
  "uuid",
- "x509-parser",
 ]
 
 [[package]]
@@ -2007,7 +2005,7 @@ checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
 [[package]]
 name = "opendal"
 version = "0.55.0"
-source = "git+https://github.com/apache/opendal.git?rev=8658906606a83b5847325ed12190e5b40cfd0a31#8658906606a83b5847325ed12190e5b40cfd0a31"
+source = "git+https://github.com/apache/opendal.git?rev=15e2cc098cfeb1403e526cea868c0e17382a50fa#15e2cc098cfeb1403e526cea868c0e17382a50fa"
 dependencies = [
  "ctor",
  "opendal-core",
@@ -2021,7 +2019,7 @@ dependencies = [
 [[package]]
 name = "opendal-core"
 version = "0.55.0"
-source = "git+https://github.com/apache/opendal.git?rev=8658906606a83b5847325ed12190e5b40cfd0a31#8658906606a83b5847325ed12190e5b40cfd0a31"
+source = "git+https://github.com/apache/opendal.git?rev=15e2cc098cfeb1403e526cea868c0e17382a50fa#15e2cc098cfeb1403e526cea868c0e17382a50fa"
 dependencies = [
  "anyhow",
  "base64 0.22.1",
@@ -2047,7 +2045,7 @@ dependencies = [
 [[package]]
 name = "opendal-layer-concurrent-limit"
 version = "0.55.0"
-source = "git+https://github.com/apache/opendal.git?rev=8658906606a83b5847325ed12190e5b40cfd0a31#8658906606a83b5847325ed12190e5b40cfd0a31"
+source = "git+https://github.com/apache/opendal.git?rev=15e2cc098cfeb1403e526cea868c0e17382a50fa#15e2cc098cfeb1403e526cea868c0e17382a50fa"
 dependencies = [
  "futures",
  "http 1.4.0",
@@ -2058,7 +2056,7 @@ dependencies = [
 [[package]]
 name = "opendal-layer-logging"
 version = "0.55.0"
-source = "git+https://github.com/apache/opendal.git?rev=8658906606a83b5847325ed12190e5b40cfd0a31#8658906606a83b5847325ed12190e5b40cfd0a31"
+source = "git+https://github.com/apache/opendal.git?rev=15e2cc098cfeb1403e526cea868c0e17382a50fa#15e2cc098cfeb1403e526cea868c0e17382a50fa"
 dependencies = [
  "log",
  "opendal-core",
@@ -2067,7 +2065,7 @@ dependencies = [
 [[package]]
 name = "opendal-layer-retry"
 version = "0.55.0"
-source = "git+https://github.com/apache/opendal.git?rev=8658906606a83b5847325ed12190e5b40cfd0a31#8658906606a83b5847325ed12190e5b40cfd0a31"
+source = "git+https://github.com/apache/opendal.git?rev=15e2cc098cfeb1403e526cea868c0e17382a50fa#15e2cc098cfeb1403e526cea868c0e17382a50fa"
 dependencies = [
  "backon",
  "log",
@@ -2077,7 +2075,7 @@ dependencies = [
 [[package]]
 name = "opendal-layer-timeout"
 version = "0.55.0"
-source = "git+https://github.com/apache/opendal.git?rev=8658906606a83b5847325ed12190e5b40cfd0a31#8658906606a83b5847325ed12190e5b40cfd0a31"
+source = "git+https://github.com/apache/opendal.git?rev=15e2cc098cfeb1403e526cea868c0e17382a50fa#15e2cc098cfeb1403e526cea868c0e17382a50fa"
 dependencies = [
  "opendal-core",
  "tokio",
@@ -2086,7 +2084,7 @@ dependencies = [
 [[package]]
 name = "opendal-service-azblob"
 version = "0.55.0"
-source = "git+https://github.com/apache/opendal.git?rev=8658906606a83b5847325ed12190e5b40cfd0a31#8658906606a83b5847325ed12190e5b40cfd0a31"
+source = "git+https://github.com/apache/opendal.git?rev=15e2cc098cfeb1403e526cea868c0e17382a50fa#15e2cc098cfeb1403e526cea868c0e17382a50fa"
 dependencies = [
  "base64 0.22.1",
  "bytes",
@@ -2104,7 +2102,7 @@ dependencies = [
 [[package]]
 name = "opendal-service-azure-common"
 version = "0.55.0"
-source = "git+https://github.com/apache/opendal.git?rev=8658906606a83b5847325ed12190e5b40cfd0a31#8658906606a83b5847325ed12190e5b40cfd0a31"
+source = "git+https://github.com/apache/opendal.git?rev=15e2cc098cfeb1403e526cea868c0e17382a50fa#15e2cc098cfeb1403e526cea868c0e17382a50fa"
 dependencies = [
  "http 1.4.0",
  "opendal-core",
@@ -2174,18 +2172,6 @@ dependencies = [
  "redox_syscall",
  "smallvec",
  "windows-link",
-]
-
-[[package]]
-name = "path_abs"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05ef02f6342ac01d8a93b65f96db53fe68a92a15f41144f97fb00a9e669633c3"
-dependencies = [
- "serde",
- "serde_derive",
- "std_prelude",
- "stfu8",
 ]
 
 [[package]]
@@ -3277,18 +3263,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6ce2be8dc25455e1f91df71bfa12ad37d7af1092ae736f3a6cd0e37bc7810596"
 
 [[package]]
-name = "std_prelude"
-version = "0.2.12"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8207e78455ffdf55661170876f88daf85356e4edd54e0a3dbc79586ca1e50cbe"
-
-[[package]]
-name = "stfu8"
-version = "0.2.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e51f1e89f093f99e7432c491c382b88a6860a5adbe6bf02574bf0a08efff1978"
-
-[[package]]
 name = "strsim"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3825,6 +3799,7 @@ dependencies = [
  "unftp-auth-jsonfile",
  "unftp-auth-pam",
  "unftp-auth-rest",
+ "unftp-core",
  "unftp-sbe-fs",
  "unftp-sbe-gcs",
  "unftp-sbe-iso",
@@ -3836,9 +3811,9 @@ dependencies = [
 
 [[package]]
 name = "unftp-auth-jsonfile"
-version = "0.3.7"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6748b978f963b2177fb2f6215f96a290ac9ae1a9d695812ef9b55f36b5227c7f"
+checksum = "26fcccdf17260b27df6d88e6fff874590fb50d04f0d9139e43785f41ccb3b7f8"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -3846,74 +3821,88 @@ dependencies = [
  "flate2",
  "ipnet",
  "iprange",
- "libunftp",
  "ring",
  "serde",
  "serde_json",
  "tokio",
  "tracing",
  "tracing-attributes",
+ "unftp-core",
  "valid",
 ]
 
 [[package]]
 name = "unftp-auth-pam"
-version = "0.2.8"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "27ce24963036b35d8b524225d0b4c110a12cd18112da61d0004cc21f1914a537"
+checksum = "609e073bcdb763a27ce98760860c14bb654add28c8638aa8082d3fa08cda6f62"
 dependencies = [
  "async-trait",
- "libunftp",
  "pam",
  "tracing",
  "tracing-attributes",
+ "unftp-core",
 ]
 
 [[package]]
 name = "unftp-auth-rest"
-version = "0.2.9"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "36b465414ee6d4a7d08b5c5366f6e4f67fa0bd1e94e98a6bbd78d3ff7f7ce97b"
+checksum = "cfe6e2b60fd7e351f23b97ce2818532599adf4480f913ed32ea6331280753760"
 dependencies = [
  "async-trait",
  "http-body-util",
  "hyper 1.8.1",
  "hyper-rustls 0.27.7",
  "hyper-util",
- "libunftp",
  "percent-encoding 2.3.2",
  "regex",
- "serde",
  "serde_json",
  "tokio",
  "tracing",
  "tracing-attributes",
+ "unftp-core",
+]
+
+[[package]]
+name = "unftp-core"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "79acf4b257aa56dd7f00466a81693d6c79c362c55092b3137909d6e76249ad80"
+dependencies = [
+ "async-trait",
+ "chrono",
+ "derive_more",
+ "libc",
+ "md-5",
+ "thiserror 2.0.18",
+ "tokio",
+ "x509-parser",
 ]
 
 [[package]]
 name = "unftp-sbe-fs"
-version = "0.3.1"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ebc345e90d075f049816c66cc0ae7953edb12bfb6375f38561d7afc35667f97"
+checksum = "9e12754866a334b276fee8c3a5e017c4a40e97cb0cd3aecb3156390ee9dab14a"
 dependencies = [
  "async-trait",
  "cap-std",
  "cfg-if",
  "futures",
  "lazy_static",
- "libunftp",
- "path_abs",
  "tokio",
  "tokio-stream",
  "tracing",
  "tracing-attributes",
+ "unftp-core",
 ]
 
 [[package]]
 name = "unftp-sbe-gcs"
-version = "0.2.9"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2fd1d4fd76b048fb3acd2eb35b64b3f61ed264ee13e6d0e34f6dbad28748d831"
+checksum = "2c1c88aa527efe912edcb8bac5b1ab338f374156916f7eef5369ae35f04cf19a"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -3924,65 +3913,64 @@ dependencies = [
  "hyper 1.8.1",
  "hyper-rustls 0.27.7",
  "hyper-util",
- "libunftp",
  "mime",
  "percent-encoding 2.3.2",
  "serde",
  "serde_json",
  "time",
  "tokio",
- "tokio-stream",
  "tokio-util",
  "tracing",
  "tracing-attributes",
+ "unftp-core",
  "yup-oauth2 12.1.2",
 ]
 
 [[package]]
 name = "unftp-sbe-iso"
-version = "0.1.3"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1d90dec8cf7c4738c51861222ac4d11a2ac0ff8c369b45afe5152b51b2f33fa0"
+checksum = "e9e95c6f73b0a29705fab173c09564e6be65abfa2dbc23c1d7addc9df781a265"
 dependencies = [
  "async-trait",
  "cdfs",
- "libunftp",
  "tokio",
+ "unftp-core",
 ]
 
 [[package]]
 name = "unftp-sbe-opendal"
 version = "0.4.0"
-source = "git+https://github.com/apache/opendal.git?rev=8658906606a83b5847325ed12190e5b40cfd0a31#8658906606a83b5847325ed12190e5b40cfd0a31"
+source = "git+https://github.com/apache/opendal.git?rev=15e2cc098cfeb1403e526cea868c0e17382a50fa#15e2cc098cfeb1403e526cea868c0e17382a50fa"
 dependencies = [
  "async-trait",
- "libunftp",
  "opendal",
  "tokio",
  "tokio-util",
+ "unftp-core",
 ]
 
 [[package]]
 name = "unftp-sbe-restrict"
-version = "0.1.4"
+version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "af4c034c68a587bc6bb2fe6dd630a639fa703d64114ffc495fb4970de6e2b80a"
+checksum = "950dd3e99e6da88b684817a85dffd0338f028c6e3a8592003a7f4b07e0c5f39f"
 dependencies = [
  "async-trait",
  "bitflags 2.10.0",
- "libunftp",
  "tokio",
+ "unftp-core",
 ]
 
 [[package]]
 name = "unftp-sbe-rooter"
-version = "0.2.3"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0398704f3c405504a49c0b562c67bf0444a36d5cdcbfbd575cca5fb70616fb1b"
+checksum = "107e82276aea98fba5a30e43a9d9d61d6f37d68bb7455a76fd197a87c8028c61"
 dependencies = [
  "async-trait",
- "libunftp",
  "tokio",
+ "unftp-core",
 ]
 
 [[package]]
