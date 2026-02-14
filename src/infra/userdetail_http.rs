@@ -9,7 +9,7 @@ use http_body_util::{BodyExt, Empty};
 use hyper::body::Bytes;
 use hyper_util::client::legacy::Client;
 use hyper_util::rt::TokioExecutor;
-use libunftp::auth::{Principal, UserDetailError, UserDetailProvider};
+use unftp_core::auth::{Principal, UserDetailError, UserDetailProvider};
 use url::form_urlencoded;
 
 /// A libunftp [`UserDetail`](libunftp::auth::UserDetail) provider that obtains user detail

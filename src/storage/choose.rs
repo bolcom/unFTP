@@ -5,8 +5,7 @@ use std::sync::Arc;
 use std::time::SystemTime;
 
 use async_trait::async_trait;
-use libunftp::storage;
-use libunftp::storage::{Fileinfo, StorageBackend};
+use unftp_core::storage::{Fileinfo, Metadata, Result as StorageResult, StorageBackend};
 
 use crate::domain::user::User;
 
@@ -43,7 +42,7 @@ pub enum SbeMeta {
     Iso(unftp_sbe_iso::IsoMeta),
 }
 
-impl libunftp::storage::Metadata for SbeMeta {
+impl Metadata for SbeMeta {
     fn len(&self) -> u64 {
         match self {
             #[cfg(feature = "sbe_azblob")]
@@ -92,7 +91,7 @@ impl libunftp::storage::Metadata for SbeMeta {
         }
     }
 
-    fn modified(&self) -> storage::Result<SystemTime> {
+    fn modified(&self) -> StorageResult<SystemTime> {
         match self {
             #[cfg(feature = "sbe_azblob")]
             SbeMeta::OpenDAL(m) => m.modified(),
@@ -161,7 +160,7 @@ impl StorageBackend<User> for ChoosingVfs {
         &self,
         user: &User,
         path: P,
-    ) -> storage::Result<Self::Metadata> {
+    ) -> StorageResult<<Self as StorageBackend<User>>::Metadata> {
         match &self.inner {
             #[cfg(feature = "sbe_azblob")]
             InnerVfs::OpenDAL(i) => i.metadata(user, path).await.map(SbeMeta::OpenDAL),
@@ -177,9 +176,9 @@ impl StorageBackend<User> for ChoosingVfs {
         &self,
         user: &User,
         path: P,
-    ) -> storage::Result<Vec<Fileinfo<PathBuf, Self::Metadata>>>
+    ) -> StorageResult<Vec<Fileinfo<PathBuf, Self::Metadata>>>
     where
-        <Self as StorageBackend<User>>::Metadata: libunftp::storage::Metadata,
+        <Self as StorageBackend<User>>::Metadata: Metadata,
     {
         match &self.inner {
             #[cfg(feature = "sbe_azblob")]
@@ -220,10 +219,10 @@ impl StorageBackend<User> for ChoosingVfs {
         }
     }
 
-    async fn list_fmt<P>(&self, user: &User, path: P) -> storage::Result<Cursor<Vec<u8>>>
+    async fn list_fmt<P>(&self, user: &User, path: P) -> StorageResult<Cursor<Vec<u8>>>
     where
         P: AsRef<Path> + Send + Debug,
-        Self::Metadata: libunftp::storage::Metadata + 'static,
+        Self::Metadata: Metadata + 'static,
     {
         match &self.inner {
             #[cfg(feature = "sbe_azblob")]
@@ -239,7 +238,7 @@ impl StorageBackend<User> for ChoosingVfs {
     async fn nlst<P>(&self, user: &User, path: P) -> std::io::Result<Cursor<Vec<u8>>>
     where
         P: AsRef<Path> + Send + Debug,
-        Self::Metadata: libunftp::storage::Metadata + 'static,
+        Self::Metadata: Metadata + 'static,
     {
         match &self.inner {
             #[cfg(feature = "sbe_azblob")]
@@ -258,7 +257,7 @@ impl StorageBackend<User> for ChoosingVfs {
         path: P,
         start_pos: u64,
         output: &'a mut W,
-    ) -> storage::Result<u64>
+    ) -> StorageResult<u64>
     where
         W: tokio::io::AsyncWrite + Unpin + Sync + Send,
         P: AsRef<Path> + Send + Debug,
@@ -279,7 +278,7 @@ impl StorageBackend<User> for ChoosingVfs {
         user: &User,
         path: P,
         start_pos: u64,
-    ) -> storage::Result<Box<dyn tokio::io::AsyncRead + Send + Sync + Unpin>> {
+    ) -> StorageResult<Box<dyn tokio::io::AsyncRead + Send + Sync + Unpin>> {
         match &self.inner {
             #[cfg(feature = "sbe_azblob")]
             InnerVfs::OpenDAL(i) => i.get(user, path, start_pos).await,
@@ -312,7 +311,7 @@ impl StorageBackend<User> for ChoosingVfs {
         input: R,
         path: P,
         start_pos: u64,
-    ) -> storage::Result<u64> {
+    ) -> StorageResult<u64> {
         match &self.inner {
             #[cfg(feature = "sbe_azblob")]
             InnerVfs::OpenDAL(i) => i.put(user, input, path, start_pos).await,
@@ -324,11 +323,7 @@ impl StorageBackend<User> for ChoosingVfs {
         }
     }
 
-    async fn del<P: AsRef<Path> + Send + Debug>(
-        &self,
-        user: &User,
-        path: P,
-    ) -> storage::Result<()> {
+    async fn del<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> StorageResult<()> {
         match &self.inner {
             #[cfg(feature = "sbe_azblob")]
             InnerVfs::OpenDAL(i) => i.del(user, path).await,
@@ -340,11 +335,7 @@ impl StorageBackend<User> for ChoosingVfs {
         }
     }
 
-    async fn mkd<P: AsRef<Path> + Send + Debug>(
-        &self,
-        user: &User,
-        path: P,
-    ) -> storage::Result<()> {
+    async fn mkd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> StorageResult<()> {
         match &self.inner {
             #[cfg(feature = "sbe_azblob")]
             InnerVfs::OpenDAL(i) => i.mkd(user, path).await,
@@ -361,7 +352,7 @@ impl StorageBackend<User> for ChoosingVfs {
         user: &User,
         from: P,
         to: P,
-    ) -> storage::Result<()> {
+    ) -> StorageResult<()> {
         match &self.inner {
             #[cfg(feature = "sbe_azblob")]
             InnerVfs::OpenDAL(i) => i.rename(user, from, to).await,
@@ -373,11 +364,7 @@ impl StorageBackend<User> for ChoosingVfs {
         }
     }
 
-    async fn rmd<P: AsRef<Path> + Send + Debug>(
-        &self,
-        user: &User,
-        path: P,
-    ) -> storage::Result<()> {
+    async fn rmd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> StorageResult<()> {
         match &self.inner {
             #[cfg(feature = "sbe_azblob")]
             InnerVfs::OpenDAL(i) => i.rmd(user, path).await,
@@ -389,11 +376,7 @@ impl StorageBackend<User> for ChoosingVfs {
         }
     }
 
-    async fn cwd<P: AsRef<Path> + Send + Debug>(
-        &self,
-        user: &User,
-        path: P,
-    ) -> storage::Result<()> {
+    async fn cwd<P: AsRef<Path> + Send + Debug>(&self, user: &User, path: P) -> StorageResult<()> {
         match &self.inner {
             #[cfg(feature = "sbe_azblob")]
             InnerVfs::OpenDAL(i) => i.cwd(user, path).await,

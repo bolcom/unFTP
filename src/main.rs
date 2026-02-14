@@ -36,7 +36,6 @@ use libunftp::{
     options::{
         FailedLoginsBlock, FailedLoginsPolicy, FtpsClientAuth, FtpsRequired, SiteMd5, TlsFlags,
     },
-    storage::StorageBackend,
     ServerBuilder,
 };
 use slog::*;
@@ -53,6 +52,8 @@ use std::{
 };
 #[cfg(feature = "auth_pam")]
 use unftp_auth_pam as pam;
+use unftp_core::auth::{Authenticator, UserDetailProvider};
+use unftp_core::storage::StorageBackend;
 #[cfg(feature = "sbe_gcs")]
 use unftp_sbe_gcs::options::AuthMethod;
 use unftp_sbe_restrict::RestrictingVfs;
@@ -96,7 +97,7 @@ fn load_user_file(
 
 fn make_auth(
     m: &clap::ArgMatches,
-) -> Result<Arc<dyn auth_spi::Authenticator + Send + Sync + 'static>, String> {
+) -> Result<Arc<dyn Authenticator + Send + Sync + 'static>, String> {
     let default_auth_type = AuthType::Anonymous.to_string();
     let input_auth_type = m.value_of(args::AUTH_TYPE).unwrap_or(&default_auth_type);
     let auth_type_variant = match input_auth_type.parse::<AuthType>() {
@@ -146,7 +147,7 @@ fn make_auth(
         }
     }
 
-    let auth: Arc<dyn auth_spi::Authenticator + Send + Sync + 'static> = match auth_type_variant {
+    let auth: Arc<dyn Authenticator + Send + Sync + 'static> = match auth_type_variant {
         AuthType::Anonymous => make_anon_auth()?,
         #[cfg(feature = "auth_pam")]
         AuthType::Pam => make_pam_auth(m)?,
@@ -159,14 +160,14 @@ fn make_auth(
     Ok(auth)
 }
 
-fn make_anon_auth() -> Result<Arc<dyn auth_spi::Authenticator + Send + Sync + 'static>, String> {
+fn make_anon_auth() -> Result<Arc<dyn Authenticator + Send + Sync + 'static>, String> {
     Ok(Arc::new(auth_spi::AnonymousAuthenticator))
 }
 
 #[cfg(feature = "auth_pam")]
 fn make_pam_auth(
     m: &clap::ArgMatches,
-) -> Result<Arc<dyn auth_spi::Authenticator + Send + Sync + 'static>, String> {
+) -> Result<Arc<dyn Authenticator + Send + Sync + 'static>, String> {
     if let Some(service) = m.value_of(args::AUTH_PAM_SERVICE) {
         let pam_auth = pam::PamAuthenticator::new(service);
         return Ok(Arc::new(pam_auth));
@@ -180,7 +181,7 @@ fn make_pam_auth(
 #[cfg(feature = "auth_rest")]
 fn make_rest_auth(
     m: &clap::ArgMatches,
-) -> Result<Arc<dyn auth_spi::Authenticator + Send + Sync + 'static>, String> {
+) -> Result<Arc<dyn Authenticator + Send + Sync + 'static>, String> {
     use std::str::FromStr;
     match (
         m.value_of(args::AUTH_REST_URL),
@@ -232,7 +233,7 @@ fn make_rest_auth(
 #[cfg(feature = "auth_jsonfile")]
 fn make_json_auth(
     m: &clap::ArgMatches,
-) -> Result<Arc<dyn auth_spi::Authenticator + Send + Sync + 'static>, String> {
+) -> Result<Arc<dyn Authenticator + Send + Sync + 'static>, String> {
     let path = m.value_of(args::AUTH_JSON_PATH).ok_or_else(|| {
         "please provide the json credentials file by specifying auth-json-path".to_string()
     })?;
@@ -244,7 +245,7 @@ fn make_json_auth(
 
 fn make_user_detail_provider(
     m: &clap::ArgMatches,
-) -> Result<Arc<dyn libunftp::auth::UserDetailProvider<User = user::User> + Send + Sync>, String> {
+) -> Result<Arc<dyn UserDetailProvider<User = user::User> + Send + Sync>, String> {
     match (
         m.value_of(args::USR_JSON_PATH),
         m.value_of(args::USR_HTTP_URL),
