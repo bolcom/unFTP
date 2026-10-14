@@ -16,9 +16,10 @@ possible.
 
 ## Feature highlights
 
-* 41 Supported FTP commands (see commands directory) and growing
+* 42 Supported FTP commands (see commands directory) and growing
 * Ability to implement own storage back-ends
 * Ability to implement own authentication back-ends
+* Ability to implement own `SITE` commands
 * Explicit FTPS (TLS)
 * Mutual TLS (Client certificates)
 * TLS session resumption
@@ -53,6 +54,14 @@ See the [full list of storage back-ends on crates.io](https://crates.io/search?q
 | [unftp-auth-rest](https://crates.io/crates/unftp-auth-rest) | Consumes an HTTP API to authenticate |
 
 See the [full list of authentication back-ends on crates.io](https://crates.io/search?q=unftp-auth) or the [Contribution Guide](https://github.com/bolcom/libunftp/blob/master/CONTRIBUTING.md#developing-your-own-authentication-or-storage-back-end-implementation) and [API Documentation](https://docs.rs/libunftp) if you want to create your own.
+
+## Known SITE command extensions
+
+| Crate | Description |
+|-------|-------------|
+| [unftp-site-hash](https://crates.io/crates/unftp-site-hash) | Adds a `SITE HASH` command, supporting SHA-256, SHA-1, MD5 and CRC32 file hashing |
+
+See the [full list of SITE command extensions on crates.io](https://crates.io/search?q=unftp-site) or the [Contribution Guide](https://github.com/bolcom/libunftp/blob/master/CONTRIBUTING.md#developing-your-own-authentication-or-storage-back-end-implementation) and [`ServerBuilder::site_command`](https://docs.rs/libunftp/latest/libunftp/struct.ServerBuilder.html#method.site_command) if you want to create your own.
 
 ## Additional resources
 
