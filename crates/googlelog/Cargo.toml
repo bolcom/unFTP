@@ -17,9 +17,9 @@ shipper = []
 
 [dependencies]
 google-logging2 = "5.0.5"
-serde_json = "1.0.151"
+serde_json = "1.0.154"
 chrono = "0.4.45"
-tokio = { version = "1.53.1", features = ["macros", "time", "rt-multi-thread"] }
+tokio = { version = "1.54.1", features = ["macros", "time", "rt-multi-thread"] }
 slog = "2.8.2"
 thiserror = "2.0.21"
 reqwest = { version = "0.12.28", default-features = false, features = ["rustls-tls", "json"] }
