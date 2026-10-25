@@ -2,6 +2,8 @@ FROM rust:1.92.0-slim AS builder
 
 FROM alpine:3.21
 
+ARG TARGETARCH
+
 # for devel only
 RUN apk add --repository http://dl-cdn.alpinelinux.org/alpine/v3.21/main fuse lftp curl
 RUN apk add --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing curlftpfs
@@ -12,6 +14,6 @@ COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certifi
 # no security measures, run as root
 USER root
 RUN mkdir /unftp
-COPY --chmod=755 ./x86_64-unknown-linux-musl/unftp_x86_64-unknown-linux-musl /unftp/unftp
+COPY --chmod=755 ./linux/${TARGETARCH}/unftp /unftp/unftp
 WORKDIR /unftp
 CMD ["/unftp/unftp", "-vv"]
