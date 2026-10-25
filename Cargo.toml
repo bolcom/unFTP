@@ -56,8 +56,8 @@ slog = { version = "2.8.2", features = [
 ] }
 slog-async = "2.8.0"
 slog-term = "2.9.2"
-strum = { version = "0.26.3", features = ["derive"] }
-strum_macros = "0.26.4"
+strum = { version = "0.28.0", features = ["derive"] }
+strum_macros = "0.28.0"
 thiserror = "2.0.21"
 tokio = { version = "1.54.1", features = ["full"] }
 unftp-sbe-fs = "0.4.0"
@@ -116,7 +116,7 @@ rest_auth = ["auth_rest"]
 jsonfile_auth = ["auth_jsonfile"]
 
 [build-dependencies]
-built = { version = "0.7.7", features = [
+built = { version = "0.8.1", features = [
   "cargo-lock",
   "git2",
   "chrono",
