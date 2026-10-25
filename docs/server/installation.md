@@ -6,13 +6,16 @@ This page covers the various ways to install unFTP, including precompiled binari
 
 ## Binaries
 
-[Precompiled binaries for unFTP are available](https://github.com/bolcom/unFTP/releases) for Linux and macOS. On Linux
-you can choose between a statically linked image (no PAM integration) or a dynamically linked image with PAM
-integration:
+[Precompiled binaries for unFTP are available](https://github.com/bolcom/unFTP/releases) for these targets:
 
-- unftp_x86_64-apple-darwin - macOS
-- unftp_x86_64-unknown-linux-musl - Linux statically linked, no PAM support.
-- unftp_x86_64-unknown-linux-gnu - Dynamically linked with PAM support.
+- `unftp_x86_64-unknown-linux-gnu` - Linux x86_64, dynamically linked with PAM support.
+- `unftp_x86_64-unknown-linux-musl` - Linux x86_64, statically linked without PAM support.
+- `unftp_aarch64-unknown-linux-musl` - Linux ARM64, statically linked without PAM support.
+- `unftp_x86_64-apple-darwin` - macOS Intel.
+- `unftp_aarch64-apple-darwin` - macOS Apple silicon.
+- `unftp_x86_64-pc-windows-msvc.exe` - Windows x86_64.
+
+Check the assets for the release you are using; older releases do not include the Linux ARM64 binary.
 
 ### To install with Curl:
 

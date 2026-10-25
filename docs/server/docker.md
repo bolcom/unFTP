@@ -11,6 +11,10 @@ docker pull bolcom/unftp:v0.15.2-alpine
 docker pull bolcom/unftp:v0.15.2-scratch
 ```
 
+Releases with ARM64 support publish the `-alpine`, `-scratch`, and `-alpine-debug` image tags for both `linux/amd64`
+and `linux/arm64`. Docker selects the matching image for your host when you pull a tag. Older tags may support only
+`linux/amd64`.
+
 Example running unFTP in a Docker container:
 
 ```sh
