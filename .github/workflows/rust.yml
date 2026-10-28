@@ -24,10 +24,17 @@ on:
   release:
     types: [ created ]
 
+# The `release` event cannot be filtered by tag name in `on:` above.
+# unFTP releases use tags like `v0.15.2`. Crate tags such as
+# `slog-redis-v0.2.0` must not publish unFTP binaries or images.
+# Jobs that build or publish unFTP therefore require:
+#   github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v')
+
 jobs:
 
   get_version:
     name: Get unFTP version
+    if: ${{ github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v') }}
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get_latest_tag.outputs.version }}
@@ -205,6 +212,7 @@ jobs:
   build-linux-gnu:
     runs-on: ubuntu-latest
     name: Build for Linux (GNU)
+    if: ${{ github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v') }}
     needs: get_version
     env:
       target: x86_64-unknown-linux-gnu
@@ -236,6 +244,7 @@ jobs:
   build-linux-musl:
     runs-on: ubuntu-latest
     name: Build for Linux (MUSL)
+    if: ${{ github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v') }}
     needs: get_version
     env:
       target: x86_64-unknown-linux-musl
@@ -267,6 +276,7 @@ jobs:
   build-linux-musl-arm:
     runs-on: ubuntu-latest
     name: Build for Linux (MUSL ARM64)
+    if: ${{ github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v') }}
     needs: get_version
     env:
       target: aarch64-unknown-linux-musl
@@ -302,6 +312,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     name: Build for Windows
+    if: ${{ github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v') }}
     needs: get_version
     env:
       trget: x86_64-pc-windows-msvc
@@ -332,6 +343,7 @@ jobs:
   build-macos-intel:
     runs-on: macos-latest
     name: Build for macOS (Intel)
+    if: ${{ github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v') }}
     needs: get_version
     env:
       target: x86_64-apple-darwin
@@ -361,6 +373,7 @@ jobs:
   build-macos-arm:
     runs-on: macos-latest
     name: Build for macOS (ARM)
+    if: ${{ github.event_name != 'release' || startsWith(github.event.release.tag_name, 'v') }}
     needs: get_version
     env:
       target: aarch64-apple-darwin
@@ -391,7 +404,7 @@ jobs:
           path: target/${{ env.target }}/release/unftp_${{ env.target }}
 
   upload-release-binaries:
-    if: ${{ github.event_name == 'release' }}  # Testing: if: ${{ github.ref == 'refs/heads/hannes/upload' }}
+    if: ${{ github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v') }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -444,7 +457,7 @@ jobs:
           asset_content_type: text/plain
 
   build-docker-images:
-    if: ${{ github.event_name == 'release' }}  # Testing if: ${{ github.ref == 'refs/heads/hannes/docker-actions' }}
+    if: ${{ github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v') }}
     runs-on: ubuntu-latest
     needs:
       - build-linux-musl
