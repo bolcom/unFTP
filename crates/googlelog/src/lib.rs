@@ -2,15 +2,13 @@
 //!
 //! # Usage
 //!
-//! Warning: Currently, this library only works in the context of [workload identity](https://cloud.google.com/iam/docs/workload-identity-federation).
-//!
 //! The `slog_google` drain creates log entries compatible with [Google Cloud Logging](https://cloud.google.com/logging).
 //! Depending on how you want to ship these logs to the Google Logging API, you can choose from one of the available build methods.
 //!
 //! Start by configuring the Logger with the builder ([`Builder`](logger::Builder::new)) and selecting the appropriate build method based on your shipping requirements:
 //!
 //! 1. [`build()`](logger::Builder::build): Receives [`WriteLogEntries`](https://cloud.google.com/logging/docs/reference/v2/rpc/google.logging.v2#google.logging.v2.LoggingServiceV2.WriteLogEntries) over a channel and allows you to handle the transportation manually.
-//! 2. [`build_with_async_shipper()`](logger::Builder::build_with_async_shipper): Offloads transportation to the [`Shipper`](shipper::Shipper) and its sync-async Bridge in an async context. (Requires the `shipper` feature.)
+//! 2. [`build_with_async_shipper()`](logger::Builder::build_with_async_shipper): Offloads transportation to the [`Shipper`](shipper::Shipper) and its sync-async Bridge in an async context. (Requires the `shipper` feature.) The shipper fetches tokens from the [GCE metadata server](https://cloud.google.com/compute/docs/metadata/overview) as the default service account. `build()` does not authenticate.
 
 //!
 //! The [`builder`](struct@logger::Builder) supports several `with_*` methods to customize the log message format,
