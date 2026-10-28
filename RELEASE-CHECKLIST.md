@@ -15,6 +15,10 @@
   or
 
   > Release slog-redis version x.y.x
+
+  or
+
+  > Release slog-google version x.y.x
 * Make a pull request for this but don't merge.
 * Wait till MR pipelines are OK then run `make publish`
 * Merge the MR via the command line by merging master into the branch and pushing it.
@@ -22,8 +26,10 @@
   > v0.15.2
   or
   > slog-redis-v0.1.2
-  Only unFTP tags (`v…`, not `slog-redis-v…`) publish binaries and Docker
-  images. For a crate tag, skip the next two steps.
+  or
+  > slog-google-v0.1.0
+  Only unFTP tags (`v…`, not crate tags such as `slog-redis-v…`) publish
+  binaries and Docker images. For a crate tag, skip the next two steps.
 * For an unFTP release, wait for the Github Actions pipeline to finish. You
   should see all artifacts in the release page.
 * For an unFTP release, confirm the docker containers were pushed

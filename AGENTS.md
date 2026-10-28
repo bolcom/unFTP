@@ -33,3 +33,8 @@
 - Use the body to explain what and why and context vs. how
 - Write thoughtful commit messages like David Tolnay
 - Write for the next person reading git log: A good commit title should let you scan history quickly without needing to run git show for every minor bump
+- Don't add attribution to AI engines
+
+## Pull requests
+
+- Don't add attribution to AI engines
