@@ -5,7 +5,7 @@ help you along.
 
 - For bug reports you can log a [Github issue](https://github.com/bolcom/unFTP/issues)
 - For ideas and feedback you can proceed to the [slog-redis general discussion](https://github.com/bolcom/unFTP/discussions/83)
-- Off course pull requests for code and documentation improvements are welcomed.
+- Of course pull requests for code and documentation improvements are welcomed.
 
 ## Submitting bug reports and feature requests
 

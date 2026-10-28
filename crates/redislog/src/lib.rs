@@ -1,44 +1,40 @@
-//! This crate implements a [slog](https://crates.io/crates/slog) drain that outputs JSON formatted
-//! logs to a Redis list
+//! A [slog](https://crates.io/crates/slog) drain that writes JSON log messages to a Redis list.
 //!
-//! Useful for structured, **centralized logging** using a RELK stack (Redis, Elasticsearch,
-//! Logstash and Kibana). All log messages are sent to a Redis server, in **Logstash message V0 format**,
-//! ready to be parsed/processed by Logstash.
+//! Useful for structured, centralized logging with a RELK stack (Redis, Elasticsearch,
+//! Logstash, and Kibana). Messages are stored in **Logstash message V0 format**, ready to be
+//! processed by Logstash.
 //!
-//! The format looks like this:
+//! The payload looks like this:
 //!
 //! ```json
-//!  {
-//!     "@timestamp": ${timeRFC3339},
-//!     "@source_host": ${hostname},
-//!     "@message": ${message},
-//!     "@fields": {
-//!        "level": ${levelLowercase},
-//!        "application": ${appName}
-//!        ... // logged field 1
-//!        ... // logged field 2
-//!        ...
+//! {
+//!    "@timestamp": ${timeRFC3339},
+//!    "@source_host": ${hostname},
+//!    "@message": ${message},
+//!    "@fields": {
+//!       "level": ${levelLowercase},
+//!       "application": ${appName}
 //!    }
+//! }
 //! ```
 //!
-//! Example usage:
+//! # Example
 //!
 //! ```no_run
-//!  use slog::*;
-//!  use slog_redis::Builder;
+//! use slog::*;
+//! use slog_redis::Builder;
 //!
-//!  let redis_drain = Builder::new("my-app-name")
-//!    .redis_host("localhost")
-//!    .redis_key("my_redis_list_key")
-//!    .build()
-//!    .unwrap();
+//! let redis_drain = Builder::new("my-app-name")
+//!     .redis_host("localhost")
+//!     .redis_key("my_redis_list_key")
+//!     .build()
+//!     .unwrap();
 //!
-//!  let drain = slog_async::Async::new(redis_drain.fuse()).build().fuse();
+//! let drain = slog_async::Async::new(redis_drain.fuse()).build().fuse();
 //!
-//!  let log = Logger::root(drain, o!());
-//!  info!(log, "Send me to {}!", "Redis"; "msg" => "Hello World!");
+//! let log = Logger::root(drain, o!());
+//! info!(log, "Send me to {}!", "Redis"; "msg" => "Hello World!");
 //! ```
-//!
 
 use std::cell::RefCell;
 use std::fmt;
@@ -47,7 +43,6 @@ use std::time::Duration;
 
 use chrono::{DateTime, SecondsFormat, Utc};
 use core::fmt::Write;
-use r2d2_redis::RedisConnectionManager;
 use serde_json::json;
 use slog::Key;
 use slog::{OwnedKVList, Record, KV};
@@ -55,35 +50,30 @@ use slog::{OwnedKVList, Record, KV};
 /// A logger that sends JSON formatted logs to a list in a Redis instance. It uses this format
 ///
 /// ```json
-///   {
-///     "@timestamp": ${timeRFC3339},
-///     "@source_host": ${hostname},
-///     "@message": ${message},
-///     "@fields": {
-///        "level": ${levelLowercase},
-///        "application": ${appName}
-///        ... // logged field 1
-///        ... // logged field 2
-///        ...
+/// {
+///    "@timestamp": ${timeRFC3339},
+///    "@source_host": ${hostname},
+///    "@message": ${message},
+///    "@fields": {
+///       "level": ${levelLowercase},
+///       "application": ${appName}
 ///    }
+/// }
 /// ```
 ///
-/// It supports structured logging via [`slog`][slog-url]. You can use the [`Builder`] to
-/// construct it and then use it as an slog drain.
-///
-/// [`Builder`]: struct.Builder.html
-/// [slog-url]: https://github.com/slog-rs/slog
+/// It supports structured logging via [`slog`](https://github.com/slog-rs/slog). You can use the
+/// [`Builder`] to construct it and then use it as an slog drain.
 #[derive(Debug)]
 pub struct Logger {
     redis_key: String,
     app_name: String,
     hostname: String,
     ttl_seconds: Option<u64>,
-    pool: r2d2::Pool<RedisConnectionManager>,
+    pool: r2d2::Pool<redis::Client>,
 }
 
 /// Builds the Redis logger.
-#[derive(Default, Debug)]
+#[derive(Debug)]
 pub struct Builder {
     redis_host: String,
     redis_port: u32,
@@ -94,37 +84,55 @@ pub struct Builder {
     connection_pool_size: u32,
 }
 
+impl Default for Builder {
+    fn default() -> Self {
+        Self {
+            redis_host: "localhost".to_string(),
+            redis_port: 6379,
+            redis_key: String::new(),
+            app_name: String::new(),
+            hostname: None,
+            ttl_seconds: None,
+            connection_pool_size: 10,
+        }
+    }
+}
+
 /// Errors returned by the [`Builder`] and the [`Logger`]
-#[derive(Debug)]
+#[derive(thiserror::Error, Debug)]
 pub enum Error {
-    ConnectionPoolErr(r2d2::Error),
-    RedisErr(redis::RedisError),
-    LogErr(slog::Error),
+    /// The Redis connection pool could not be created or a connection could not be obtained.
+    #[error("Redis logger connection pool error: {0}")]
+    ConnectionPoolErr(#[from] r2d2::Error),
+    /// A Redis command failed.
+    #[error("Redis logger Redis error: {0}")]
+    RedisErr(#[from] redis::RedisError),
+    /// Serializing slog key/value pairs failed.
+    #[error("Redis logger slog error: {0}")]
+    LogErr(#[from] slog::Error),
 }
 
 // A Key/Value pair used when constructing the JSON message.
-type KeyVals = std::vec::Vec<(String, serde_json::Value)>;
+type KeyVals = Vec<(String, serde_json::Value)>;
 
 // Serializes to KeyVals and implements slog::Serializer
 struct Serializer {
     vec: KeyVals,
 }
 
-#[allow(dead_code)]
 impl Builder {
     /// Creates the builder taking an application name that will end up in the `@fields.application`
     /// JSON field of the structured log message.
+    #[must_use]
     pub fn new(app_name: &str) -> Builder {
         Builder {
             app_name: app_name.to_string(),
-            redis_host: "localhost".to_string(),
-            redis_port: 6379,
-            connection_pool_size: 10,
             ..Default::default()
         }
     }
 
     /// Sets the redis details all at once.
+    #[must_use]
     pub fn redis(self, host: String, port: u32, key: impl Into<String>) -> Builder {
         Builder {
             redis_host: host,
@@ -135,6 +143,7 @@ impl Builder {
     }
 
     /// Sets the name of the key for the list where log messages will be added.
+    #[must_use]
     pub fn redis_key(self, key: impl Into<String>) -> Builder {
         Builder {
             redis_key: key.into(),
@@ -142,7 +151,8 @@ impl Builder {
         }
     }
 
-    /// Sets the name of the redis host. Defaults to 'localhost'.
+    /// Sets the name of the redis host. Defaults to `localhost`.
+    #[must_use]
     pub fn redis_host(self, host: impl Into<String>) -> Builder {
         Builder {
             redis_host: host.into(),
@@ -150,7 +160,8 @@ impl Builder {
         }
     }
 
-    /// Sets the name of the redis port. Defaults to 6379.
+    /// Sets the redis port. Defaults to 6379.
+    #[must_use]
     pub fn redis_port(self, val: u32) -> Builder {
         Builder {
             redis_port: val,
@@ -159,6 +170,7 @@ impl Builder {
     }
 
     /// Sets the time to live for messages in the redis list. Defaults to no timeout
+    #[must_use]
     pub fn ttl(self, duration: Duration) -> Builder {
         Builder {
             ttl_seconds: Some(duration.as_secs()),
@@ -168,6 +180,7 @@ impl Builder {
 
     /// Sets the name noted down in logs indicating the source of the log entry i.e. the
     /// `@source_host` field in the JSON payload
+    #[must_use]
     pub fn source_host(self, host: impl Into<String>) -> Builder {
         Builder {
             hostname: Some(host.into()),
@@ -175,22 +188,23 @@ impl Builder {
         }
     }
 
+    /// Sets the r2d2 connection pool size. Defaults to 10.
+    #[must_use]
+    pub fn connection_pool_size(self, size: u32) -> Builder {
+        Builder {
+            connection_pool_size: size,
+            ..self
+        }
+    }
+
     /// Consumes the builder, returning the redis logger
     pub fn build(self) -> Result<Logger, Error> {
-        // TODO: Get something that works on windows too
-        fn get_host_name() -> String {
-            let output = Command::new("hostname")
-                .output()
-                .expect("failed to execute process");
-            String::from_utf8_lossy(&output.stdout).replace('\n', "")
-        }
-
         let connection_str = format!("redis://{}:{}", self.redis_host, self.redis_port);
-        let manager = RedisConnectionManager::new(connection_str.as_str())?;
+        let client = redis::Client::open(connection_str.as_str())?;
         let pool = r2d2::Pool::builder()
             .max_size(self.connection_pool_size)
-            .connection_timeout(Duration::new(1, 0))
-            .build(manager)?;
+            .connection_timeout(Duration::from_secs(1))
+            .build(client)?;
 
         let mut con = pool.get()?;
         redis::cmd("PING").query::<()>(&mut *con)?;
@@ -198,15 +212,32 @@ impl Builder {
         Ok(Logger {
             redis_key: self.redis_key,
             app_name: self.app_name,
-            hostname: self.hostname.unwrap_or_else(get_host_name),
+            hostname: self.hostname.unwrap_or_else(default_hostname),
             ttl_seconds: self.ttl_seconds,
             pool,
         })
     }
 }
 
+fn default_hostname() -> String {
+    std::env::var("HOSTNAME")
+        .or_else(|_| std::env::var("HOST"))
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .or_else(|| {
+            Command::new("hostname")
+                .output()
+                .ok()
+                .and_then(|output| String::from_utf8(output.stdout).ok())
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+        })
+        .unwrap_or_else(|| "unknown".to_string())
+}
+
 impl Logger {
-    fn v0_msg(&self, level: &str, msg: &str, key_vals: Option<KeyVals>) -> String {
+    fn v0_msg(&self, level: &str, msg: &str, key_vals: KeyVals) -> String {
         let now: DateTime<Utc> = Utc::now();
         let time = now.to_rfc3339_opts(SecondsFormat::AutoSi, true);
         let mut json_val = json!({
@@ -219,17 +250,10 @@ impl Logger {
             }
         });
 
-        let fields = match json_val {
-            serde_json::Value::Object(ref mut v) => match v.get_mut("@fields").unwrap() {
-                serde_json::Value::Object(ref mut v) => Some(v),
-                _ => None,
-            },
-            _ => None,
-        }
-        .unwrap();
-
-        for key_val in &key_vals.unwrap() {
-            fields.insert(key_val.0.clone(), key_val.1.clone());
+        if let Some(fields) = json_val.get_mut("@fields").and_then(|v| v.as_object_mut()) {
+            for (key, val) in key_vals {
+                fields.insert(key, val);
+            }
         }
 
         json_val.to_string()
@@ -256,55 +280,27 @@ impl Logger {
 
 impl slog::Drain for Logger {
     type Ok = ();
-    type Err = self::Error;
+    type Err = Error;
 
     fn log(&self, record: &Record, values: &OwnedKVList) -> Result<Self::Ok, Self::Err> {
-        let ser = &mut Serializer::new();
-        record.kv().serialize(record, ser)?;
-        values.serialize(record, ser)?;
+        let mut ser = Serializer::new();
+        record.kv().serialize(record, &mut ser)?;
+        values.serialize(record, &mut ser)?;
 
         let level_str = record.level().as_str();
         let msg = format!("{}", record.msg());
-        let log_entry = self.v0_msg(level_str, msg.as_str(), Some(ser.done()));
+        let log_entry = self.v0_msg(level_str, msg.as_str(), ser.done());
         self.send_to_redis(&log_entry)?;
         Ok(())
     }
 }
 
-impl From<r2d2::Error> for Error {
-    fn from(error: r2d2::Error) -> Self {
-        Error::ConnectionPoolErr(error)
-    }
-}
-
-impl From<redis::RedisError> for Error {
-    fn from(error: redis::RedisError) -> Self {
-        Error::RedisErr(error)
-    }
-}
-
-impl From<slog::Error> for Error {
-    fn from(error: slog::Error) -> Self {
-        Error::LogErr(error)
-    }
-}
-
-impl fmt::Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match self {
-            Error::ConnectionPoolErr(e) => write!(f, "Redis logger connection pool error: {}", e),
-            Error::RedisErr(e) => write!(f, "Redis logger Redis error: {}", e),
-            Error::LogErr(e) => write!(f, "Redis logger slog error: {}", e),
-        }
-    }
-}
-
 impl Serializer {
-    pub fn new() -> Serializer {
+    fn new() -> Serializer {
         Serializer { vec: Vec::new() }
     }
 
-    pub fn emit_val(&mut self, key: slog::Key, val: serde_json::Value) -> slog::Result {
+    fn emit_val(&mut self, key: slog::Key, val: serde_json::Value) -> slog::Result {
         self.vec.push((key.to_string(), val));
         Ok(())
     }
@@ -313,22 +309,20 @@ impl Serializer {
     where
         serde_json::Number: From<V>,
     {
-        // convert a given number into serde_json::Number
         let num = serde_json::Number::from(value);
         self.emit_val(key, serde_json::Value::Number(num))
     }
 
-    fn done(&mut self) -> KeyVals {
-        self.vec.clone()
+    fn done(self) -> KeyVals {
+        self.vec
     }
 }
 
 // used by Serializer
 thread_local! {
-    static THREAD_LOCAL_BUF: RefCell<String> = RefCell::new(String::with_capacity(256))
+    static THREAD_LOCAL_BUF: RefCell<String> = RefCell::new(String::with_capacity(256));
 }
 
-#[allow(dead_code)]
 impl slog::Serializer for Serializer {
     fn emit_bool(&mut self, key: Key, val: bool) -> slog::Result {
         self.emit_val(key, serde_json::Value::Bool(val))
@@ -395,14 +389,16 @@ impl slog::Serializer for Serializer {
     }
 
     fn emit_f64(&mut self, key: Key, val: f64) -> slog::Result {
-        let n = serde_json::Number::from_f64(val);
-        self.emit_val(key, serde_json::Value::Number(n.unwrap()))
+        match serde_json::Number::from_f64(val) {
+            Some(n) => self.emit_val(key, serde_json::Value::Number(n)),
+            None => self.emit_val(key, serde_json::Value::Null),
+        }
     }
 
     fn emit_arguments(&mut self, key: Key, val: &fmt::Arguments) -> slog::Result {
         THREAD_LOCAL_BUF.with(|buf| {
             let mut buf = buf.borrow_mut();
-            buf.write_fmt(*val).unwrap();
+            buf.write_fmt(*val)?;
             let res = self.emit_val(key, serde_json::Value::String(buf.clone()));
             buf.clear();
             res
