@@ -29,7 +29,7 @@ version = "0.2.0"
 [dependencies.slog-google]
 path = "crates/googlelog"
 features = ["shipper"]
-version = "0.1.0"
+version = "0.2.0"
 
 [dependencies]
 async-trait = "0.1.92"
