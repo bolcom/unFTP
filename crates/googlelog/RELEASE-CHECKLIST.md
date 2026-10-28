@@ -14,7 +14,7 @@
 * Wait till CI is green, then from this directory run `make publish`.
 * Merge the PR via the command line by merging master into the branch and pushing it.
 * Create a git tag using format `slog-google-v{version}` e.g.
-  > slog-google-v0.1.0
+  > slog-google-v0.2.0
   A GitHub *Release* from that tag is fine: the unFTP workflow only publishes
   binaries and Docker images for tags that start with `v` (e.g. `v0.15.2`).
   Tag-only is enough to mark the crate release.

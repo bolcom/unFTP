@@ -27,7 +27,7 @@
   or
   > slog-redis-v0.1.2
   or
-  > slog-google-v0.1.0
+  > slog-google-v0.2.0
   Only unFTP tags (`v…`, not crate tags such as `slog-redis-v…`) publish
   binaries and Docker images. For a crate tag, skip the next two steps.
 * For an unFTP release, wait for the Github Actions pipeline to finish. You

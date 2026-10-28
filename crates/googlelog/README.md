@@ -9,7 +9,7 @@ There are two ways to ship the entries:
 
 ```toml
 [dependencies]
-slog-google = { version = "0.1.0", features = ["shipper"] }
+slog-google = { version = "0.2.0", features = ["shipper"] }
 ```
 
 ```rust
