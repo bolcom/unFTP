@@ -9,6 +9,8 @@
   level filters.
 - Stop panicking when the hostname cannot be determined, and add
   `Builder::connection_pool_size`.
+- Add an example and Redis integration tests (skip locally when Redis is
+  not running; CI starts Redis in Docker).
 
 ## 0.1.2
 

@@ -88,6 +88,16 @@ jobs:
   test:
     name: Run Tests
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -108,6 +118,16 @@ jobs:
   test-hack-each-feature:
     name: Test Each Feature
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -127,6 +147,16 @@ jobs:
   test-hack-all-features:
     name: Test All Features
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
@@ -146,6 +176,16 @@ jobs:
   test-hack-no-default-features:
     name: Test No Default Features
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3

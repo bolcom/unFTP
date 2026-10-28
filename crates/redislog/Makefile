@@ -29,5 +29,9 @@ pr-prep: # Runs checks to ensure you're ready for a pull request
 	cargo build
 	cargo doc --no-deps
 
+.PHONY: redis
+redis: # Start a local Redis for slog-redis tests and the example
+	docker run --rm -d --name slog-redis-test -p 6379:6379 redis:7-alpine
+
 publish:
 	cargo publish --verbose

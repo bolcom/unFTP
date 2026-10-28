@@ -38,3 +38,15 @@ let drain = slog_async::Async::new(redis_drain.fuse()).build().fuse();
 let log = Logger::root(drain, o!());
 info!(log, "Send me to {}!", "Redis"; "msg" => "Hello World!");
 ```
+
+## Example and tests
+
+Against a local Redis:
+
+```sh
+docker run --rm -p 6379:6379 redis:7-alpine
+cargo run -p slog-redis --example log_to_redis
+cargo test -p slog-redis
+```
+
+The integration tests skip if Redis is not running, except in CI where Redis is required.
