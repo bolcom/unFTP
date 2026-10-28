@@ -4,6 +4,10 @@
 
 - Compile against Rust 1.99.1
 - Upgrade slog-redis to 0.2.0 (Redis client 1.8, drop r2d2_redis)
+- Upgrade to [libunftp 0.24.0](https://github.com/bolcom/libunftp/releases/tag/libunftp-0.24.0)
+  - Get and Put Pub/Sub event paths now include the FTP working directory
+    (for example `/uploads/photo.jpg` instead of `photo.jpg`)
+- Upgrade base64 to 0.23.1
 
 ## 2025-12-23 unftp v0.15.2
 
