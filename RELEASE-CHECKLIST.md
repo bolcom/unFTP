@@ -22,8 +22,11 @@
   > v0.15.2
   or
   > slog-redis-v0.1.2
-* Wait for the Github Actions pipeline to finish. You should see all artifacts in the release page.
-* Build and push the docker containers
+  Only unFTP tags (`v…`, not `slog-redis-v…`) publish binaries and Docker
+  images. For a crate tag, skip the next two steps.
+* For an unFTP release, wait for the Github Actions pipeline to finish. You
+  should see all artifacts in the release page.
+* For an unFTP release, confirm the docker containers were pushed
 * Check if any documentation in the docs directory needs changes.
 * Publish the docs site unftp.rs by running `make site`.
 * Notify the Telegram channel.
