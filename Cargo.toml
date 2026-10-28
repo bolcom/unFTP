@@ -24,7 +24,7 @@ documentation = "https://unftp.rs/server/"
 
 [dependencies.slog-redis]
 path = "crates/redislog"
-version = "0.1.2"
+version = "0.2.0"
 
 [dependencies.slog-google]
 path = "crates/googlelog"
