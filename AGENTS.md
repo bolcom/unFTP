@@ -38,3 +38,25 @@
 ## Pull requests
 
 - Don't add attribution to AI engines
+
+## Upgrading the Rust version
+
+Ask if the Rust version should be upgraded before a release.
+
+Do not upgrade the user's local compiler; remind them to run
+`rustup update stable` if they are behind.
+
+Keep these pins in lockstep:
+
+- `.github/workflows/rust.yml` (`env.RUST_VERSION`)
+- `Makefile` (`RUST_VERSION`). This is substituted into
+  `*.Dockerfile.template` when generating the gitignored root
+  `*.Dockerfile` files.
+- `packaging/docker/*.Dockerfile.ci` (`FROM rust:<version>-slim`),
+  which GitHub Actions uses to publish images.
+
+Also note the new version under Unreleased in `CHANGELOG.md`.
+
+`docs/server/installation.md` documents a *minimum* Rust version
+for building from source, not the CI/Docker toolchain. Only bump
+that if the project actually requires a newer MSRV.
