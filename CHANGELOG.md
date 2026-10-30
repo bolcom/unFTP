@@ -2,9 +2,12 @@
 
 ## Unreleased
 
+## 2026-10-30 unftp v0.16.0
+
 - Upgrade clap from 3.2 to 4.6
 - Compile against Rust 1.99.1
 - Upgrade slog-redis to 0.2.0 (Redis client 1.8, drop r2d2_redis)
+- Upgrade slog-google to 0.2.0 (`google-logging2` 7)
 - Upgrade to [libunftp 0.24.0](https://github.com/bolcom/libunftp/releases/tag/libunftp-0.24.0)
   - Get and Put Pub/Sub event paths now include the FTP working directory
     (for example `/uploads/photo.jpg` instead of `photo.jpg`)

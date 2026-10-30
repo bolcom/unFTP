@@ -7,8 +7,8 @@ This page explains how to run unFTP using Docker, including downloading pre-buil
 You can download pre-made docker images from [docker hub](https://hub.docker.com/r/bolcom/unftp/tags) e.g.:
 
 ```sh
-docker pull bolcom/unftp:v0.15.2-alpine
-docker pull bolcom/unftp:v0.15.2-scratch
+docker pull bolcom/unftp:v0.16.0-alpine
+docker pull bolcom/unftp:v0.16.0-scratch
 ```
 
 Releases with ARM64 support publish the `-alpine`, `-scratch`, and `-alpine-debug` image tags for both `linux/amd64`
@@ -34,7 +34,7 @@ docker run \
   -v /Users/xxx/unftp/unftp.crt:/unftp.crt \
   -v /Users/xxx/unftp/the-key.json:/key.json \
   -ti \
-  bolcom/unftp:v0.15.2-alpine
+  bolcom/unftp:v0.16.0-alpine
 ```
 
 Now that we've covered Docker deployment, you may want to configure [cloud storage backends](/server/cloud-storage) or set up [monitoring](/server/monitoring) for your containerized deployment.
