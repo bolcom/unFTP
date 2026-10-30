@@ -1,8 +1,6 @@
 #[macro_use]
 extern crate lazy_static;
 
-extern crate clap;
-
 mod app;
 mod args;
 mod domain;
@@ -99,7 +97,7 @@ fn make_auth(
     m: &clap::ArgMatches,
 ) -> Result<Arc<dyn Authenticator + Send + Sync + 'static>, String> {
     let default_auth_type = AuthType::Anonymous.to_string();
-    let input_auth_type = m.value_of(args::AUTH_TYPE).unwrap_or(&default_auth_type);
+    let input_auth_type = args::str_arg(m, args::AUTH_TYPE).unwrap_or(default_auth_type.as_str());
     let auth_type_variant = match input_auth_type.parse::<AuthType>() {
         Ok(auth_type_variant) => auth_type_variant,
         Err(strum::ParseError::VariantNotFound) => {
@@ -109,7 +107,7 @@ fn make_auth(
 
     #[cfg(feature = "auth_pam")]
     {
-        if auth_type_variant != AuthType::Pam && m.is_present(args::AUTH_PAM_SERVICE) {
+        if auth_type_variant != AuthType::Pam && m.contains_id(args::AUTH_PAM_SERVICE) {
             return Err(format!(
                 "parameter {} set while auth_type is set to {}",
                 args::AUTH_PAM_SERVICE,
@@ -120,7 +118,7 @@ fn make_auth(
 
     #[cfg(feature = "auth_jsonfile")]
     {
-        if auth_type_variant != AuthType::Json && m.is_present(args::AUTH_JSON_PATH) {
+        if auth_type_variant != AuthType::Json && m.contains_id(args::AUTH_JSON_PATH) {
             return Err(format!(
                 "parameter {} set while auth_type is set to {}",
                 args::AUTH_JSON_PATH,
@@ -138,7 +136,7 @@ fn make_auth(
                 args::AUTH_REST_SELECTOR,
             ]
             .iter()
-            .any(|&arg| m.is_present(arg))
+            .any(|&arg| m.contains_id(arg))
         {
             return Err(format!(
                 "REST auth parameter(s) set while auth_type is set to {}",
@@ -168,7 +166,7 @@ fn make_anon_auth() -> Result<Arc<dyn Authenticator + Send + Sync + 'static>, St
 fn make_pam_auth(
     m: &clap::ArgMatches,
 ) -> Result<Arc<dyn Authenticator + Send + Sync + 'static>, String> {
-    if let Some(service) = m.value_of(args::AUTH_PAM_SERVICE) {
+    if let Some(service) = args::str_arg(m, args::AUTH_PAM_SERVICE) {
         let pam_auth = pam::PamAuthenticator::new(service);
         return Ok(Arc::new(pam_auth));
     }
@@ -184,26 +182,28 @@ fn make_rest_auth(
 ) -> Result<Arc<dyn Authenticator + Send + Sync + 'static>, String> {
     use std::str::FromStr;
     match (
-        m.value_of(args::AUTH_REST_URL),
-        m.value_of(args::AUTH_REST_REGEX),
-        m.value_of(args::AUTH_REST_SELECTOR),
-        m.value_of(args::AUTH_REST_METHOD),
+        args::str_arg(m, args::AUTH_REST_URL),
+        args::str_arg(m, args::AUTH_REST_REGEX),
+        args::str_arg(m, args::AUTH_REST_SELECTOR),
+        args::str_arg(m, args::AUTH_REST_METHOD),
     ) {
         (Some(url), Some(regex), Some(selector), Some(method)) => {
-            if method.to_uppercase() != "GET" && m.value_of(args::AUTH_REST_BODY).is_none() {
+            if method.to_uppercase() != "GET" && args::str_arg(m, args::AUTH_REST_BODY).is_none() {
                 return Err(
                     "REST authenticator error: no body provided for rest request".to_string(),
                 );
             }
 
-            let body = String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or(""));
+            let body = String::from(args::str_arg(m, args::AUTH_REST_BODY).unwrap_or(""));
             let mut builder = unftp_auth_rest::Builder::new()
                 .with_url(String::from(url))
                 .with_method(
                     Method::from_str(method)
                         .map_err(|e| format!("error creating REST auth: {}", e))?,
                 )
-                .with_body(String::from(m.value_of(args::AUTH_REST_BODY).unwrap_or("")))
+                .with_body(String::from(
+                    args::str_arg(m, args::AUTH_REST_BODY).unwrap_or(""),
+                ))
                 .with_selector(String::from(selector))
                 .with_regex(String::from(regex));
 
@@ -234,7 +234,7 @@ fn make_rest_auth(
 fn make_json_auth(
     m: &clap::ArgMatches,
 ) -> Result<Arc<dyn Authenticator + Send + Sync + 'static>, String> {
-    let path = m.value_of(args::AUTH_JSON_PATH).ok_or_else(|| {
+    let path = args::str_arg(m, args::AUTH_JSON_PATH).ok_or_else(|| {
         "please provide the json credentials file by specifying auth-json-path".to_string()
     })?;
 
@@ -247,8 +247,8 @@ fn make_user_detail_provider(
     m: &clap::ArgMatches,
 ) -> Result<Arc<dyn UserDetailProvider<User = user::User> + Send + Sync>, String> {
     match (
-        m.value_of(args::USR_JSON_PATH),
-        m.value_of(args::USR_HTTP_URL),
+        args::str_arg(m, args::USR_JSON_PATH),
+        args::str_arg(m, args::USR_HTTP_URL),
     ) {
         (Some(path), None) => {
             let json: String = load_user_file(path)
@@ -276,7 +276,7 @@ type VfsProducer = Box<
 
 // Creates the filesystem storage back-end
 fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> VfsProducer {
-    let p: PathBuf = m.value_of(args::ROOT_DIR).unwrap().into();
+    let p: PathBuf = args::str_arg(m, args::ROOT_DIR).unwrap().into();
     let sub_log = Arc::new(log.new(o!("module" => "storage")));
     Box::new(move || {
         RooterVfs::new(RestrictingVfs::new(storage::ChoosingVfs {
@@ -289,8 +289,7 @@ fn fs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> VfsProducer {
 // Creates the GCS storage back-end
 #[cfg(feature = "sbe_gcs")]
 fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer, String> {
-    let bucket: String = m
-        .value_of(args::GCS_BUCKET)
+    let bucket: String = args::str_arg(m, args::GCS_BUCKET)
         .ok_or_else(|| {
             format!(
                 "--{} is required when using storage type gcs",
@@ -298,8 +297,7 @@ fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer
             )
         })?
         .into();
-    let base_url: String = m
-        .value_of(args::GCS_BASE_URL)
+    let base_url: String = args::str_arg(m, args::GCS_BASE_URL)
         .ok_or_else(|| {
             format!(
                 "--{} is required when using storage type gcs",
@@ -307,8 +305,7 @@ fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer
             )
         })?
         .into();
-    let root_dir: PathBuf = m
-        .value_of(args::GCS_ROOT)
+    let root_dir: PathBuf = args::str_arg(m, args::GCS_ROOT)
         .ok_or_else(|| {
             format!(
                 "--{} is required when using storage type gcs",
@@ -317,8 +314,8 @@ fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer
         })?
         .into();
     let auth_method: AuthMethod = match (
-        m.value_of(args::GCS_SERVICE_ACCOUNT),
-        m.value_of(args::GCS_KEY_FILE),
+        args::str_arg(m, args::GCS_SERVICE_ACCOUNT),
+        args::str_arg(m, args::GCS_KEY_FILE),
     ) {
         (None, None) => AuthMethod::WorkloadIdentity(None),
         (Some(_), Some(_)) => {
@@ -360,25 +357,25 @@ fn gcs_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer
 #[cfg(feature = "sbe_azblob")]
 pub fn azblob_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer, String> {
     let mut b = opendal::services::Azblob::default();
-    if let Some(val) = m.value_of(args::AZBLOB_ROOT) {
+    if let Some(val) = args::str_arg(m, args::AZBLOB_ROOT) {
         b = b.root(val);
     }
-    if let Some(val) = m.value_of(args::AZBLOB_CONTAINER) {
+    if let Some(val) = args::str_arg(m, args::AZBLOB_CONTAINER) {
         b = b.container(val);
     }
-    if let Some(val) = m.value_of(args::AZBLOB_ENDPOINT) {
+    if let Some(val) = args::str_arg(m, args::AZBLOB_ENDPOINT) {
         b = b.endpoint(val);
     }
-    if let Some(val) = m.value_of(args::AZBLOB_ACCOUNT_NAME) {
+    if let Some(val) = args::str_arg(m, args::AZBLOB_ACCOUNT_NAME) {
         b = b.account_name(val);
     }
-    if let Some(val) = m.value_of(args::AZBLOB_ACCOUNT_KEY) {
+    if let Some(val) = args::str_arg(m, args::AZBLOB_ACCOUNT_KEY) {
         b = b.account_key(val);
     }
-    if let Some(val) = m.value_of(args::AZBLOB_SAS_TOKEN) {
+    if let Some(val) = args::str_arg(m, args::AZBLOB_SAS_TOKEN) {
         b = b.sas_token(val);
     }
-    if let Some(val) = m.value_of(args::AZBLOB_BATCH_MAX_OPERATIONS) {
+    if let Some(val) = args::str_arg(m, args::AZBLOB_BATCH_MAX_OPERATIONS) {
         b =
             b.batch_max_operations(val.parse::<usize>().map_err(|e| {
                 format!("could not parse AZBLOB_BATCH_MAX_OPERATIONS to usize: {e}")
@@ -400,7 +397,7 @@ pub fn azblob_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsP
 
 #[cfg(feature = "sbe_iso")]
 pub fn iso_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsProducer, String> {
-    let iso_file = m.value_of(args::ISO_FILE).ok_or_else(|| {
+    let iso_file = args::str_arg(m, args::ISO_FILE).ok_or_else(|| {
         format!(
             "parameter {} is required when storage backend type is 'iso'",
             args::ISO_FILE
@@ -432,7 +429,7 @@ fn start_ftp(
         start_ftp_with_storage(log, root_log, m, prod, event_dispatcher, shutdown, done)
     };
 
-    match m.value_of(args::STORAGE_BACKEND_TYPE) {
+    match args::str_arg(m, args::STORAGE_BACKEND_TYPE) {
         None | Some("filesystem") => svc(fs_storage_backend(root_log, m)),
         #[cfg(feature = "sbe_gcs")]
         Some("gcs") => svc(gcs_storage_backend(root_log, m)?),
@@ -471,7 +468,7 @@ fn get_passive_host_option(
     log: &Logger,
     arg_matches: &ArgMatches,
 ) -> Result<options::PassiveHost, String> {
-    let passive_host_str = arg_matches.value_of(args::PASSIVE_HOST);
+    let passive_host_str = args::str_arg(arg_matches, args::PASSIVE_HOST);
     match passive_host_str {
         None | Some("from-connection") => Ok(options::PassiveHost::FromConnection),
         Some(ip_or_dns) => match ip_or_dns.parse() {
@@ -499,10 +496,9 @@ where
     S: StorageBackend<user::User> + Send + Sync + 'static,
     S::Metadata: Sync + Send,
 {
-    let addr = String::from(arg_matches.value_of(args::BIND_ADDRESS).unwrap());
+    let addr = String::from(args::str_arg(arg_matches, args::BIND_ADDRESS).unwrap());
 
-    let ports: std::vec::Vec<&str> = arg_matches
-        .value_of(args::PASSIVE_PORTS)
+    let ports: std::vec::Vec<&str> = args::str_arg(arg_matches, args::PASSIVE_PORTS)
         .unwrap()
         .split(|c: char| !c.is_numeric())
         .filter(|s| !s.is_empty())
@@ -526,7 +522,7 @@ where
     let passive_host = get_passive_host_option(log, arg_matches)?;
     info!(log, "Using passive host option '{:?}'", passive_host);
 
-    let idle_timeout_str = arg_matches.value_of(args::IDLE_SESSION_TIMEOUT).unwrap();
+    let idle_timeout_str = args::str_arg(arg_matches, args::IDLE_SESSION_TIMEOUT).unwrap();
     let idle_timeout = String::from(idle_timeout_str)
         .parse::<u64>()
         .map_err(move |e| {
@@ -544,8 +540,8 @@ where
     );
 
     let md5_setting = match (
-        arg_matches.value_of(args::STORAGE_BACKEND_TYPE),
-        arg_matches.is_present(args::ENABLE_SITEMD5),
+        args::str_arg(arg_matches, args::STORAGE_BACKEND_TYPE),
+        arg_matches.get_flag(args::ENABLE_SITEMD5),
     ) {
         (Some("gcs"), _) => SiteMd5::All,
         (_, true) => SiteMd5::Accounts,
@@ -553,8 +549,7 @@ where
     };
 
     let hostname = get_host_name();
-    let instance_name = arg_matches
-        .value_of(args::INSTANCE_NAME)
+    let instance_name = args::str_arg(arg_matches, args::INSTANCE_NAME)
         .unwrap()
         .to_owned();
 
@@ -588,7 +583,7 @@ where
             .metrics();
 
     // Setup proxy protocol mode.
-    if let Some(port) = arg_matches.value_of(args::PROXY_EXTERNAL_CONTROL_PORT) {
+    if let Some(port) = args::str_arg(arg_matches, args::PROXY_EXTERNAL_CONTROL_PORT) {
         let port_num = String::from(port).parse::<u16>().map_err(|e| {
             format!(
                 "unable to parse proxy protocol external control port {}: {}",
@@ -599,8 +594,8 @@ where
     }
 
     // Set up failed logins policy (anti-bruteforce)
-    if let Some(arg) = arg_matches.value_of(args::FAILED_LOGINS_POLICY) {
-        let max_attempts_str = arg_matches.value_of(args::FAILED_MAX_ATTEMPTS).unwrap();
+    if let Some(arg) = args::str_arg(arg_matches, args::FAILED_LOGINS_POLICY) {
+        let max_attempts_str = args::str_arg(arg_matches, args::FAILED_MAX_ATTEMPTS).unwrap();
         let max_attempts = String::from(max_attempts_str)
             .parse::<u32>()
             .map_err(move |e| {
@@ -612,7 +607,7 @@ where
                 )
             })?;
 
-        let expires_after_str = arg_matches.value_of(args::FAILED_EXPIRE_AFTER).unwrap();
+        let expires_after_str = args::str_arg(arg_matches, args::FAILED_EXPIRE_AFTER).unwrap();
         let expires_after = String::from(expires_after_str)
             .parse::<u32>()
             .map_err(move |e| {
@@ -671,8 +666,8 @@ where
 
     // Setup FTPS
     server = match (
-        arg_matches.value_of(args::FTPS_CERTS_FILE),
-        arg_matches.value_of(args::FTPS_KEY_FILE),
+        args::str_arg(arg_matches, args::FTPS_CERTS_FILE),
+        args::str_arg(arg_matches, args::FTPS_KEY_FILE),
     ) {
         (Some(certs_file), Some(key_file)) => {
             info!(log, "FTPS enabled");
@@ -683,7 +678,7 @@ where
             ]
             .iter()
             .map(|arg| -> Result<FtpsRequired, String> {
-                let ftps_required = match arg_matches.value_of(arg) {
+                let ftps_required = match args::str_arg(arg_matches, arg) {
                     None => libunftp::options::FtpsRequired::None,
                     Some(str) => match str.parse::<args::FtpsRequiredType>()? {
                         args::FtpsRequiredType::all => libunftp::options::FtpsRequired::All,
@@ -724,11 +719,10 @@ where
 
     // MTLS
     server = match (
-        arg_matches
-            .value_of(args::FTPS_CLIENT_AUTH)
+        args::str_arg(arg_matches, args::FTPS_CLIENT_AUTH)
             .unwrap()
             .parse::<args::FtpsClientAuthType>()?,
-        arg_matches.value_of(args::FTPS_TRUST_STORE),
+        args::str_arg(arg_matches, args::FTPS_TRUST_STORE),
     ) {
         (FtpsClientAuthType::off, _) => server.ftps_client_auth(FtpsClientAuth::Off),
         (FtpsClientAuthType::request, None) | (FtpsClientAuthType::require, None) => {
@@ -844,13 +838,12 @@ async fn main_task(
     let (http_done_sender, mut shutdown_done_received) = tokio::sync::mpsc::channel(1);
     let ftp_done_sender = http_done_sender.clone();
 
-    let ftp_addr: SocketAddr = arg_matches
-        .value_of(args::BIND_ADDRESS)
+    let ftp_addr: SocketAddr = args::str_arg(&arg_matches, args::BIND_ADDRESS)
         .unwrap()
         .parse()
         .map_err(|_| "could not parse FTP address")?;
 
-    if let Some(addr) = arg_matches.value_of(args::HTTP_BIND_ADDRESS) {
+    if let Some(addr) = args::str_arg(&arg_matches, args::HTTP_BIND_ADDRESS) {
         let addr = String::from(addr);
         let log = log.clone();
         tokio::spawn(async move {
@@ -886,18 +879,18 @@ async fn run(arg_matches: ArgMatches) -> Result<(), String> {
     let (root_logger, google_shipper) = logging::create_logger(&arg_matches)?;
     let log = root_logger.new(o!("module" => "main"));
 
-    let addr = arg_matches.value_of(args::BIND_ADDRESS).unwrap();
-    let http_addr = arg_matches.value_of(args::HTTP_BIND_ADDRESS).unwrap();
-    let auth_type = arg_matches.value_of(args::AUTH_TYPE).unwrap_or_else(|| {
+    let addr = args::str_arg(&arg_matches, args::BIND_ADDRESS).unwrap();
+    let http_addr = args::str_arg(&arg_matches, args::HTTP_BIND_ADDRESS).unwrap();
+    let auth_type = args::str_arg(&arg_matches, args::AUTH_TYPE).unwrap_or_else(|| {
         eprintln!("Required option --auth-type is missing. To disable authentication, use: `--auth-type=anonymous` or set the `UNFTP_AUTH_TYPE=anonymous` environment variable.");
         ::std::process::exit(1)
     });
-    let sbe_type = arg_matches.value_of(args::STORAGE_BACKEND_TYPE).unwrap();
+    let sbe_type = args::str_arg(&arg_matches, args::STORAGE_BACKEND_TYPE).unwrap();
 
     let home_dir = match sbe_type {
         #[cfg(feature = "sbe_gcs")]
-        "gcs" => arg_matches.value_of(args::GCS_ROOT).unwrap(),
-        _ => arg_matches.value_of(args::ROOT_DIR).unwrap(),
+        "gcs" => args::str_arg(&arg_matches, args::GCS_ROOT).unwrap(),
+        _ => args::str_arg(&arg_matches, args::ROOT_DIR).unwrap(),
     };
 
     info!(log, "Starting {} server.", app::NAME;
@@ -964,12 +957,12 @@ async fn main() {
 
     #[cfg(feature = "tokio_console")]
     {
-        let console_addr: SocketAddr = arg_matches
-            .value_of(args::TOKIO_CONSOLE_BIND_ADDRESS)
-            .unwrap()
-            .parse()
-            .map_err(|e| format!("could not parse tokio-console address: {}", e))
-            .unwrap();
+        let console_addr: SocketAddr =
+            args::str_arg(&arg_matches, args::TOKIO_CONSOLE_BIND_ADDRESS)
+                .unwrap()
+                .parse()
+                .map_err(|e| format!("could not parse tokio-console address: {}", e))
+                .unwrap();
 
         // Convert SocketAddr to the format expected by console_subscriber
         let (ip, port) = match console_addr {

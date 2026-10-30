@@ -11,9 +11,9 @@ pub fn create_event_dispatcher(
     m: &ArgMatches,
 ) -> Result<Arc<dyn EventDispatcher<FTPEvent>>, String> {
     match (
-        m.value_of(args::PUBSUB_TOPIC),
-        m.value_of(args::PUBSUB_BASE_URL),
-        m.value_of(args::PUBSUB_PROJECT),
+        args::str_arg(m, args::PUBSUB_TOPIC),
+        args::str_arg(m, args::PUBSUB_BASE_URL),
+        args::str_arg(m, args::PUBSUB_PROJECT),
     ) {
         (Some(topic), Some(base_url), Some(project_name)) => Ok(Arc::new(
             PubsubEventDispatcher::with_api_base(log, project_name, topic, base_url),

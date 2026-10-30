@@ -41,14 +41,14 @@ where
 pub fn create_logger(
     arg_matches: &ArgMatches,
 ) -> Result<(slog::Logger, Option<slog_google::shipper::Shipper>), String> {
-    let min_log_level = match arg_matches.occurrences_of(VERBOSITY) {
+    let min_log_level = match arg_matches.get_count(VERBOSITY) {
         0 => Level::Warning,
         1 => Level::Info,
         2 => Level::Debug,
         _ => Level::Trace,
     };
 
-    let min_log_level = match arg_matches.value_of(LOG_LEVEL) {
+    let min_log_level = match args::str_arg(arg_matches, LOG_LEVEL) {
         Some(level) => match level.parse::<args::LogLevelType>()? {
             args::LogLevelType::error => Level::Error,
             args::LogLevelType::warn => Level::Warning,
@@ -104,12 +104,12 @@ pub fn create_logger(
 
 fn redis_logger(m: &ArgMatches) -> Result<Option<FallbackToStderr<redislog::Logger>>, String> {
     match (
-        m.value_of(REDIS_KEY),
-        m.value_of(REDIS_HOST),
-        m.value_of(REDIS_PORT),
+        args::str_arg(m, REDIS_KEY),
+        args::str_arg(m, REDIS_HOST),
+        args::str_arg(m, REDIS_PORT),
     ) {
         (Some(key), Some(host), Some(port)) => {
-            let instance_name = m.value_of(INSTANCE_NAME).unwrap();
+            let instance_name = args::str_arg(m, INSTANCE_NAME).unwrap();
             let app_name = if instance_name == NAME {
                 String::from(NAME)
             } else {
@@ -141,14 +141,14 @@ fn load_labels_file(file_path: &str, hostname: &str) -> Result<serde_json::Value
 fn google_logger(
     m: &ArgMatches,
 ) -> Result<Option<(slog_google::logger::Logger, slog_google::shipper::Shipper)>, String> {
-    match (m.value_of(GLOG_LOGNAME), m.value_of(GLOG_RESOURCE_TYPE)) {
+    match (args::str_arg(m, GLOG_LOGNAME), args::str_arg(m, GLOG_RESOURCE_TYPE)) {
 
         (Some(logname), Some(resource_type)) => {
             let hostname = std::env::var("HOST")
                 .or_else(|_| std::env::var("HOSTNAME"))
                 .unwrap_or_default();
 
-            let (labels_file, level_label) = (m.value_of(GLOG_LABELS_FILE), m.value_of(GLOG_LEVEL_LABEL));
+            let (labels_file, level_label) = (args::str_arg(m, GLOG_LABELS_FILE), args::str_arg(m, GLOG_LEVEL_LABEL));
 
             let mut builder = slog_google::logger::Builder::new(
                 logname,

@@ -1,5 +1,5 @@
 use crate::app;
-use clap::{Arg, ArgEnum, Command};
+use clap::{Arg, ArgAction, ArgMatches, Command};
 use std::str::FromStr;
 use strum_macros::{Display, EnumString};
 
@@ -92,8 +92,8 @@ pub enum AuthType {
     Json,
 }
 
-#[derive(ArgEnum, Clone, Debug)]
-#[allow(non_camel_case_types)]
+#[derive(Clone, Debug)]
+#[allow(dead_code, non_camel_case_types)]
 pub enum StorageBackendType {
     filesystem,
     #[cfg(feature = "sbe_gcs")]
@@ -104,7 +104,7 @@ pub enum StorageBackendType {
     iso,
 }
 
-#[derive(ArgEnum, Clone, Debug)]
+#[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub enum FailedLoginsPolicyType {
     ip,
@@ -125,7 +125,7 @@ impl FromStr for FailedLoginsPolicyType {
     }
 }
 
-#[derive(ArgEnum, Clone, Debug)]
+#[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub enum FtpsRequiredType {
     all,
@@ -146,7 +146,7 @@ impl FromStr for FtpsRequiredType {
     }
 }
 
-#[derive(ArgEnum, Clone, Debug)]
+#[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub enum FtpsClientAuthType {
     off,
@@ -167,7 +167,7 @@ impl FromStr for FtpsClientAuthType {
     }
 }
 
-#[derive(clap::ArgEnum, Clone, Debug)]
+#[derive(Clone, Debug)]
 #[allow(non_camel_case_types)]
 pub enum LogLevelType {
     error,
@@ -192,7 +192,11 @@ impl FromStr for LogLevelType {
     }
 }
 
-pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
+pub(crate) fn str_arg<'a>(m: &'a ArgMatches, id: &str) -> Option<&'a str> {
+    m.get_one::<String>(id).map(String::as_str)
+}
+
+pub(crate) fn clap_app(tmp_dir: &str) -> Command {
     let mut cmd = Command::new(app::NAME)
         .version(app::VERSION)
         .long_version(app::long_version())
@@ -201,7 +205,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
         .arg(
             Arg::new(VERBOSITY)
                 .short('v')
-                .multiple_occurrences(true)
+                .action(ArgAction::Count)
                 .help("verbosity level")
         )
         .arg(
@@ -211,7 +215,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                 .help("Sets the logging level. This overrides the verbosity flag -v if it is \
                           also specified.")
                 .env("UNFTP_LOG_LEVEL")
-                .takes_value(true)
         )
         .arg(
             Arg::new(BIND_ADDRESS)
@@ -219,7 +222,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                 .value_name("HOST_PORT")
                 .help("Sets the host and port to listen on for FTP(S) connections.")
                 .env("UNFTP_BIND_ADDRESS")
-                .takes_value(true)
                 .default_value("0.0.0.0:2121"),
         )
         .arg(
@@ -234,7 +236,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                        the specific combination of client IP and username will be blocked after \
                        too many failed login attempts.")
                 .env("UNFTP_FAILED_LOGINS_POLICY")
-                .takes_value(true)
+                .num_args(0..=1)
                 .default_missing_value("combination"),
         )
         .arg(
@@ -243,7 +245,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                 .value_name("ATTEMPTS")
                 .help("Number of consecutive failed login attempts that activates the failed logins policy.")
                 .env("UNFTP_FAILED_MAX_ATTEMPTS")
-                .takes_value(true)
                 .requires(FAILED_LOGINS_POLICY)
                 .default_value("3")
         )
@@ -253,7 +254,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                 .value_name("SECONDS")
                 .help("Number of seconds before a failed logins block entry expires.")
                 .env("UNFTP_FAILED_EXPIRE_AFTER")
-                .takes_value(true)
                 .requires(FAILED_LOGINS_POLICY)
                 .default_value("300")
         )
@@ -263,7 +263,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                 .value_name("FILE")
                 .help("Sets the path to the certificates (PEM format) used for TLS security")
                 .env("UNFTP_FTPS_CERTS_FILE")
-                .takes_value(true)
                 .requires(FTPS_KEY_FILE),
         )
         .arg(
@@ -276,7 +275,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                           The latter won't let TLS connections proceed unless the client sents a \
                           valid certificate")
                 .env("UNFTP_FTPS_CLIENT_AUTH")
-                .takes_value(true)
                 .default_value("off")
         )
         .arg(
@@ -285,7 +283,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                 .value_name("FILE")
                 .help("Sets the path to the private key file (PEM format) used for TLS security")
                 .env("UNFTP_FTPS_KEY_FILE")
-                .takes_value(true)
                 .requires(FTPS_CERTS_FILE),
         )
         .arg(
@@ -296,7 +293,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                           between 'all' and 'accounts' is that the latter does not enforce FTPS on \
                           anonymous logins i.e. it applies to accounts only")
                 .env("UNFTP_FTPS_REQUIRED_ON_CONTROL_CHANNEL")
-                .takes_value(true)
                 .default_value("none")
         )
         .arg(
@@ -307,7 +303,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                           between 'all' and 'accounts' is that the latter does not enforce FTPS on \
                           anonymous logins i.e. it applies to accounts only")
                 .env("UNFTP_FTPS_REQUIRED_ON_DATA_CHANNEL")
-                .takes_value(true)
                 .default_value("none")
         )
         .arg(
@@ -317,7 +312,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                 .help("Sets the path to a PEM file containing certificates to use when validating \
                           client certificates in MTLS mode")
                 .env("UNFTP_FTPS_TRUST_STORE")
-                .takes_value(true)
                 .requires(FTPS_CLIENT_AUTH),
         )
         .arg(
@@ -325,24 +319,21 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                 .long("log-redis-key")
                 .value_name("KEY")
                 .help("Sets the key name for storage in Redis")
-                .env("UNFTP_LOG_REDIS_KEY")
-                .takes_value(true),
+                .env("UNFTP_LOG_REDIS_KEY"),
         )
         .arg(
             Arg::new(REDIS_HOST)
                 .long("log-redis-host")
                 .value_name("HOST")
                 .help("Sets the hostname for the Redis server where logging should go")
-                .env("UNFTP_LOG_REDIS_HOST")
-                .takes_value(true),
+                .env("UNFTP_LOG_REDIS_HOST"),
         )
         .arg(
             Arg::new(REDIS_PORT)
                 .long("log-redis-port")
                 .value_name("PORT")
                 .help("Sets the port for the Redis server where logging should go")
-                .env("UNFTP_LOG_REDIS_PORT")
-                .takes_value(true),
+                .env("UNFTP_LOG_REDIS_PORT"),
         )
         .arg(
             Arg::new(HTTP_BIND_ADDRESS)
@@ -350,7 +341,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                 .value_name("HOST_PORT")
                 .help("Sets the host and port for the HTTP server used by prometheus metrics collection")
                 .env("UNFTP_BIND_ADDRESS_HTTP")
-                .takes_value(true)
                 .default_value("0.0.0.0:8080"),
         )
         .arg(
@@ -360,7 +350,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                 .help("Gives a user friendly name to this instance. This is for used for example \
                           as part of the app name during logging.")
                 .env("UNFTP_INSTANCE_NAME")
-                .takes_value(true)
                 .default_value("unFTP"),
         )
         .arg(
@@ -370,7 +359,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                 .help("Sets the port range for data connections. In proxy protocol mode this \
                           resembles ports on the proxy.")
                 .env("UNFTP_PASSIVE_PORTS")
-                .takes_value(true)
                 .default_value("49152-65535"),
         )
         .arg(
@@ -382,7 +370,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                           Examples: 'from-connection', '127.0.0.1' or 'ftp.myhost.org'"
                 )
                 .env("UNFTP_PASSIVE_HOST")
-                .takes_value(true)
                 .default_value("from-connection"),
         )
         .arg(
@@ -394,7 +381,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                          on whether unFTP was compiled to include that particular feature.")
                 //.case_insensitive(true)
                 .env("UNFTP_AUTH_TYPE")
-                .takes_value(true)
                 .default_value("anonymous"),
         )
         .arg(
@@ -405,7 +391,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                           Possible values could by 'filesystem', 'gcs', 'azblob' or 'iso', but it depends \
                           on whether unFTP was compiled to include that particular feature.")
                 .env("UNFTP_SBE_TYPE")
-                .takes_value(true)
                 .default_value("filesystem"),
         )
       .arg(
@@ -414,7 +399,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                 .value_name("TIMEOUT_SECONDS")
                 .help("The timeout in seconds after which idle connections will be closed")
                 .env("UNFTP_IDLE_SESSION_TIMEOUT")
-                .takes_value(true)
                 .default_value("600"),
         )
         .arg(
@@ -422,31 +406,28 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                 .long("proxy-external-control-port")
                 .value_name("PORT")
                 .help("This switches on proxy protocol mode and sets the external control port number exposed on the proxy.")
-                .env("UNFTP_PROXY_EXTERNAL_CONTROL_PORT")
-                .takes_value(true),
+                .env("UNFTP_PROXY_EXTERNAL_CONTROL_PORT"),
         )
         .arg(
             Arg::new(ENABLE_SITEMD5)
                 .long("enable-sitemd5")
                 .help("Enable the SITE MD5 command for authenticated users (not anonymous) (always enabled for GCS backend)")
                 .env("UNFTP_ENABLE_SITEMD5")
-                .takes_value(false)
+                .action(ArgAction::SetTrue)
         )
         .arg(
             Arg::new(USR_JSON_PATH)
                 .long("usr-json-path")
                 .value_name("PATH")
                 .help("The path to a JSON user detail file")
-                .env("UNFTP_USR_JSON_PATH")
-                .takes_value(true),
+                .env("UNFTP_USR_JSON_PATH"),
         )
         .arg(
             Arg::new(USR_HTTP_URL)
                 .long("usr-http-url")
                 .value_name("URL")
                 .help("The URL to fetch user details from via a GET request. The username will be appended to this path.")
-                .env("UNFTP_USR_HTTP_URL")
-                .takes_value(true),
+                .env("UNFTP_USR_HTTP_URL"),
         )
         .arg(
             Arg::new(PUBSUB_BASE_URL)
@@ -454,56 +435,49 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                 .value_name("URL")
                 .help("The base url of the Google Pub/Sub API")
                 .env("UNFTP_NTF_PUBSUB_BASE_URL")
-                .default_value("https://pubsub.googleapis.com")
-                .takes_value(true),
+                .default_value("https://pubsub.googleapis.com"),
         )
         .arg(
             Arg::new(PUBSUB_TOPIC)
                 .long("ntf-pubsub-topic")
                 .value_name("TOPIC_NAME")
                 .help("The name of the Google Pub/Sub topic to publish to")
-                .env("UNFTP_NTF_PUBSUB_TOPIC")
-                .takes_value(true),
+                .env("UNFTP_NTF_PUBSUB_TOPIC"),
         )
         .arg(
             Arg::new(PUBSUB_PROJECT)
                 .long("ntf-pubsub-project")
                 .value_name("PROJECT_ID")
                 .help("The ID of the GCP project where the Google Pub/Sub topic exists")
-                .env("UNFTP_NTF_PUBSUB_PROJECT")
-                .takes_value(true),
+                .env("UNFTP_NTF_PUBSUB_PROJECT"),
         )
         .arg(
             Arg::new(GLOG_LOGNAME)
                 .long("log-google-logname")
                 .value_name("LOG_GOOGLE_LOGNAME")
                 .help("Required for google logging: The logName to set in the LogEntry records going to Google Logging. See https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry")
-                .env("UNFTP_GLOG_LOGNAME")
-                .takes_value(true),
+                .env("UNFTP_GLOG_LOGNAME"),
         )
         .arg(
             Arg::new(GLOG_RESOURCE_TYPE)
                 .long("log-google-resource-type")
                 .value_name("LOG_GOOGLE_RESOURCE_TYPE")
                 .help("Required for google logging: The resource type to add to all Google log entries. E.g.: 'k8s_container'. See See https://cloud.google.com/logging/docs/reference/v2/rest/v2/MonitoredResource")
-                .env("UNFTP_GLOG_RESOURCE_TYPE")
-                .takes_value(true),
+                .env("UNFTP_GLOG_RESOURCE_TYPE"),
         )
         .arg(
             Arg::new(GLOG_LEVEL_LABEL)
                 .long("log-google-level-label")
                 .value_name("LOG_GOOGLE_LEVEL_LABEL")
                 .help("The name you want for the label in 'labels' that will contain the log level")
-                .env("UNFTP_GLOG_LEVEL_LABEL")
-                .takes_value(true),
+                .env("UNFTP_GLOG_LEVEL_LABEL"),
         )
         .arg(
             Arg::new(GLOG_LABELS_FILE)
                 .long("log-google-labels-file")
                 .value_name("LOG_GOOGLE_LABELS_FILE")
                 .help("Default labels for 'labels' and 'resource.labels' to add to all Google log entries. See https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry")
-                .env("UNFTP_GLOG_LABELS_FILE")
-                .takes_value(true),
+                .env("UNFTP_GLOG_LABELS_FILE"),
         );
 
     cmd = cmd.arg(
@@ -515,8 +489,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                           files are stored.",
             )
             .env("UNFTP_ROOT_DIR")
-            .takes_value(true)
-            .default_value(tmp_dir),
+            .default_value(tmp_dir.to_owned()),
     );
 
     #[cfg(feature = "sbe_gcs")]
@@ -557,7 +530,6 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command<'_> {
                 .value_name("HOST_PORT")
                 .help("Sets the host and port to bind to for tokio-console. Allows multiple unFTP servers to run simultaneously on the same host.")
                 .env("UNFTP_BIND_ADDRESS_TOKIO_CONSOLE")
-                .takes_value(true)
                 .default_value("127.0.0.1:6669"),
         );
     }
@@ -573,7 +545,6 @@ fn sbe_iso_commands(cmd: Command) -> Command {
             .value_name("FILE")
             .help("When the storage backend type is 'iso', this sets the path to the ISO file to serve.")
             .env("UNFTP_ISO_FILE")
-            .takes_value(true)
             .requires(STORAGE_BACKEND_TYPE),
     )
 }
@@ -586,24 +557,21 @@ fn sbe_gcs_commands(cmd: Command) -> Command {
             .value_name("URL")
             .help("The base url of Google Cloud Storage API")
             .env("UNFTP_SBE_GCS_BASE_URL")
-            .default_value("https://www.googleapis.com")
-            .takes_value(true),
+            .default_value("https://www.googleapis.com"),
     )
         .arg(
             Arg::new(GCS_BUCKET)
                 .long("sbe-gcs-bucket")
                 .value_name("BUCKET")
                 .help("The bucket to use for the Google Cloud Storage backend")
-                .env("UNFTP_SBE_GCS_BUCKET")
-                .takes_value(true),
+                .env("UNFTP_SBE_GCS_BUCKET"),
         )
         .arg(
             Arg::new(GCS_KEY_FILE)
                 .long("sbe-gcs-key-file")
                 .value_name("KEY_FILE")
                 .help("The JSON file that contains the service account key for access to Google Cloud Storage.")
-                .env("UNFTP_SBE_GCS_KEY_FILE")
-                .takes_value(true),
+                .env("UNFTP_SBE_GCS_KEY_FILE"),
         )
         .arg(
             Arg::new(GCS_ROOT)
@@ -611,16 +579,14 @@ fn sbe_gcs_commands(cmd: Command) -> Command {
                 .value_name("PATH")
                 .help("The root path in the bucket where unFTP will look for and store files.")
                 .env("UNFTP_SBE_GCS_ROOT")
-                .default_value("")
-                .takes_value(true),
+                .default_value(""),
         )
         .arg(
             Arg::new(GCS_SERVICE_ACCOUNT)
                 .long("sbe-gcs-service-account")
                 .value_name("SERVICE_ACCOUNT_NAME")
                 .help("The name of the service account to use when authenticating using GKE workload identity.")
-                .env("UNFTP_SBE_GCS_SERVICE_ACCOUNT")
-                .takes_value(true),
+                .env("UNFTP_SBE_GCS_SERVICE_ACCOUNT"),
         )
 }
 
@@ -630,49 +596,42 @@ fn sbe_azblob_commands(cmd: Command) -> Command {
           Arg::new(AZBLOB_ROOT)
             .long("sbe-opendal-azblob-root")
             .help("Root of this backend. All operations will happen under this root.")
-            .env("UNFTP_SBE_OPENDAL_AZBLOB_ROOT")
-            .takes_value(true))
+            .env("UNFTP_SBE_OPENDAL_AZBLOB_ROOT"))
         .arg(
             Arg::new(AZBLOB_CONTAINER)
                 .long("sbe-opendal-azblob-container")
                 .help("Container name of this backend.")
                 .env("UNFTP_SBE_OPENDAL_AZBLOB_CONTAINER")
-                .takes_value(true)
         )
         .arg(
             Arg::new(AZBLOB_ENDPOINT)
                 .long("sbe-opendal-azblob-endpoint")
                 .help("Endpoint of this backend. Endpoint must be full uri.")
                 .env("UNFTP_SBE_OPENDAL_AZBLOB_ENDPOINT")
-                .takes_value(true)
         )
         .arg(
             Arg::new(AZBLOB_ACCOUNT_NAME)
                 .long("sbe-opendal-azblob-account-name")
                 .help("Set account_name of this backend. If account_name is set, we will take user's input first. If not, we will try to load it from environment.")
                 .env("UNFTP_SBE_OPENDAL_AZBLOB_ACCOUNT_NAME")
-                .takes_value(true)
         )
         .arg(
             Arg::new(AZBLOB_ACCOUNT_KEY)
                 .long("sbe-opendal-azblob-account-key")
                 .help("Set account_key of this backend. If account_name is set, we will take user's input first. If not, we will try to load it from environment.")
                 .env("UNFTP_SBE_OPENDAL_AZBLOB_ACCOUNT_KEY")
-                .takes_value(true)
         )
         .arg(
             Arg::new(AZBLOB_SAS_TOKEN)
                 .long("sbe-opendal-azblob-sas-token")
                 .help("Set sas_token of this backend. If account_name is set, we will take user's input first. If not, we will try to load it from environment. See https://learn.microsoft.com/en-us/azure/storage/common/storage-sas-overview for more info.")
                 .env("UNFTP_SBE_OPENDAL_AZBLOB_SAS_TOKEN")
-                .takes_value(true)
         )
         .arg(
             Arg::new(AZBLOB_BATCH_MAX_OPERATIONS)
                 .long("sbe-opendal-azblob-batch-max-operations")
                 .help("Set maximum batch operations of this backend.")
                 .env("UNFTP_SBE_OPENDAL_AZBLOB_BATCH_MAX_OPERATIONS")
-                .takes_value(true)
         )
 }
 
@@ -683,8 +642,7 @@ fn auth_pam_commands(cmd: Command) -> Command {
             .long("auth-pam-service")
             .value_name("NAME")
             .help("The name of the PAM service")
-            .env("UNFTP_AUTH_PAM_SERVICE")
-            .takes_value(true),
+            .env("UNFTP_AUTH_PAM_SERVICE"),
     )
 }
 
@@ -695,8 +653,7 @@ fn auth_jsonfile_commands(cmd: Command) -> Command {
             .long("auth-json-path")
             .value_name("PATH")
             .help("The path to the json authentication file")
-            .env("UNFTP_AUTH_JSON_PATH")
-            .takes_value(true),
+            .env("UNFTP_AUTH_JSON_PATH"),
     )
 }
 
@@ -707,8 +664,7 @@ fn auth_rest_commands(cmd: Command) -> Command {
             .long("auth-rest-url")
             .value_name("URL")
             .help("Define REST endpoint. {USER}, {PASS} and/or {IP} are replaced by provided credentials and source IP respectively.")
-            .env("UNFTP_AUTH_REST_URL")
-            .takes_value(true),
+            .env("UNFTP_AUTH_REST_URL"),
     )
         .arg(
             Arg::new(AUTH_REST_METHOD)
@@ -716,8 +672,7 @@ fn auth_rest_commands(cmd: Command) -> Command {
                 .value_name("URL")
                 .help("HTTP method to access REST endpoint")
                 .env("UNFTP_AUTH_REST_METHOD")
-                .default_value("GET")
-                .takes_value(true),
+                .default_value("GET"),
         )
         .arg(
             Arg::new(AUTH_REST_BODY)
@@ -725,23 +680,20 @@ fn auth_rest_commands(cmd: Command) -> Command {
                 .value_name("TEMPLATE")
                 .help("If HTTP method contains body, it can be specified here. {USER}, {PASS} and/or {IP}\
                 are replaced by provided credentials and source IP respectively.")
-                .env("UNFTP_AUTH_REST_BODY")
-                .takes_value(true),
+                .env("UNFTP_AUTH_REST_BODY"),
         )
         .arg(
             Arg::new(AUTH_REST_SELECTOR)
                 .long("auth-rest-selector")
                 .value_name("SELECTOR")
                 .help("Define JSON pointer to fetch from REST response body (RFC6901)")
-                .env("UNFTP_AUTH_REST_SELECTOR")
-                .takes_value(true),
+                .env("UNFTP_AUTH_REST_SELECTOR"),
         )
         .arg(
             Arg::new(AUTH_REST_REGEX)
                 .long("auth-rest-regex")
                 .value_name("REGEX")
                 .help("Regular expression to try match against value extracted via selector")
-                .env("UNFTP_AUTH_REST_REGEX")
-                .takes_value(true),
+                .env("UNFTP_AUTH_REST_REGEX"),
         )
 }
