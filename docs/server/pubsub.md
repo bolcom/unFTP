@@ -111,6 +111,11 @@ All of them are of type JSON object. Examples of their format are shown below.
 }
 ```
 
+Get and Put `path` values are rooted at the user's FTP root and include the
+working directory. Uploading `photo.jpg` in `/uploads` reports `/uploads/photo.jpg`;
+at the FTP root it reports `/photo.jpg`. Delete, rename, and directory events
+already use this convention.
+
 **Get Event (FTP RETR):**
 
 ```json
@@ -119,7 +124,7 @@ All of them are of type JSON object. Examples of their format are shown below.
   "hostname": "MYMAC-XYZ",
   "payload": {
     "Get": {
-      "path": "hello.txt"
+      "path": "/hello.txt"
     }
   },
   "username": "hannes",
@@ -171,7 +176,7 @@ All of them are of type JSON object. Examples of their format are shown below.
   "hostname": "MYMAC-XYZ",
   "payload": {
     "Put": {
-      "path": "x.yaml"
+      "path": "/x.yaml"
     }
   },
   "username": "hannes",
