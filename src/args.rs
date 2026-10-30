@@ -201,7 +201,7 @@ pub(crate) fn clap_app(tmp_dir: &str) -> Command {
         .version(app::VERSION)
         .long_version(app::long_version())
         .about("An FTP server for when you need to FTP but don't want to")
-        .author("The bol.com unFTP team")
+        .author("The unFTP team")
         .arg(
             Arg::new(VERBOSITY)
                 .short('v')

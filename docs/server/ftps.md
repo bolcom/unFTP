@@ -36,7 +36,7 @@ Create Server Root Key and Certificate:
 openssl genrsa -out unftp_client_ca.key 2048
 openssl req -new -x509 -days 365 \
 	-key unftp_client_ca.key \
-        -subj '/CN=unftp-ca.mysite.com/O=bol.com/C=NL' \
+        -subj '/CN=unftp-ca.mysite.com/O=Example/C=NL' \
 	-out unftp_client_ca.crt
 ```
 
@@ -51,7 +51,7 @@ Create a client side certificate signing request (CSR):
 ```
 openssl req -new -sha256 \
     -key client.key \
-    -subj '/CN=unftp-client.mysite.com/O=bol.com/C=NL' \
+    -subj '/CN=unftp-client.mysite.com/O=Example/C=NL' \
     -reqexts SAN \
     -config <(cat /etc/ssl/openssl.cnf \
         <(printf "\n[SAN]\nsubjectAltName=DNS:localhost")) \

@@ -1,6 +1,6 @@
 # unFTP
 
-[![Build Status](https://github.com/bolcom/unFTP/workflows/build/badge.svg?branch=master)](https://github.com/bolcom/unFTP/actions)
+[![Build Status](https://github.com/Cloudinvoke/unFTP/workflows/build/badge.svg?branch=master)](https://github.com/Cloudinvoke/unFTP/actions)
 [![Docker Pulls](https://img.shields.io/docker/pulls/bolcom/unftp.svg?maxAge=2592000?style=plastic)](https://hub.docker.com/r/bolcom/unftp/)
 [![Follow on Telegram](https://img.shields.io/badge/follow%20on-Telegram-brightgreen.svg)](https://t.me/unftp)
 
@@ -26,6 +26,10 @@ of [libunftp](https://github.com/bolcom/libunftp) and the [Tokio](https://tokio.
 
 With unFTP, you can present RFC compliant FTP(S) to the outside world while freeing yourself to use modern APIs and
 techniques on the inside of your perimeter.
+
+unFTP is maintained under the [CloudInvoke](https://github.com/Cloudinvoke) project by
+[Hannes de Jager](https://github.com/hannesdejager) and
+[Rob klein Gunnewiek](https://github.com/robklg). It is no longer affiliated with bol.com.
 
 ## Installation and Usage
 
@@ -86,7 +90,7 @@ The binary called `unftp_x86_64-unknown-linux-gnu` that we provide via the unFTP
 ## Getting help and staying informed
 
 Support is given on a best effort basis. You are welcome to engage us
-on [the discussions page](https://github.com/bolcom/unftp/discussions)
+on [the discussions page](https://github.com/Cloudinvoke/unFTP/discussions)
 or create a Github issue.
 
 You can also follow news and talk to us on [Telegram](https://t.me/unftp)

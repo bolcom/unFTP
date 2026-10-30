@@ -2,14 +2,14 @@
 name = "slog-redis"
 description = "Redis drain for slog-rs"
 version = "0.2.0"
-authors = ["Hannes de Jager <hdejager@bol.com>"]
+authors = ["Hannes de Jager"]
 edition = "2021"
 license = "Apache-2.0"
 keywords = ["slog", "logging", "log", "redis"]
 categories = ["development-tools::debugging"]
 documentation = "https://docs.rs/slog-redis"
-homepage = "https://github.com/bolcom/unFTP/tree/master/crates/redislog"
-repository = "https://github.com/bolcom/unFTP/tree/master/crates/redislog"
+homepage = "https://github.com/Cloudinvoke/unFTP/tree/master/crates/redislog"
+repository = "https://github.com/Cloudinvoke/unFTP/tree/master/crates/redislog"
 readme = "README.md"
 
 [dependencies]
