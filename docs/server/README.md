@@ -22,3 +22,7 @@ unFTP is a FTP(S) server written in [Rust](https://www.rust-lang.org) and built 
 
 With unFTP, you can present RFC compliant FTP(S) to the outside world while freeing yourself to use modern APIs and 
 techniques on the inside of your perimeter.
+
+unFTP is maintained under the [CloudInvoke](https://github.com/Cloudinvoke) project by
+[Hannes de Jager](https://github.com/hannesdejager) and
+[Rob klein Gunnewiek](https://github.com/robklg). It is no longer affiliated with bol.com.

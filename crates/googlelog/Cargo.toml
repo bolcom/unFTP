@@ -5,12 +5,12 @@ version = "0.2.0"
 edition = "2021"
 license = "Apache-2.0"
 authors = [
-    "Rob klein Gunnewiek <rkleingunnewiek@bol.com>"
+    "Rob klein Gunnewiek"
 ]
 keywords = ["slog", "logging", "log", "google", "gcp"]
 categories = ["development-tools::debugging"]
-homepage = "https://github.com/bolcom/unFTP/tree/master/crates/googlelog"
-repository = "https://github.com/bolcom/unFTP/tree/master/crates/googlelog"
+homepage = "https://github.com/Cloudinvoke/unFTP/tree/master/crates/googlelog"
+repository = "https://github.com/Cloudinvoke/unFTP/tree/master/crates/googlelog"
 readme = "README.md"
 
 [features]

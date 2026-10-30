@@ -4,7 +4,8 @@ title: Docker
 
 This page explains how to run unFTP using Docker, including downloading pre-built images and configuring the container with environment variables and volume mounts.
 
-You can download pre-made docker images from [docker hub](https://hub.docker.com/r/bolcom/unftp/tags) e.g.:
+You can download pre-made docker images from [Docker Hub](https://hub.docker.com/r/bolcom/unftp/tags).
+Images are currently published as `bolcom/unftp`. For example:
 
 ```sh
 docker pull bolcom/unftp:v0.15.2-alpine

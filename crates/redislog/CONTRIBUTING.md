@@ -3,8 +3,8 @@
 Great projects are never established alone. Therefore we thank you for your interest to help out and offer this guide to
 help you along.
 
-- For bug reports you can log a [Github issue](https://github.com/bolcom/unFTP/issues)
-- For ideas and feedback you can proceed to the [slog-redis general discussion](https://github.com/bolcom/unFTP/discussions/83)
+- For bug reports you can log a [Github issue](https://github.com/Cloudinvoke/unFTP/issues)
+- For ideas and feedback you can proceed to the [slog-redis general discussion](https://github.com/Cloudinvoke/unFTP/discussions/83)
 - Of course pull requests for code and documentation improvements are welcomed.
 
 ## Submitting bug reports and feature requests

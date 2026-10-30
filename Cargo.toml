@@ -2,17 +2,17 @@
 name = "unftp"
 version = "0.15.2"
 authors = [
-  "Agoston Horvath <ahorvath@bol.com>",
-  "Dávid Kosztka <dkosztka@bol.com>",
-  "Hannes de Jager <hdejager@bol.com>",
+  "Hannes de Jager",
+  "Rob klein Gunnewiek",
+  "Agoston Horvath",
+  "Dávid Kosztka",
   "Koen Wilde <koen@chillheid.nl>",
-  "Maarten Dirkse <mdirkse@bol.com>",
-  "Steven Meunier <smeunier@bol.com>",
-  "Rob klein Gunnewiek <rkleingunnewiek@bol.com>",
+  "Maarten Dirkse",
+  "Steven Meunier",
 ]
 edition = "2021"
 description = "When you need to FTP, but don't want to. An async, cloud orientated FTP(S) server built on libunftp"
-repository = "https://github.com/bolcom/unFTP"
+repository = "https://github.com/Cloudinvoke/unFTP"
 homepage = "https://unftp.rs"
 license = "Apache-2.0"
 readme = "README.md"

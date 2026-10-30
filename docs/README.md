@@ -11,18 +11,22 @@ needed in cloud environments like integration with proxy servers, Prometheus mon
 logs while capitalizing on the memory safety and speed provided by its implementation language, [Rust](https://www.rust-lang.org/).
 
 unFTP is first an **embeddable library** ([libunftp](https://crates.io/crates/libunftp)) and second an 
-FTPS **server application** ([unFTP](https://github.com/bolcom/unFTP)). You can run it out of the box, embed it in your 
+FTPS **server application** ([unFTP](https://github.com/Cloudinvoke/unFTP)). You can run it out of the box, embed it in your 
 app, craft your own server or build extensions for it.
 
 **un**FTP tries to **un**tangle you from old-school environments so you can move all the things, even FTP, to the cloud 
 while your users still get that familiar FTP feeling.
+
+The unFTP server is maintained under the [CloudInvoke](https://github.com/Cloudinvoke) project by
+[Hannes de Jager](https://github.com/hannesdejager) and
+[Rob klein Gunnewiek](https://github.com/robklg). It is no longer affiliated with bol.com.
 
 ### Looking for something else?
 
 - [libunftp on Github](https://github.com/bolcom/libunftp)
 - [libunftp API docs](https://docs.rs/libunftp/latest)
 - [libunftp crate](https://crates.io/crates/libunftp)
-- [unFTP server on Github](https://github.com/bolcom/unFTP)
+- [unFTP server on Github](https://github.com/Cloudinvoke/unFTP)
 - [Storage Backends for libunftp](https://crates.io/search?page=1&per_page=10&q=unftp-sbe-)
 - [Authentication Backends for libunftp](https://crates.io/search?page=1&per_page=10&q=unftp-auth-)
 - [SITE command extensions for libunftp](https://crates.io/search?page=1&per_page=10&q=unftp-site-)

@@ -27,7 +27,7 @@ use thiserror::Error;
 const METADATA_HOST: &str = "metadata.google.internal";
 
 // `github.com/bolcom/libunftp v{package_version}`
-const USER_AGENT: &str = concat!("github.com/bolcom/unFTP v", env!("BUILD_VERSION"));
+const USER_AGENT: &str = concat!("github.com/Cloudinvoke/unFTP v", env!("BUILD_VERSION"));
 
 /// Defines the errors that can be encountered when `request_token` is called.
 #[derive(Error, Debug)]
