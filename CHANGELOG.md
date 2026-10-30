@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Compile against Rust 1.99.1
 - Upgrade slog-redis to 0.2.0 (Redis client 1.8, drop r2d2_redis)
 
 ## 2025-12-23 unftp v0.15.2
