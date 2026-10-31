@@ -29,7 +29,9 @@ unftp \
 
 ## Generating secure passwords
 
-We provide a tool that generates a secure password for you.
+We provide a tool that generates a secure password for you. Its container is
+still published under the former Docker Hub namespace; there is no
+`cloudinvoke/unftp-key-generator` image yet.
 
 Generating a secure password is as simple as this:
 
