@@ -109,6 +109,16 @@ If you want to preview the docs:
 - Install Doctave as explained in the README at https://github.com/Doctave/doctave
 - Run `make site-preview`
 
+To publish the documentation, merge your changes, update your local
+`master`, and ensure it has no uncommitted tracked changes. Then run
+`make site`.
+This requires Doctave and permission to push to the `netlify` branch. The
+publishing script builds the site, commits the generated files on that
+branch, and pushes it; Netlify then deploys unftp.rs.
+The script keeps your `master` checkout and its untracked files intact. If it
+fails after building, it leaves `site/` for inspection; move or remove that
+directory before retrying.
+
 ## License
 
 You're free to use, modify and distribute this software under the terms of the Apache-2.0 license.

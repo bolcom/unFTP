@@ -79,30 +79,7 @@ site-preview: # Previews the documentation for Github Pages and Netlify
 
 .PHONY: site
 site: # Publishes the documentation to Netlify
-	@set -eu; \
-	if [ -e site ] || [ -L site ]; then \
-		echo "Error: site directory already exists; move it before publishing" >&2; \
-		exit 1; \
-	fi; \
-	git fetch origin netlify; \
-	doctave build --release; \
-	if [ ! -d site ]; then \
-		echo "Error: site directory not found after build" >&2; \
-		exit 1; \
-	fi; \
-	site_worktree=$$(mktemp -d); \
-	trap 'git worktree remove --force "$$site_worktree" >/dev/null 2>&1 || rmdir "$$site_worktree" 2>/dev/null || true' 0; \
-	git worktree add --detach "$$site_worktree" FETCH_HEAD; \
-	git -C "$$site_worktree" rm -r -q -- .; \
-	cp -R site/. "$$site_worktree/"; \
-	git -C "$$site_worktree" add -A; \
-	if git -C "$$site_worktree" diff --cached --quiet; then \
-		echo "Documentation site is already up to date"; \
-	else \
-		git -C "$$site_worktree" commit -m "Update documentation site"; \
-		git -C "$$site_worktree" push origin HEAD:refs/heads/netlify; \
-	fi; \
-	rm -r site
+	@./scripts/publish-site.sh
 
 .PHONY: clean
 clean: # Removes generated files
