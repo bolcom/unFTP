@@ -22,6 +22,8 @@
 - Public website and user documentation: https://unftp.rs
 - Doctave (https://github.com/Doctave/doctave) is currently used to build the website
 - Website documentation lives in `docs/` and is done in markdown.
+- Netlify is used for hosting and it is set up to deploy the "netlify" branch.
+- A Makefile target called "site" will compile the docs and add it to the netlify branch
 
 ## Commit messages
 
