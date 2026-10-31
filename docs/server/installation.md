@@ -22,28 +22,28 @@ Check the assets for the release you are using; older releases do not include th
 Linux (static, no PAM):
 
 ```sh
-curl -L https://github.com/Cloudinvoke/unFTP/releases/download/v0.15.2/unftp_x86_64-unknown-linux-musl \
+curl -L https://github.com/Cloudinvoke/unFTP/releases/download/v0.16.0/unftp_x86_64-unknown-linux-musl \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
 Linux (dynamic with PAM support):
 
 ```sh
-curl -L https://github.com/Cloudinvoke/unFTP/releases/download/v0.15.2/unftp_x86_64-unknown-linux-gnu \
+curl -L https://github.com/Cloudinvoke/unFTP/releases/download/v0.16.0/unftp_x86_64-unknown-linux-gnu \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
 macOS Intel:
 
 ```sh
-curl -L https://github.com/Cloudinvoke/unFTP/releases/download/v0.15.2/unftp_x86_64-apple-darwin \
+curl -L https://github.com/Cloudinvoke/unFTP/releases/download/v0.16.0/unftp_x86_64-apple-darwin \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 
 macOS ARM:
 
 ```sh
-curl -L https://github.com/Cloudinvoke/unFTP/releases/download/v0.15.2/unftp_aarch64-apple-darwin \
+curl -L https://github.com/Cloudinvoke/unFTP/releases/download/v0.16.0/unftp_aarch64-apple-darwin \
   | sudo tee /usr/local/bin/unftp > /dev/null && sudo chmod +x /usr/local/bin/unftp
 ```
 

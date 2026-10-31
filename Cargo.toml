@@ -1,6 +1,6 @@
 [package]
 name = "unftp"
-version = "0.15.2"
+version = "0.16.0"
 authors = [
   "Hannes de Jager <hannes.de.jager@gmail.com>",
   "Rob klein Gunnewiek <rob.kleingunnewiek@gmail.com>",
@@ -45,8 +45,7 @@ hyper-rustls = "0.27.10"
 lazy_static = "1.5.1"
 libunftp = "0.24.0"
 unftp-core = "0.1.0"
-#opendal = { version = "0.53.3", optional = true }
-opendal = { git = "https://github.com/apache/opendal.git", rev = "15e2cc098cfeb1403e526cea868c0e17382a50fa", optional = true }
+opendal = { version = "=0.57.0", optional = true }
 prometheus = { version = "0.14.0", features = ["process"] }
 serde = { version = "1.0.229", features = ["derive"] }
 serde_json = "1.0.154"
@@ -64,8 +63,7 @@ unftp-sbe-fs = "0.4.0"
 unftp-sbe-rooter = "0.3.0"
 unftp-sbe-restrict = "0.1.5"
 unftp-sbe-gcs = { version = "0.3.1", optional = true }
-#unftp-sbe-opendal = { version = "0.4.0", optional = true }
-unftp-sbe-opendal = { git = "https://github.com/apache/opendal.git", rev = "15e2cc098cfeb1403e526cea868c0e17382a50fa", subdir="integrations/unftp-sbe", optional = true }
+unftp-sbe-opendal = { version = "=0.4.2", optional = true }
 unftp-sbe-iso = { version = "0.2.0", optional = true }
 unftp-auth-jsonfile = { version = "0.4.0", optional = true }
 unftp-auth-rest = { version = "0.3.1", optional = true }

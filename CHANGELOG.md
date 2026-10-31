@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 2026-10-31 unftp v0.16.0
+
 - Publish release images to GitHub Container Registry as `ghcr.io/cloudinvoke/unftp`
   and to Docker Hub as `cloudinvoke/unftp`, with source, license, and vendor labels
 - The project moved to [CloudInvoke](https://github.com/Cloudinvoke/unFTP)
@@ -13,6 +15,8 @@
   - Get and Put Pub/Sub event paths now include the FTP working directory
     (for example `/uploads/photo.jpg` instead of `photo.jpg`)
 - Upgrade base64 to 0.23.1
+- Use published OpenDAL 0.57.0 and unftp-sbe-opendal 0.4.2 so the
+  crates.io package builds with Azure Blob support
 
 ## 2025-12-23 unftp v0.15.2
 
