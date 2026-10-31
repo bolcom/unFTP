@@ -2,13 +2,13 @@
 name = "unftp"
 version = "0.15.2"
 authors = [
-  "Hannes de Jager",
-  "Rob klein Gunnewiek",
-  "Agoston Horvath",
-  "Dávid Kosztka",
+  "Hannes de Jager <hannes.de.jager@gmail.com>",
+  "Rob klein Gunnewiek <rob.kleingunnewiek@gmail.com>",
+  "Agoston Horvath <ahorvath@bol.com>",
+  "Dávid Kosztka <dkosztka@bol.com>",
   "Koen Wilde <koen@chillheid.nl>",
-  "Maarten Dirkse",
-  "Steven Meunier",
+  "Maarten Dirkse <mdirkse@bol.com>",
+  "Steven Meunier <smeunier@bol.com>",
 ]
 edition = "2021"
 description = "When you need to FTP, but don't want to. An async, cloud orientated FTP(S) server built on libunftp"

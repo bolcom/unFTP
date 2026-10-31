@@ -5,7 +5,7 @@ version = "0.2.0"
 edition = "2021"
 license = "Apache-2.0"
 authors = [
-    "Rob klein Gunnewiek"
+    "Rob klein Gunnewiek <rob.kleingunnewiek@gmail.com>"
 ]
 keywords = ["slog", "logging", "log", "google", "gcp"]
 categories = ["development-tools::debugging"]

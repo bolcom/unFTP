@@ -2,7 +2,7 @@
 name = "slog-redis"
 description = "Redis drain for slog-rs"
 version = "0.2.0"
-authors = ["Hannes de Jager"]
+authors = ["Hannes de Jager <hannes.de.jager@gmail.com>"]
 edition = "2021"
 license = "Apache-2.0"
 keywords = ["slog", "logging", "log", "redis"]
