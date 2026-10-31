@@ -78,28 +78,31 @@ site-preview: # Previews the documentation for Github Pages and Netlify
 	doctave serve
 
 .PHONY: site
-site: # Publishes to the documentation to Netlify
-	doctave build --release
-	@if [ ! -d "site" ]; then \
-		echo "Error: site directory not found after build"; \
+site: # Publishes the documentation to Netlify
+	@set -eu; \
+	if [ -e site ] || [ -L site ]; then \
+		echo "Error: site directory already exists; move it before publishing" >&2; \
 		exit 1; \
 	fi; \
-	current_branch=$$(git branch --show-current); \
-	site_tar=$$(mktemp -t site-XXXXXX.tar.gz); \
-	tar -czf $$site_tar -C site .; \
-	if git show-ref --verify --quiet refs/heads/netlify; then \
-		git checkout netlify; \
-	else \
-		git checkout -b netlify; \
+	git fetch origin netlify; \
+	doctave build --release; \
+	if [ ! -d site ]; then \
+		echo "Error: site directory not found after build" >&2; \
+		exit 1; \
 	fi; \
-	find . -mindepth 1 -maxdepth 1 ! -name '.git' -exec rm -rf {} + 2>/dev/null || true; \
-	tar -xzf $$site_tar; \
-	rm -f $$site_tar; \
-	git add -A; \
-	git commit -m "Update documentation site" || true; \
-	git push origin netlify; \
-	git checkout $$current_branch; \
-	rm -rf site
+	site_worktree=$$(mktemp -d); \
+	trap 'git worktree remove --force "$$site_worktree" >/dev/null 2>&1 || rmdir "$$site_worktree" 2>/dev/null || true' 0; \
+	git worktree add --detach "$$site_worktree" FETCH_HEAD; \
+	git -C "$$site_worktree" rm -r -q -- .; \
+	cp -R site/. "$$site_worktree/"; \
+	git -C "$$site_worktree" add -A; \
+	if git -C "$$site_worktree" diff --cached --quiet; then \
+		echo "Documentation site is already up to date"; \
+	else \
+		git -C "$$site_worktree" commit -m "Update documentation site"; \
+		git -C "$$site_worktree" push origin HEAD:refs/heads/netlify; \
+	fi; \
+	rm -r site
 
 .PHONY: clean
 clean: # Removes generated files
