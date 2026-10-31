@@ -46,7 +46,7 @@ jobs:
       - name: Get latest tag
         id: get_latest_tag
         run: |
-          tag=$(git describe --tags)
+          tag=$(git describe --tags --match 'v[0-9]*')
           echo "version=$tag" >> $GITHUB_OUTPUT
 
   format:
@@ -459,12 +459,16 @@ jobs:
   build-docker-images:
     if: ${{ github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v') }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     needs:
       - build-linux-musl
       - build-linux-musl-arm
       - get_version
     env:
       BUILD_VERSION: ${{ needs.get_version.outputs.version }}
+      DOCKERHUB_NAMESPACE: ${{ vars.DOCKERHUB_NAMESPACE || 'cloudinvoke' }}
     name: Build docker images
     steps:
       - name: Checkout code
@@ -503,6 +507,13 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and push scratch image
         uses: docker/build-push-action@v6
         with:
@@ -510,7 +521,9 @@ jobs:
           file: ./packaging/docker/scratch.Dockerfile.ci
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: bolcom/unftp:${{ env.BUILD_VERSION }}-scratch
+          tags: |
+            ${{ env.DOCKERHUB_NAMESPACE }}/unftp:${{ env.BUILD_VERSION }}-scratch
+            ghcr.io/cloudinvoke/unftp:${{ env.BUILD_VERSION }}-scratch
 
       - name: Build and push alpine image
         uses: docker/build-push-action@v6
@@ -519,7 +532,9 @@ jobs:
           file: ./packaging/docker/alpine.Dockerfile.ci
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: bolcom/unftp:${{ env.BUILD_VERSION }}-alpine
+          tags: |
+            ${{ env.DOCKERHUB_NAMESPACE }}/unftp:${{ env.BUILD_VERSION }}-alpine
+            ghcr.io/cloudinvoke/unftp:${{ env.BUILD_VERSION }}-alpine
 
       - name: Build and push alpine-debug image
         uses: docker/build-push-action@v6
@@ -528,4 +543,6 @@ jobs:
           file: ./packaging/docker/alpine-debug.Dockerfile.ci
           push: true
           platforms: linux/amd64,linux/arm64
-          tags: bolcom/unftp:${{ env.BUILD_VERSION }}-alpine-debug
+          tags: |
+            ${{ env.DOCKERHUB_NAMESPACE }}/unftp:${{ env.BUILD_VERSION }}-alpine-debug
+            ghcr.io/cloudinvoke/unftp:${{ env.BUILD_VERSION }}-alpine-debug

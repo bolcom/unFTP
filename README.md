@@ -1,7 +1,7 @@
 # unFTP
 
 [![Build Status](https://github.com/Cloudinvoke/unFTP/workflows/build/badge.svg?branch=master)](https://github.com/Cloudinvoke/unFTP/actions)
-[![Docker Pulls](https://img.shields.io/docker/pulls/bolcom/unftp.svg?maxAge=2592000?style=plastic)](https://hub.docker.com/r/bolcom/unftp/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/cloudinvoke/unftp.svg?maxAge=2592000?style=plastic)](https://hub.docker.com/r/cloudinvoke/unftp/)
 [![Follow on Telegram](https://img.shields.io/badge/follow%20on-Telegram-brightgreen.svg)](https://t.me/unftp)
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/unftp.svg?exclude_unsupported=1)](https://repology.org/project/unftp/versions)
@@ -59,7 +59,11 @@ To build the alpine docker image:
 make docker-image-alpine
 ```
 
-Alternatively you can download pre-made images from [docker hub](https://hub.docker.com/r/bolcom/unftp/tags). Also see [the Docker section on the unftp.rs website](https://unftp.rs/server/docker)
+Starting with the next release, pre-made images will be published to
+[Docker Hub](https://hub.docker.com/r/cloudinvoke/unftp/tags) as `cloudinvoke/unftp`
+and to GitHub Container Registry as `ghcr.io/cloudinvoke/unftp`.
+Older tags remain at [bolcom/unftp](https://hub.docker.com/r/bolcom/unftp/tags).
+See [the Docker section on the unftp.rs website](https://unftp.rs/server/docker).
 
 ## Selective compiling
 

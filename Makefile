@@ -1,9 +1,10 @@
 RUST_VERSION=1.99.1
-DOCKER_TAG=$(shell git describe --tags)
+DOCKER_TAG=$(shell git describe --tags --match 'v[0-9]*')
 DOCKER_TEMPLATES:=$(wildcard *.Dockerfile.template)
 DOCKER_FILES=$(DOCKER_TEMPLATES:%.template=%)
 DOCKER_IMAGES=$(DOCKER_FILES:%.Dockerfile=%)
 DOCKER_DEFAULT=alpine
+DOCKER_NAMESPACE?=cloudinvoke
 
 .PHONY: help
 help: # Show available `make` commands
@@ -34,7 +35,7 @@ help: # Show available `make` commands
 ##
 .PHONY: docker-%
 docker-image-%: %.Dockerfile # Build the % docker image
-	docker build -t bolcom/unftp:$(DOCKER_TAG)-$* -f $< .
+	docker build -t $(DOCKER_NAMESPACE)/unftp:$(DOCKER_TAG)-$* -f $< .
 
 ##
 .PHONY: docker-run-%
@@ -45,11 +46,11 @@ docker-run-%: docker-image-% # Run the % docker image in the foreground
 ##
 .PHONY: docker-image
 docker-image: $(DOCKER_DEFAULT).Dockerfile # Build the default docker image
-	docker build -t bolcom/unftp:$(DOCKER_DEFAULT)-$(DOCKER_TAG) -f $(DOCKER_DEFAULT).Dockerfile .
+	docker build -t $(DOCKER_NAMESPACE)/unftp:$(DOCKER_TAG)-$(DOCKER_DEFAULT) -f $(DOCKER_DEFAULT).Dockerfile .
 
 .PHONY: docker-run
 docker-run: docker-image # Run the default docker image in the foreground
-	docker run -ti --rm --net host --init bolcom/unftp:$(DOCKER_DEFAULT)-$(DOCKER_TAG)
+	docker run -ti --rm --net host --init $(DOCKER_NAMESPACE)/unftp:$(DOCKER_TAG)-$(DOCKER_DEFAULT)
 
 .PHONY: docker-list
 docker-list: # List the available docker images

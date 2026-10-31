@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Publish release images to GitHub Container Registry as `ghcr.io/cloudinvoke/unftp`
+  and to Docker Hub as `cloudinvoke/unftp`, with source, license, and vendor labels
 - The project moved to [CloudInvoke](https://github.com/Cloudinvoke/unFTP)
   and is no longer affiliated with bol.com
 - Upgrade clap from 3.2 to 4.6
