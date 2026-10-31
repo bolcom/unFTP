@@ -4,13 +4,17 @@ title: Docker
 
 This page explains how to run unFTP using Docker, including downloading pre-built images and configuring the container with environment variables and volume mounts.
 
-You can download pre-made docker images from [Docker Hub](https://hub.docker.com/r/bolcom/unftp/tags).
-Images are currently published as `bolcom/unftp`. For example:
+Starting with the next release, pre-made images will be published on
+[Docker Hub](https://hub.docker.com/r/cloudinvoke/unftp/tags) as `cloudinvoke/unftp` and on
+GitHub Container Registry as `ghcr.io/cloudinvoke/unftp`. For example, with a released version:
 
 ```sh
-docker pull bolcom/unftp:v0.15.2-alpine
-docker pull bolcom/unftp:v0.15.2-scratch
+docker pull cloudinvoke/unftp:vX.Y.Z-alpine
+docker pull ghcr.io/cloudinvoke/unftp:vX.Y.Z-scratch
 ```
+
+Older images remain available from the former
+[Docker Hub repository](https://hub.docker.com/r/bolcom/unftp/tags).
 
 Releases with ARM64 support publish the `-alpine`, `-scratch`, and `-alpine-debug` image tags for both `linux/amd64`
 and `linux/arm64`. Docker selects the matching image for your host when you pull a tag. Older tags may support only
@@ -35,7 +39,7 @@ docker run \
   -v /Users/xxx/unftp/unftp.crt:/unftp.crt \
   -v /Users/xxx/unftp/the-key.json:/key.json \
   -ti \
-  bolcom/unftp:v0.15.2-alpine
+  cloudinvoke/unftp:vX.Y.Z-alpine
 ```
 
 Now that we've covered Docker deployment, you may want to configure [cloud storage backends](/server/cloud-storage) or set up [monitoring](/server/monitoring) for your containerized deployment.

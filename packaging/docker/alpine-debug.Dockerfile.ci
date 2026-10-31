@@ -2,6 +2,10 @@ FROM rust:1.99.1-slim AS builder
 
 FROM alpine:3.21
 
+LABEL org.opencontainers.image.source="https://github.com/Cloudinvoke/unFTP" \
+      org.opencontainers.image.licenses="Apache-2.0" \
+      org.opencontainers.image.vendor="CloudInvoke"
+
 ARG TARGETARCH
 
 # for devel only
