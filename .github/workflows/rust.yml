@@ -22,7 +22,8 @@ on:
     branches:
       - master
   release:
-    types: [ created ]
+    # Also fires when a draft release is published.
+    types: [ published ]
 
 # The `release` event cannot be filtered by tag name in `on:` above.
 # unFTP releases use tags like `v0.15.2`. Crate tags such as
@@ -406,6 +407,8 @@ jobs:
   upload-release-binaries:
     if: ${{ github.event_name == 'release' && startsWith(github.event.release.tag_name, 'v') }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     strategy:
       matrix:
         build:
