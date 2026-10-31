@@ -19,11 +19,11 @@ while your users still get that familiar FTP feeling.
 
 The unFTP server is maintained under the [CloudInvoke](https://github.com/Cloudinvoke) project by
 [Hannes de Jager](https://github.com/hannesdejager) and
-[Rob klein Gunnewiek](https://github.com/robklg). It is no longer affiliated with bol.com.
+[Rob klein Gunnewiek](https://github.com/robklg).
 
 ### Looking for something else?
 
-- [libunftp on Github](https://github.com/bolcom/libunftp)
+- [libunftp on Github](https://github.com/Cloudinvoke/libunftp)
 - [libunftp API docs](https://docs.rs/libunftp/latest)
 - [libunftp crate](https://crates.io/crates/libunftp)
 - [unFTP server on Github](https://github.com/Cloudinvoke/unFTP)

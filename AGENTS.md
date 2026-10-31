@@ -3,8 +3,8 @@
 - unFTP is a Rust FTP/FTPS server designed for cloud deployments, built on libunftp and Tokio.
 - This repository contains the server application, including configuration and integrations for storage, authentication, monitoring, logging, and notifications.
 - GitHub project: https://github.com/Cloudinvoke/unFTP
-- Maintained under the CloudInvoke project by Hannes de Jager and Rob klein Gunnewiek (https://github.com/robklg). unFTP is no longer affiliated with bol.com.
-- The source for libunftp sits here: https://github.com/bolcom/libunftp
+- Maintained under the CloudInvoke project by Hannes de Jager and Rob klein Gunnewiek (https://github.com/robklg).
+- The source for libunftp sits here: https://github.com/Cloudinvoke/libunftp
 - Many extensions used by unFTP can be found on crates.io by searching for `unftp-`: https://crates.io/search?q=unftp-
 - libunftp provides the underlying FTP/FTPS server library; this application configures and integrates it.
 - Application code lives in `src/`
@@ -15,7 +15,7 @@
 
 - We offer binaries that are hosted on Github
 - We have a couple of docker images. There are *.Dockerfile.template files for these in the root. They build and publish via Github actions
-- Images are still published to Docker Hub as `bolcom/unftp` until a CloudInvoke namespace is set up
+- Images are published to Docker Hub as `cloudinvoke/unftp` and to GHCR as `ghcr.io/cloudinvoke/unftp`.
 
 ## Website
 

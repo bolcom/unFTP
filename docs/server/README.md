@@ -5,13 +5,13 @@ title: The Server
 # unFTP - The FTPS Server Application
 
 [![Crate Version](https://img.shields.io/crates/v/unftp.svg)](https://crates.io/crates/unftp)
-[![Docker Pulls](https://img.shields.io/docker/pulls/bolcom/unftp.svg?maxAge=2592000?style=plastic)](https://hub.docker.com/r/bolcom/unftp/)
+[![Docker Pulls](https://img.shields.io/docker/pulls/cloudinvoke/unftp.svg?maxAge=2592000?style=plastic)](https://hub.docker.com/r/cloudinvoke/unftp/)
 [![Follow on Telegram](https://img.shields.io/badge/follow%20on-Telegram-brightgreen.svg)](https://t.me/unftp)
 
 [![Packaging status](https://repology.org/badge/vertical-allrepos/unftp.svg?exclude_unsupported=1)](https://repology.org/project/unftp/versions)
 
 
-unFTP is a FTP(S) server written in [Rust](https://www.rust-lang.org) and built on top of [libunftp](https://github.com/bolcom/libunftp) and the [Tokio](https://tokio.rs) asynchronous run-time. It is **un**like your normal FTP server in that it provides:
+unFTP is a FTP(S) server written in [Rust](https://www.rust-lang.org) and built on top of [libunftp](https://github.com/Cloudinvoke/libunftp) and the [Tokio](https://tokio.rs) asynchronous run-time. It is **un**like your normal FTP server in that it provides:
 
 - Configurable Authentication (e.g. Anonymous, [PAM](https://en.wikipedia.org/wiki/Linux_PAM) or a JSON file).
 - Configurable storage back-ends (e.g. [GCS](https://cloud.google.com/storage/) or filesystem)
@@ -25,4 +25,4 @@ techniques on the inside of your perimeter.
 
 unFTP is maintained under the [CloudInvoke](https://github.com/Cloudinvoke) project by
 [Hannes de Jager](https://github.com/hannesdejager) and
-[Rob klein Gunnewiek](https://github.com/robklg). It is no longer affiliated with bol.com.
+[Rob klein Gunnewiek](https://github.com/robklg).

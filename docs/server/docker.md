@@ -4,7 +4,7 @@ title: Docker
 
 This page explains how to run unFTP using Docker, including downloading pre-built images and configuring the container with environment variables and volume mounts.
 
-Starting with the next release, pre-made images will be published on
+Since v0.16.0, pre-made images have been published on
 [Docker Hub](https://hub.docker.com/r/cloudinvoke/unftp/tags) as `cloudinvoke/unftp` and on
 GitHub Container Registry as `ghcr.io/cloudinvoke/unftp`. For example, with a released version:
 
@@ -13,7 +13,7 @@ docker pull cloudinvoke/unftp:vX.Y.Z-alpine
 docker pull ghcr.io/cloudinvoke/unftp:vX.Y.Z-scratch
 ```
 
-Older images remain available from the former
+Older images also remain available from the former
 [Docker Hub repository](https://hub.docker.com/r/bolcom/unftp/tags).
 
 Releases with ARM64 support publish the `-alpine`, `-scratch`, and `-alpine-debug` image tags for both `linux/amd64`

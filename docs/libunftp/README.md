@@ -43,7 +43,7 @@ possible.
 | [unftp-sbe-rooter](https://crates.io/crates/unftp-sbe-rooter) | Wraps another storage back-end in order to root a user to a specific home directory |
 | [unftp-sbe-webdav](https://crates.io/crates/unftp-sbe-webdav) | A WebDAV storage back-end providing translation between FTP & WebDAV |
 
-See the [full list of storage back-ends on crates.io](https://crates.io/search?q=unftp-sbe) or the [Contribution Guide](https://github.com/bolcom/libunftp/blob/master/CONTRIBUTING.md#developing-your-own-authentication-or-storage-back-end-implementation) and [API Documentation](https://docs.rs/libunftp) if you want to create your own.
+See the [full list of storage back-ends on crates.io](https://crates.io/search?q=unftp-sbe) or the [Contribution Guide](https://github.com/Cloudinvoke/libunftp/blob/master/CONTRIBUTING.md#developing-your-own-authentication-or-storage-back-end-implementation) and [API Documentation](https://docs.rs/libunftp) if you want to create your own.
 
 ## Known Authentication back-ends
 
@@ -53,7 +53,7 @@ See the [full list of storage back-ends on crates.io](https://crates.io/search?q
 | [unftp-auth-pam](https://crates.io/crates/unftp-auth-pam) | Authenticates via PAM |
 | [unftp-auth-rest](https://crates.io/crates/unftp-auth-rest) | Consumes an HTTP API to authenticate |
 
-See the [full list of authentication back-ends on crates.io](https://crates.io/search?q=unftp-auth) or the [Contribution Guide](https://github.com/bolcom/libunftp/blob/master/CONTRIBUTING.md#developing-your-own-authentication-or-storage-back-end-implementation) and [API Documentation](https://docs.rs/libunftp) if you want to create your own.
+See the [full list of authentication back-ends on crates.io](https://crates.io/search?q=unftp-auth) or the [Contribution Guide](https://github.com/Cloudinvoke/libunftp/blob/master/CONTRIBUTING.md#developing-your-own-authentication-or-storage-back-end-implementation) and [API Documentation](https://docs.rs/libunftp) if you want to create your own.
 
 ## Known SITE command extensions
 
@@ -61,8 +61,8 @@ See the [full list of authentication back-ends on crates.io](https://crates.io/s
 |-------|-------------|
 | [unftp-site-hash](https://crates.io/crates/unftp-site-hash) | Adds a `SITE HASH` command, supporting SHA-256, SHA-1, MD5 and CRC32 file hashing |
 
-See the [full list of SITE command extensions on crates.io](https://crates.io/search?q=unftp-site) or the [Contribution Guide](https://github.com/bolcom/libunftp/blob/master/CONTRIBUTING.md#developing-your-own-authentication-or-storage-back-end-implementation) and [`ServerBuilder::site_command`](https://docs.rs/libunftp/latest/libunftp/struct.ServerBuilder.html#method.site_command) if you want to create your own.
+See the [full list of SITE command extensions on crates.io](https://crates.io/search?q=unftp-site) or the [Contribution Guide](https://github.com/Cloudinvoke/libunftp/blob/master/CONTRIBUTING.md#developing-your-own-authentication-or-storage-back-end-implementation) and [`ServerBuilder::site_command`](https://docs.rs/libunftp/latest/libunftp/struct.ServerBuilder.html#method.site_command) if you want to create your own.
 
 ## Additional resources
 
-See the [github page](https://github.com/bolcom/libunftp) or the [API Documentation](https://docs.rs/libunftp) for more details.
+See the [github page](https://github.com/Cloudinvoke/libunftp) or the [API Documentation](https://docs.rs/libunftp) for more details.

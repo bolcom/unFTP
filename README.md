@@ -10,10 +10,10 @@ When you need to FTP, but don't want to.
 
 ![logo](logo.png)
 
-[**Website**](https://unftp.rs) | [**Docs**](https://unftp.rs/server) | [**libunftp**](https://github.com/bolcom/libunftp)
+[**Website**](https://unftp.rs) | [**Docs**](https://unftp.rs/server) | [**libunftp**](https://github.com/Cloudinvoke/libunftp)
 
 unFTP is an FTP(S) server written in [Rust](https://www.rust-lang.org) and built on top
-of [libunftp](https://github.com/bolcom/libunftp) and the [Tokio](https://tokio.rs) asynchronous run-time. It is **un**like your normal FTP server in that it provides:
+of [libunftp](https://github.com/Cloudinvoke/libunftp) and the [Tokio](https://tokio.rs) asynchronous run-time. It is **un**like your normal FTP server in that it provides:
 
 - Configurable Authentication (e.g. Anonymous, [PAM](https://en.wikipedia.org/wiki/Linux_PAM), a JSON file or HTTP).
 - Configurable storage back-ends (e.g. [GCS](https://cloud.google.com/storage/) or filesystem)
@@ -29,7 +29,7 @@ techniques on the inside of your perimeter.
 
 unFTP is maintained under the [CloudInvoke](https://github.com/Cloudinvoke) project by
 [Hannes de Jager](https://github.com/hannesdejager) and
-[Rob klein Gunnewiek](https://github.com/robklg). It is no longer affiliated with bol.com.
+[Rob klein Gunnewiek](https://github.com/robklg).
 
 ## Installation and Usage
 
@@ -125,5 +125,5 @@ You're free to use, modify and distribute this software under the terms of the A
 
 ## See also
 
-- [libunftp](https://github.com/bolcom/libunftp), the primary crate unFTP server is based on.
+- [libunftp](https://github.com/Cloudinvoke/libunftp), the primary crate unFTP server is based on.
 - [libunftp back-ends/extensions on crates.io](https://crates.io/search?q=unftp-)
