@@ -45,7 +45,7 @@
 
 - Look up associated merged GitHub pull requests when updating changelogs
   or release notes, and link entries to them where available, following
-  the existing `[#123](https://github.com/Cloudinvoke/libunftp/pull/123)`
+  the existing `[#240](https://github.com/Cloudinvoke/unFTP/pull/240)`
   style.
 - Verify each association using GitHub metadata or commit history. Do not
   invent pull request numbers.
