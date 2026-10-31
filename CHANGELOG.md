@@ -4,19 +4,20 @@
 
 ## 2026-10-31 unftp v0.16.0
 
-- Publish release images to GitHub Container Registry as `ghcr.io/cloudinvoke/unftp`
+- [#250](https://github.com/Cloudinvoke/unFTP/pull/250) Publish release images to GitHub Container Registry as `ghcr.io/cloudinvoke/unftp`
   and to Docker Hub as `cloudinvoke/unftp`, with source, license, and vendor labels
-- The project moved to [CloudInvoke](https://github.com/Cloudinvoke/unFTP)
+- [#248](https://github.com/Cloudinvoke/unFTP/pull/248) The project moved to [CloudInvoke](https://github.com/Cloudinvoke/unFTP)
   and is no longer affiliated with bol.com
-- Upgrade clap from 3.2 to 4.6
-- Compile against Rust 1.99.1
-- Upgrade slog-redis to 0.2.0 (Redis client 1.8, drop r2d2_redis)
-- Upgrade to [libunftp 0.24.0](https://github.com/bolcom/libunftp/releases/tag/libunftp-0.24.0)
+- [#246](https://github.com/Cloudinvoke/unFTP/pull/246) Upgrade clap from 3.2 to 4.6
+- [#245](https://github.com/Cloudinvoke/unFTP/pull/245) Compile against Rust 1.99.1
+- [#241](https://github.com/Cloudinvoke/unFTP/pull/241) Upgrade slog-redis to 0.2.0 (Redis client 1.8, drop r2d2_redis)
+- [#240](https://github.com/Cloudinvoke/unFTP/pull/240) Upgrade to [libunftp 0.24.0](https://github.com/bolcom/libunftp/releases/tag/libunftp-0.24.0)
   - Get and Put Pub/Sub event paths now include the FTP working directory
     (for example `/uploads/photo.jpg` instead of `photo.jpg`)
-- Upgrade base64 to 0.23.1
-- Use published OpenDAL 0.57.0 and unftp-sbe-opendal 0.4.2 so the
+- [#240](https://github.com/Cloudinvoke/unFTP/pull/240) Upgrade base64 to 0.23.1
+- [#252](https://github.com/Cloudinvoke/unFTP/pull/252) Use published OpenDAL 0.57.0 and unftp-sbe-opendal 0.4.2 so the
   crates.io package builds with Azure Blob support
+- [#237](https://github.com/Cloudinvoke/unFTP/pull/237) Add Linux ARM64 MUSL binary to GitHub releases
 
 ## 2025-12-23 unftp v0.15.2
 

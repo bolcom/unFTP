@@ -41,6 +41,15 @@
 
 - Don't add attribution to AI engines
 
+## Changelogs and release notes
+
+- Look up associated merged GitHub pull requests when updating changelogs
+  or release notes, and link entries to them where available, following
+  the existing `[#123](https://github.com/Cloudinvoke/libunftp/pull/123)`
+  style.
+- Verify each association using GitHub metadata or commit history. Do not
+  invent pull request numbers.
+
 ## Upgrading the Rust version
 
 Ask if the Rust version should be upgraded before a release.
