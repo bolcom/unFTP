@@ -13,16 +13,16 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766698252"
+    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1793460053"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766698252"
+    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1793460053"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766698252" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766698252"
+    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1793460053" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1793460053"
         media="screen" />
 
     <script>
-        var DOCTAVE_TIMESTAMP = "1766698252";
+        var DOCTAVE_TIMESTAMP = "1793460053";
         var BASE_PATH = "/";
         var color = localStorage.getItem('doctave-color')
 
@@ -170,7 +170,7 @@
 <pre><code class="language-sh">openssl genrsa -out unftp_client_ca.key 2048
 openssl req -new -x509 -days 365 \
 	-key unftp_client_ca.key \
-        -subj '/CN=unftp-ca.mysite.com/O=bol.com/C=NL' \
+        -subj '/CN=unftp-ca.mysite.com/O=Example/C=NL' \
 	-out unftp_client_ca.crt
 </code></pre>
 <p>Create a client side key:</p>
@@ -179,7 +179,7 @@ openssl req -new -x509 -days 365 \
 <p>Create a client side certificate signing request (CSR):</p>
 <pre><code>openssl req -new -sha256 \
     -key client.key \
-    -subj '/CN=unftp-client.mysite.com/O=bol.com/C=NL' \
+    -subj '/CN=unftp-client.mysite.com/O=Example/C=NL' \
     -reqexts SAN \
     -config &lt;(cat /etc/ssl/openssl.cnf \
         &lt;(printf "\n[SAN]\nsubjectAltName=DNS:localhost")) \
@@ -250,11 +250,11 @@ openssl req -new -x509 -days 365 \
             </div>
         </div>
     </div>
-    <script type="text/javascript" src="/assets/katex.js?v=1766698252"></script>
-    <script type="text/javascript" src="/assets/mermaid.js?v=1766698252"></script>
-    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766698252"></script>
-    <script type="text/javascript" src="/assets/prism.js?v=1766698252"></script>
-    <script type="text/javascript" src="/assets/doctave-app.js?v=1766698252"></script>
+    <script type="text/javascript" src="/assets/katex.js?v=1793460053"></script>
+    <script type="text/javascript" src="/assets/mermaid.js?v=1793460053"></script>
+    <script type="text/javascript" src="/assets/elasticlunr.js?v=1793460053"></script>
+    <script type="text/javascript" src="/assets/prism.js?v=1793460053"></script>
+    <script type="text/javascript" src="/assets/doctave-app.js?v=1793460053"></script>
 
     
 </body>

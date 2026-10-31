@@ -13,16 +13,16 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766698252"
+    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1793460053"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766698252"
+    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1793460053"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766698252" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766698252"
+    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1793460053" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1793460053"
         media="screen" />
 
     <script>
-        var DOCTAVE_TIMESTAMP = "1766698252";
+        var DOCTAVE_TIMESTAMP = "1793460053";
         var BASE_PATH = "/";
         var color = localStorage.getItem('doctave-color')
 
@@ -198,8 +198,8 @@ only specifies an <code>eventType</code> attribute:</p>
   "hostname": "MYMAC-XYZ",
   "payload": {
     "Startup": {
-      "libunftp_version": "0.19.1",
-      "unftp_version": "v0.15.2"
+      "libunftp_version": "0.24.0",
+      "unftp_version": "v0.16.0"
     }
   }
 }
@@ -228,13 +228,17 @@ only specifies an <code>eventType</code> attribute:</p>
   "sequence_number": 2
 }
 </code></pre>
+<p>Get and Put <code>path</code> values are rooted at the user's FTP root and include the
+working directory. Uploading <code>photo.jpg</code> in <code>/uploads</code> reports <code>/uploads/photo.jpg</code>;
+at the FTP root it reports <code>/photo.jpg</code>. Delete, rename, and directory events
+already use this convention.</p>
 <p><strong>Get Event (FTP RETR):</strong></p>
 <pre><code class="language-json">{
   "source_instance": "unFTP",
   "hostname": "MYMAC-XYZ",
   "payload": {
     "Get": {
-      "path": "hello.txt"
+      "path": "/hello.txt"
     }
   },
   "username": "hannes",
@@ -277,7 +281,7 @@ only specifies an <code>eventType</code> attribute:</p>
   "hostname": "MYMAC-XYZ",
   "payload": {
     "Put": {
-      "path": "x.yaml"
+      "path": "/x.yaml"
     }
   },
   "username": "hannes",
@@ -332,11 +336,11 @@ only specifies an <code>eventType</code> attribute:</p>
             </div>
         </div>
     </div>
-    <script type="text/javascript" src="/assets/katex.js?v=1766698252"></script>
-    <script type="text/javascript" src="/assets/mermaid.js?v=1766698252"></script>
-    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766698252"></script>
-    <script type="text/javascript" src="/assets/prism.js?v=1766698252"></script>
-    <script type="text/javascript" src="/assets/doctave-app.js?v=1766698252"></script>
+    <script type="text/javascript" src="/assets/katex.js?v=1793460053"></script>
+    <script type="text/javascript" src="/assets/mermaid.js?v=1793460053"></script>
+    <script type="text/javascript" src="/assets/elasticlunr.js?v=1793460053"></script>
+    <script type="text/javascript" src="/assets/prism.js?v=1793460053"></script>
+    <script type="text/javascript" src="/assets/doctave-app.js?v=1793460053"></script>
 
     
 </body>

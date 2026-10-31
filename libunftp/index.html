@@ -13,16 +13,16 @@
         href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Source+Sans+Pro:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&display=swap"
         rel="stylesheet">
 
-    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1766698252"
+    <link rel="stylesheet" type="text/css" href="/assets/normalize.css?v=1793460053"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1766698252"
+    <link rel="stylesheet" type="text/css" href="/assets/doctave-style.css?v=1793460053"
         media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1766698252" media="screen" />
-    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1766698252"
+    <link rel="stylesheet" type="text/css" href="/assets/katex.css?v=1793460053" media="screen" />
+    <link rel="stylesheet" type="text/css" href="/assets/prism-ghcolors.css?v=1793460053"
         media="screen" />
 
     <script>
-        var DOCTAVE_TIMESTAMP = "1766698252";
+        var DOCTAVE_TIMESTAMP = "1793460053";
         var BASE_PATH = "/";
         var color = localStorage.getItem('doctave-color')
 
@@ -156,9 +156,10 @@ build your own FTPS server with. You can extend it with your own storage back-en
 possible.</p>
 <h2 id="feature-highlights">Feature highlights</h2>
 <ul>
-<li>41 Supported FTP commands (see commands directory) and growing</li>
+<li>42 Supported FTP commands (see commands directory) and growing</li>
 <li>Ability to implement own storage back-ends</li>
 <li>Ability to implement own authentication back-ends</li>
+<li>Ability to implement own <code>SITE</code> commands</li>
 <li>Explicit FTPS (TLS)</li>
 <li>Mutual TLS (Client certificates)</li>
 <li>TLS session resumption</li>
@@ -188,6 +189,11 @@ possible.</p>
 <tr><td><a href="https://crates.io/crates/unftp-auth-rest">unftp-auth-rest</a></td><td>Consumes an HTTP API to authenticate</td></tr>
 </tbody></table>
 <p>See the <a href="https://crates.io/search?q=unftp-auth">full list of authentication back-ends on crates.io</a> or the <a href="https://github.com/bolcom/libunftp/blob/master/CONTRIBUTING.md#developing-your-own-authentication-or-storage-back-end-implementation">Contribution Guide</a> and <a href="https://docs.rs/libunftp">API Documentation</a> if you want to create your own.</p>
+<h2 id="known-site-command-extensions">Known SITE command extensions</h2>
+<table><thead><tr><th>Crate</th><th>Description</th></tr></thead><tbody>
+<tr><td><a href="https://crates.io/crates/unftp-site-hash">unftp-site-hash</a></td><td>Adds a <code>SITE HASH</code> command, supporting SHA-256, SHA-1, MD5 and CRC32 file hashing</td></tr>
+</tbody></table>
+<p>See the <a href="https://crates.io/search?q=unftp-site">full list of SITE command extensions on crates.io</a> or the <a href="https://github.com/bolcom/libunftp/blob/master/CONTRIBUTING.md#developing-your-own-authentication-or-storage-back-end-implementation">Contribution Guide</a> and <a href="https://docs.rs/libunftp/latest/libunftp/struct.ServerBuilder.html#method.site_command"><code>ServerBuilder::site_command</code></a> if you want to create your own.</p>
 <h2 id="additional-resources">Additional resources</h2>
 <p>See the <a href="https://github.com/bolcom/libunftp">github page</a> or the <a href="https://docs.rs/libunftp">API Documentation</a> for more details.</p>
 
@@ -214,6 +220,10 @@ possible.</p>
                         </li>
                         
                         <li class='page-nav-level-2'>
+                            <a href='#known-site-command-extensions'>Known SITE command extensions</a>
+                        </li>
+                        
+                        <li class='page-nav-level-2'>
                             <a href='#additional-resources'>Additional resources</a>
                         </li>
                         
@@ -236,11 +246,11 @@ possible.</p>
             </div>
         </div>
     </div>
-    <script type="text/javascript" src="/assets/katex.js?v=1766698252"></script>
-    <script type="text/javascript" src="/assets/mermaid.js?v=1766698252"></script>
-    <script type="text/javascript" src="/assets/elasticlunr.js?v=1766698252"></script>
-    <script type="text/javascript" src="/assets/prism.js?v=1766698252"></script>
-    <script type="text/javascript" src="/assets/doctave-app.js?v=1766698252"></script>
+    <script type="text/javascript" src="/assets/katex.js?v=1793460053"></script>
+    <script type="text/javascript" src="/assets/mermaid.js?v=1793460053"></script>
+    <script type="text/javascript" src="/assets/elasticlunr.js?v=1793460053"></script>
+    <script type="text/javascript" src="/assets/prism.js?v=1793460053"></script>
+    <script type="text/javascript" src="/assets/doctave-app.js?v=1793460053"></script>
 
     
 </body>
