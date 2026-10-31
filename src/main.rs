@@ -375,6 +375,9 @@ pub fn azblob_storage_backend(log: &Logger, m: &clap::ArgMatches) -> Result<VfsP
     if let Some(val) = args::str_arg(m, args::AZBLOB_SAS_TOKEN) {
         b = b.sas_token(val);
     }
+    // OpenDAL retains this setter for compatibility, but its batch limit is
+    // now fixed by Azure Blob Storage.
+    #[allow(deprecated)]
     if let Some(val) = args::str_arg(m, args::AZBLOB_BATCH_MAX_OPERATIONS) {
         b =
             b.batch_max_operations(val.parse::<usize>().map_err(|e| {

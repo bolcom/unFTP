@@ -59,7 +59,7 @@ To build the alpine docker image:
 make docker-image-alpine
 ```
 
-Starting with the next release, pre-made images will be published to
+Starting with v0.16.0, pre-made images will be published to
 [Docker Hub](https://hub.docker.com/r/cloudinvoke/unftp/tags) as `cloudinvoke/unftp`
 and to GitHub Container Registry as `ghcr.io/cloudinvoke/unftp`.
 Older images remain available from the former
