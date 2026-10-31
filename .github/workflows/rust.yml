@@ -549,3 +549,17 @@ jobs:
           tags: |
             ${{ env.DOCKERHUB_NAMESPACE }}/unftp:${{ env.BUILD_VERSION }}-alpine-debug
             ghcr.io/cloudinvoke/unftp:${{ env.BUILD_VERSION }}-alpine-debug
+
+      - name: Tag stable Alpine image as latest
+        if: ${{ !github.event.release.prerelease }}
+        run: |
+          set -euo pipefail
+
+          for repository in "${DOCKERHUB_NAMESPACE}/unftp" ghcr.io/cloudinvoke/unftp; do
+            source="${repository}:${BUILD_VERSION}-alpine"
+            target="${repository}:latest"
+            source_digest=$(docker buildx imagetools inspect "$source" --format '{{.Manifest.Digest}}')
+            docker buildx imagetools create --tag "$target" "$source"
+            target_digest=$(docker buildx imagetools inspect "$target" --format '{{.Manifest.Digest}}')
+            test "$target_digest" = "$source_digest"
+          done
